@@ -1,13 +1,15 @@
-# $Id: Makefile.am,v 1.3.2.3 2011/06/02 18:38:46 ak Exp $
+# $Id: Makefile.am,v 1.3.2.4 2012/01/11 07:00:40 ak Exp $
 # Copyright (C) 2009,2010 Cubicroot Co. Ltd.
 # This is the auto-Makefile for bounceHammer/src/cgi, is processed by 
 # automake to create Makefile.in.
 
 pkgdatadir = @datarootdir@/script
+distdir = $(BUILDROOT)/dist/script
 pkgdata_DATA = api.cgi bouncehammer.cgi
 SUFFIXES = .PL .cgi
 
 $(pkgdata_DATA):
+	test -d $(distdir) || mkdir -p $(distdir)
 	$(CAT) $*.PL | $(SED) \
 		-e 's|__KANADZUCHIROOT__|@prefix@|g' \
 		-e 's|__KANADZUCHIDATA__|@datadir@|g' \
@@ -23,4 +25,4 @@ $(pkgdata_DATA):
 .PHONY: clean
 clean:
 	rm -f $(pkgdata_DATA)
-
+	rm -f $(distdir)/*
