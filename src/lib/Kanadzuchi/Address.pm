@@ -1,4 +1,4 @@
-# $Id: Address.pm,v 1.10.2.5 2011/09/29 15:42:22 ak Exp $
+# $Id: Address.pm,v 1.10.2.6 2012/02/06 10:23:59 ak Exp $
 # Copyright (C) 2009,2010 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                    
@@ -116,6 +116,10 @@ sub canonify
 
 	return q() unless defined $input;
 	return q() if ref $input;
+
+	# "=?ISO-2022-JP?B?....?="<user@example.jp>
+	# no space character between " and < .
+	$input =~ s{"<}{" <};
 
 	my $canon = q();
 	my $addrs = [];
