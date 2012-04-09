@@ -1,4 +1,4 @@
- $Id: RELEASE_NOTES,v 1.76.2.22 2011/10/10 09:56:54 ak Exp $
+ $Id: RELEASE_NOTES,v 1.76.2.23 2012/04/09 06:23:07 ak Exp $
  -Id: RELEASE_NOTES,v 1.12 2009/12/01 10:35:23 ak Exp -
  -Id: RELEASE_NOTES,v 1.34 2009/08/27 05:09:04 ak Exp -
 -----------------------------------------------------------------------
@@ -28,6 +28,26 @@
   - http://www.facebook.com/bouncehammer
 -----------------------------------------------------------------------
 
+2.7.8/2.7.0	2012/04/09
+
+  New functionality:
+    * (EXPERIMENTAL IMPLEMENTATION): bin/mailboxparser detects some of
+      FBL: Feedback loop message as a bounced email. Thanks to Gilles.
+
+  Fixed bugs:
+    * Fixed an issue that  src/cgi/Makefile uses "/" as a temporary di-
+      rectory when the "make" command is executed. Thanks to Hasegawa.
+
+    * Fixed an issue that Kanadzuchi::Address->canonify fails when the
+      email header does not contain any space character like follwoing:
+      "=?ISO-2022-JP?B?.....?="<user@example.jp> . Thanks to Kanazawa.
+
+  New files:
+    * lib/Kanadzuchi/MTA/FeedbackLoop.pm (Experimental)
+    * t/041_mta-feedbackloop.t (Experimental)
+
+
+-----------------------------------------------------------------------
 2.7.7/2.7.0	2011/11/14
 
   New functionality:
