@@ -1,4 +1,4 @@
-# $Id: 000_compile-core.t,v 1.50.2.11 2011/08/21 18:49:50 ak Exp $
+# $Id: 000_compile-core.t,v 1.50.2.12 2012/04/09 06:20:13 ak Exp $
 use strict;
 use warnings;
 use lib qw(./t/lib ./dist/lib ./src/lib);
@@ -204,6 +204,7 @@ my $Modules = [ qw{
 	Kanadzuchi::MTA::Courier
 	Kanadzuchi::MTA::Exim
 	Kanadzuchi::MTA::Fallback
+	Kanadzuchi::MTA::FeedbackLoop
 	Kanadzuchi::MTA::Postfix
 	Kanadzuchi::MTA::qmail
 	Kanadzuchi::MTA::Sendmail

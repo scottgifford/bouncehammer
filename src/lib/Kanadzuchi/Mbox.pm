@@ -1,8 +1,8 @@
-# $Id: Mbox.pm,v 1.28.2.9 2011/10/11 03:03:18 ak Exp $
+# $Id: Mbox.pm,v 1.28.2.10 2012/04/09 06:20:13 ak Exp $
 # -Id: Parser.pm,v 1.10 2009/12/26 19:40:12 ak Exp -
 # -Id: Parser.pm,v 1.1 2009/08/29 08:50:27 ak Exp -
 # -Id: Parser.pm,v 1.4 2009/07/31 09:03:53 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
 # Kanadzuchi::
                              
  ##  ## ##                   
@@ -33,6 +33,7 @@ use Kanadzuchi::MTA::Postfix;
 use Kanadzuchi::MTA::qmail;
 use Kanadzuchi::MTA::Exim;
 use Kanadzuchi::MTA::Courier;
+use Kanadzuchi::MTA::FeedbackLoop;
 
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||A |||c |||c |||e |||s |||s |||o |||r |||s ||
@@ -55,7 +56,8 @@ __PACKAGE__->mk_accessors(
 #
 sub ENDOF() { qq(\n__THE_END_OF_THE_EMAIL__\n); }
 my $TransferAgents = __PACKAGE__->postulat();
-my $MostFamousMTAs = [ 'Sendmail', 'Postfix', 'qmail', 'Exim', 'Courier' ];
+my $MostFamousMTAs = [ 'Sendmail', 'Postfix', 'qmail', 'Exim', 'Courier',
+			'FeedbackLoop' ];
 
 #  ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
 # ||C |||l |||a |||s |||s |||       |||M |||e |||t |||h |||o |||d |||s ||
