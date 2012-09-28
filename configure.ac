@@ -1,11 +1,11 @@
 dnl #                                               -*- Autoconf -*-
 dnl # Process this file with autoconf to produce a configure script.
-dnl # $Id: configure.ac,v 1.68.2.21 2012/04/09 06:23:07 ak Exp $
+dnl # $Id: configure.ac,v 1.68.2.22 2012/09/28 05:53:36 ak Exp $
 dnl # -Id: configure.ac,v 1.8 2009/12/01 10:35:23 ak Exp -
 dnl # -Id: configure.ac,v 1.35 2009/08/27 05:09:04 ak Exp -
 dnl # Copyright (C) 2009-2011 Cubicroot Co. Ltd.
 AC_PREREQ(2.61)
-AC_INIT([bounceHammer], [2.7.8], [bugs@bouncehammer.jp])
+AC_INIT([bounceHammer], [2.7.9], [bugs@bouncehammer.jp])
 AM_INIT_AUTOMAKE([foreign])
 AC_PREFIX_DEFAULT(/usr/local/bouncehammer)
 AC_CANONICAL_HOST
