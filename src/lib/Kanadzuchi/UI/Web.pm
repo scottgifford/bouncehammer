@@ -1,4 +1,4 @@
-# $Id: Web.pm,v 1.26.2.4 2011/06/20 03:43:41 ak Exp $
+# $Id: Web.pm,v 1.26.2.5 2012/09/27 06:42:43 ak Exp $
 # -Id: WebUI.pm,v 1.6 2009/10/05 08:51:03 ak Exp -
 # -Id: WebUI.pm,v 1.11 2009/08/27 05:09:29 ak Exp -
 # Copyright (C) 2009,2010 Cubicroot Co. Ltd.
@@ -91,6 +91,9 @@ sub cgiapp_init
 	$self->{'language'} = $htsession->param('language');
 	$self->{'language'} = 'en' unless grep { $self->{'language'} } @$available;
 	$self->query->charset('UTF-8');
+
+	# To avoid an internal server error and a blank page on Internet Explorer.
+	$self->header_add( '-X-Content-Type-Options' => 'nosniff' );
 
 	# Insert the template paths, '../tmpl/*' overrides configurated sytem
 	# template directory in bouncehammer.cf
