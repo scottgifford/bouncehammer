@@ -1,4 +1,4 @@
-# $Id: Smartphone.pm,v 1.1.2.5 2011/03/11 04:58:45 ak Exp $
+# $Id: Smartphone.pm,v 1.1.2.6 2012/09/28 05:51:40 ak Exp $
 # Copyright (C) 2009-2011 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::
                                                    
@@ -42,9 +42,10 @@ sub nominisexemplaria
 		'vodafone' => [
 			# Vodafone; http://www.vodafone.com/
 			qr{\A360[.]com\z},	# Vodafone 360, http://vodafone360.com/
-			qr{\Amobileemail[.]vodafone[.](?:net|al|at|bg|cd|cz|de|dk|es|fr|gg|gr)\z},
-			qr{\Amobileemail[.]vodafone[.](?:hu|ie|in|is|it|je|lt|lv|nl|pt|ro|se|si)\z},
-			qr{\Amobileemail[.]vodafone[.]com[.](?:eg|fj|gh|hr|mk|mt|qa|tr)\z},
+			qr{\Amobileemail[.]vodafone[.]com[.](?:au|eg|fj|gh|hr|mk|mt|my|qa|tr)\z},
+			qr{\Amobileemail[.]vodafone[.](?:al|at|bg|cd|cz|de|dk|es|fr|gg|gr|hu)\z},
+			qr{\Amobileemail[.]vodafone[.](?:ie|in|is|it|je|lk|lt|lv|nl|pt|ro|se|si)\z},
+			qr{\Amobileemail[.]vodafone[.]net\z},
 			qr{\Amobileemail[.]vodafonesa[.]co[.]za\z},
 		],
 	};
