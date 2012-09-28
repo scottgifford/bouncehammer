@@ -1,4 +1,4 @@
-# $Id: Modules.PL,v 1.22 2010/10/30 13:49:16 ak Exp $
+# $Id: Modules.PL,v 1.22.2.1 2012/09/27 06:43:23 ak Exp $
 # -Id: PERL-MODULES.PL,v 1.1 2009/08/29 07:32:08 ak Exp -
 # -Id: PERL-MODULES,v 1.6 2009/08/12 01:57:35 ak Exp -
 # Copyright (C) 2009,2010 Cubicroot Co. Ltd.
@@ -30,7 +30,7 @@ my $Dependencies = {
 		'Perl6::Slurp'		=> [ 0.03, 0, 'Unknown' ],
 		'Term::ProgressBar'	=> [ 2.09, 0, 'Perl' ],
 		'Text::ASCIITable'	=> [ 0.18, 0, 'Perl' ],
-		'Time::Piece'		=> [ 1.14, 5.009005, 'Unknown' ],
+		'Time::Piece'		=> [ 1.20, 5.009005, 'Unknown' ],
 	},
 	'UI::CLI' => {
 		'Carp'			=> [ 1.01, 5.000000, 'Perl' ],
@@ -54,16 +54,16 @@ my $Dependencies = {
 
 sub modules
 {
-	my $modules = undef();
-	my $reqtype = shift() || q{key};
+	my $modules = undef;
+	my $reqtype = shift || q{key};
 
 	if( $reqtype eq 'key' )
 	{
 		$modules = [];
-		push( @$modules, keys( %{$Dependencies->{'Kanadzuchi'}} ) );
-		push( @$modules, keys( %{$Dependencies->{'UI::CLI'}} ) );
-		push( @$modules, keys( %{$Dependencies->{'UI::Web'}} ) );
-		push( @$modules, keys( %{$Dependencies->{'Test'}} ) );
+		push @$modules, keys( %{$Dependencies->{'Kanadzuchi'}} );
+		push @$modules, keys( %{$Dependencies->{'UI::CLI'}} );
+		push @$modules, keys( %{$Dependencies->{'UI::Web'}} );
+		push @$modules, keys( %{$Dependencies->{'Test'}} );
 		return($modules);
 	}
 	elsif( $reqtype eq 'hash' )
@@ -74,16 +74,16 @@ sub modules
 			%{$Dependencies->{'UI::Web'}},
 			%{$Dependencies->{'Test'}},
 		};
-		return($modules);
+		return $modules;
 	}
 }
 
 sub list
 {
-	my $argv = shift() || q();
+	my $argv = shift || q();
 	foreach my $m ( @{ modules() } )
 	{
-		next() if( $argv eq 'no-webui' && $m =~ m{\ACGI::} );
+		next if( $argv eq 'no-webui' && $m =~ m{\ACGI::} );
 		print $m."\n";
 	}
 }
@@ -91,17 +91,25 @@ sub list
 sub check
 {
 	no strict 'refs';
-	my $argv = shift() || q();
+	my $argv = shift || q();
 	my $hash = modules('hash');
 	my $path = q();
 	my $vers = q();
 	my $none = [];
 	my $oldv = [];
+	my $ver0 = 0;
+	my $ver1 = undef;
+	my $ver2 = undef;
 	my $head = { 
 		'installed' => ' [ OK ]',
 		'missing' => '*[ NG ]',
 		'warning' => '*[WARN]',
 	};
+
+	eval {
+		require version;
+	};
+	$ver0 = 1 unless $@;
 
 	foreach my $m ( keys(%$hash) )
 	{
@@ -112,25 +120,44 @@ sub check
 		eval { require "$path"; };
 		if( $@ )
 		{
-			next() if( $argv eq 'installed' );
-			push( @$none, $m );
-			printf(STDOUT "%s %s\n", $head->{'missing'}, $m );
+			next if $argv eq 'installed';
+			push @$none, $m;
+			printf( STDOUT "%s %s\n", $head->{'missing'}, $m );
 		}
 		else
 		{
-			next() if( $argv eq 'missing' );
+			next if $argv eq 'missing';
 			$vers =  ${ $m.'::VERSION' } || 0;
 			$vers =~ y{_}{}d;
 
-			if( $hash->{$m}->[0] && $vers && ( $vers < $hash->{$m}->[0] ) )
+			if( $ver0 )
 			{
-				push( @$oldv, $m );
-				printf(STDOUT "%s %s VERSION = %s is older than %s\n",
-					$head->{'warning'}, $m, $vers, $hash->{$m}->[0] );
+				$ver1 = version->new( 'v'.$hash->{ $m }->[0] );
+				$ver2 = version->new( 'v'.$vers );
+
+				if( $ver1 && $ver2 && ( $ver2->numify < $ver1->numify ) )
+				{
+					push( @$oldv, $m );
+					printf(STDOUT "%s %s VERSION = %s is older than %s\n",
+						$head->{'warning'}, $m, $ver2->stringify, $ver1->stringify );
+				}
+				else
+				{
+					printf(STDOUT "%s %s VERSION = %s\n",$head->{'installed'}, $m, $ver2 );
+				}
 			}
 			else
 			{
-				printf(STDOUT "%s %s VERSION = %s\n",$head->{'installed'}, $m, $vers );
+				if( $hash->{$m}->[0] && $vers && ( $vers < $hash->{$m}->[0] ) )
+				{
+					push( @$oldv, $m );
+					printf(STDOUT "%s %s VERSION = %s is older than %s\n",
+						$head->{'warning'}, $m, $vers, $hash->{$m}->[0] );
+				}
+				else
+				{
+					printf(STDOUT "%s %s VERSION = %s\n",$head->{'installed'}, $m, $vers );
+				}
 			}
 		}
 	}
@@ -157,7 +184,7 @@ elsif( $Command eq 'installed' || $Command eq 'missing' )
 }
 else
 {
-	printf(STDERR "Usage: perl %s (list|list-no-webui|check|installed|missing)\n", $0 );
+	printf( STDERR "Usage: perl %s (list|list-no-webui|check|installed|missing)\n", $0 );
 }
 
 __END__
