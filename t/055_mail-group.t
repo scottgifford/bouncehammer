@@ -1,4 +1,4 @@
-# $Id: 055_mail-group.t,v 1.31.2.15 2011/08/21 18:49:38 ak Exp $
+# $Id: 055_mail-group.t,v 1.31.2.16 2012/09/28 05:53:05 ak Exp $
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||L |||i |||b |||r |||a |||r |||i |||e |||s ||
 # ||__|||__|||__|||__|||__|||__|||__|||__|||__||
@@ -176,7 +176,7 @@ my $Domains = {
 	'webmail'	=> [ qw( aol.com aol.jp gmail.com googlemail.com yahoo.com yahoo.co.jp 
 				hotmail.com windowslive.com mac.com me.com excite.com
 				lycos.com lycosmail.com facebook.com groups.facebook.com myspace.com
-				love.com ygm.com latinmail.com myopera.com ) ],
+				love.com ygm.com latinmail.com myopera.com outlook.com) ],
 	'smartphone'	=> [ qw( vertu.me mobileemail.vodafone.net 360.com ovi.com blackberry.orange.fr ) ],
 	'aesmartphone'	=> [ qw( du.blackberry.com etisalat.blackberry.com ) ],
 	'alsmartphone'	=> [ qw( amc.blackberry.com ) ],
@@ -241,7 +241,7 @@ my $Domains = {
 	'ilwebmail'	=> [ qw( walla.co.il ) ],
 	'incellphone'	=> [ qw( aircel.co.in airtelap.com airtelkk.com bplmobile.com ) ],
 	'insmartphone'	=> [ qw( airtel.blackberry.com hutch.blackberry.com ) ],
-	'inwebmail'	=> [ qw( ibibo.com in.com rediffmail.com) ],
+	'inwebmail'	=> [ qw( ibibo.com in.com rediffmail.com india.com) ],
 	'irwebmail'	=> [ qw( iran.ir ) ],
 	'iscellphone'	=> [ qw( sms.is ) ],
 	'issmartphone'	=> [ qw( siminn.blackberry.com ) ],
