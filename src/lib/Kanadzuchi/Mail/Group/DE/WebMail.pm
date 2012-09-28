@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.4.2.2 2011/04/07 06:53:15 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.4.2.3 2012/09/28 05:52:24 ak Exp $
+# Copyright (C) 2010,2012 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::DE::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -26,11 +26,11 @@ sub nominisexemplaria
 	return {
 		# GMX - http://www.gmx.net/
 		'gmx' => [
-			qr{\Agmx[.](?:at|ca|cc|ch|cn|de|es|eu|fr|hk|ie|it)\z},
-			qr{\Agmx[.](?:li|lu|ph|pt|ru|se|sg|tm|tw|us)\z},
-			qr{\Agmx[.](?:biz|com|info|name|net)\z},
+			qr{\Agmx[.](?:com|net|org|info|biz|name)\z},
 			qr{\Agmx[.]co[.](?:in|uk)\z},
 			qr{\Agmx[.]com[.](?:br|my|tr)\z},
+			qr{\Agmx[.](?:at|ca|cc|ch|cn|co|de|es|eu|fr|hk|ie|it)\z},
+			qr{\Agmx[.](?:li|lu|ph|pt|ru|se|sg|tm|tw|us)\z},
 			qr{\Acaramail[.]com\z},	# GMX Caramail
 		],
 	};
