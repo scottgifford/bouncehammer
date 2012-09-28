@@ -1,10 +1,10 @@
-# $Id: WebMail.pm,v 1.14.2.9 2011/09/29 15:40:51 ak Exp $
+# $Id: WebMail.pm,v 1.14.2.11 2012/09/28 05:52:05 ak Exp $
 # -Id: AOL.pm,v 1.1 2009/08/29 07:33:21 ak Exp -
 # -Id: Google.pm,v 1.1 2009/08/29 07:33:22 ak Exp -
 # -Id: Hotmail.pm,v 1.1 2009/08/29 07:33:22 ak Exp -
 # -Id: WebBased.pm,v 1.2 2009/09/03 18:45:31 ak Exp -
 # -Id: Yahoo.pm,v 1.2 2009/12/01 10:33:29 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -32,16 +32,19 @@ sub nominisexemplaria
 	return {
 		'aol' => [
 			# AOL; America OnLine
+			qr{\Aaol[.](?:com|net|org|asia)\z},
 			qr{\Aaim[.](?:com|net)\z},
-			qr{\Aaol[.](?:com|be|ch|cl|de|dk|es|fi|fr|hk|in|it|jp|kr|nl|pl|ru|se|tw)\z},
-			qr{\Aaol[.]co[.](?:nz|uk)\z},
-			qr{\Aaol[.]com[.](?:ar|au|br|co|mx|ve)\z},
+			qr{\Aaol[.]co[.](?:ck|gg|im|je|jp|kr|mu|nz|tt|uk|vi)\z},
+			qr{\Aaol[.]com[.](?:ag|ai|ar|au|az|br|bs|co|dm|do|gi|gy|kz|mx|nf|sc|tr|uy|ve)\z},
+			qr{\Aaol[.](?:ac|ag|am|at|be|bs|cg|ch|cl|cz|de|dk|es|fi|fm|fr|hk|hn|ie|in|io|it)\z},
+			qr{\Aaol[.](?:jp|kg|kr|lv|md|nl|pl|ru|rw|sc|se|sh|sn|to|tt|tw)\z},
 			qr{\Anetscape[.]net\z},
 			qr{\A(?:games|love|wow|ygm)[.]com\z},	# AOL's Project Phoenix
 		],
 		'apple' => [
 			# mobileme, http://me.com/
-			qr{\A(?:mac|me)[.]com\z},
+			qr{\A(?:icloud|mac|me)[.]com\z},
+			qr{\Amac[.]me\z},
 		],
 		'excite' => [
 			# http://excite.com/
@@ -64,20 +67,25 @@ sub nominisexemplaria
 		],
 		'lycos' => [
 			# http://www.lycos.com/
-			qr{\Alycos(?:mail)?[.]com\z},
+			qr{\Alycos[.](?:at|com|de|es|fr|in|nl)\z},
+			qr{\Alycosmail[.]com\z},
 		],
 		'microsoft' => [
 			# Windows Live Hotmail http://www.hotmail.com/
-			qr{\Amsn[.](?:com|mv)\z},
-			qr{\A(?:hotmail|live|msnhotmail)[.]com\z},
-			qr{\Awindowslive[.](?:com|ez)\z},
-			qr{\Ahotmail[.](?:ac|as|at|bb|be|bs|ca|ch|cl|cz|de|dk|es|fi|fr|gr|hk|hu)\z},
-			qr{\Ahotmail[.](?:it|la|lt|lu|lv|ly|mn|mw|my|nl|no|ph|pn|pt|rs|se|sg|sh|sk|vu)\z},
-			qr{\Ahotmail[.]co[.](?:at|id|il|in|jp|kr|nz|pn|th|ug|uk|za)\z},
-			qr{\Ahotmail[.]com[.](?:ar|au|bo|br|hk|my|ph|pl|sg|tr|tt|tw|vn)\z},
-			qr{\Alive[.](?:at|be|ca|ch|cl|cn|de|dk|fi|fr|hk|ie|in|it|jp|nl|no|ph|ru|se)\z},
-			qr{\Alive[.]co[.](?:in|kr|uk|za)\z},
+			qr{\A(?:live|msn|windowslive|outlook)[.]com\z},
+			qr{\Ahotmail[.](?:com|info)\z},
+			qr{\Ahotmail[.](?:ac|as|at|bb|be|bs|ca|ch|cl|cz|de|dk|ee|es|fi|fr|gr|hk|hu)\z},
+			qr{\Ahotmail[.](?:ie|it|jp|la|lt|lu|lv|ly|mn|mw|my|nl|no|ph|pl|pn|pt)\z},
+			qr{\Ahotmail[.](?:rs|se|sg|sh|sk|ua|vu)\z},
+			qr{\Ahotmail[.]co[.](?:at|hu|id|il|in|it|jp|kr|nz|pn|th|ug|uk|ve|za)\z},
+			qr{\Ahotmail[.]com[.](?:ar|au|bo|br|do|hk|my|ph|pl|ru|sg|tr|tt|tw|uz|ve|vn)\z},
+			qr{\Alive[.](?:at|be|ca|ch|cl|cn|de|dk|fi|fr|hk|ie|in|it|jp|lu|nl|no|ph|ru|se)\z},
+			qr{\Alive[.]co[.](?:hu|in|it|kr|uk|za)\z},
 			qr{\Alive[.]com[.](?:ar|au|co|mx|my|pe|ph|pk|pt|sg|ve)\z},
+			qr{\Amsn[.](?:cn|fi|fr|hu|it|nl)\z},
+			qr{\Amsnhotmail[.]nl\z},
+			qr{\Awindowslive[.](?:es|fi|fr|hu|it|nl)\z},
+			qr{\Aoutook[.]com[.](?:fr|hu)\z},
 		],
 		'myspace' => [
 			# MySpace Mail has over 15 million users.
@@ -96,10 +104,11 @@ sub nominisexemplaria
 		'yahoo' => [
 			# Yahoo! Mail; http://world.yahoo.com/
 			qr{\Ayahoo[.]com\z},
-			qr{\Ayahoo[.](?:at|ca|cl|cn|de|dk|es|fr|gr|ie|in|it|jp|no|pl|ro|se)\z},
-			qr{\Ayahoo[.]com[.](?:ar|au|br|cn|co|hk|mx|my|pe|ph|sg|tr|tw|ve|vn)\z},
-			qr{\Ayahoo[.]co[.](?:hu|id|in|jp|kr|nz|th|uk)\z},
-			qr{\A(?:ymail|rocketmail)[.]com\z},		# From 2008/06/19
+			qr{\Ayahoo[.](?:at|be|bg|ca|cl|cn|cz|de|dk|ee|es|fi|fr|gr|hu)\z},
+			qr{\Ayahoo[.](?:ie|in|it|jp||lt|lv|nl|no|pl|pt|ro|se|sk)\z},
+			qr{\Ayahoo[.]co[.](?:ee|id|il|in|jp|kr|nz|th|uk|za)\z},
+			qr{\Ayahoo[.]com[.](?:ar|au|br|co|hk|hr|mx|my|pe|ph|sg|tr|tw|ua|ve|vn)\z},
+			qr{\A(?:ymail|rocketmail)[.]com\z},	# From 2008/06/19
 
 			# http://promo.mail.yahoo.co.jp/collabo/
 			# From 2009/12/01
