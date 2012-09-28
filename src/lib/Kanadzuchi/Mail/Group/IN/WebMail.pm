@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.2.2.2 2011/04/07 06:53:15 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.2.2.3 2012/09/28 05:52:43 ak Exp $
+# Copyright (C) 2010,2012 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::IN::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -31,6 +31,10 @@ sub nominisexemplaria
 			# in.com; http://mail.in.com/
 			qr{\Ain[.]com\z}
 		],
+		'india.com' => [
+			# http://www.india.com/
+			qr{\A(?:zmail|timepass|imail|india|tadka|indiawrites|dvaar|takdhinadhin)[.]com\z},
+		],
 		'rediff.com' => [
 			# rediff.com; http://www.rediff.com/
 			qr{\Arediffmail[.]com\z},
@@ -44,6 +48,7 @@ sub classisnomina
 	return {
 		'ibibo'		=> 'Generic',
 		'in.com'	=> 'Generic',
+		'india.com'	=> 'Generic',
 		'rediff.com'	=> 'Generic',
 	};
 }
