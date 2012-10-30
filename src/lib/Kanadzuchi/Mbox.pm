@@ -1,4 +1,4 @@
-# $Id: Mbox.pm,v 1.28.2.10 2012/04/09 06:20:13 ak Exp $
+# $Id: Mbox.pm,v 1.28.2.11 2012/10/30 09:14:15 ak Exp $
 # -Id: Parser.pm,v 1.10 2009/12/26 19:40:12 ak Exp -
 # -Id: Parser.pm,v 1.1 2009/08/29 08:50:27 ak Exp -
 # -Id: Parser.pm,v 1.4 2009/07/31 09:03:53 ak Exp -
@@ -450,11 +450,21 @@ sub parseit
 		next(PARSE_EMAILS) unless( $_mail->{'body'} );
 		$_mail->{'body'} =~ s{^[Ff]rom:[ ]*([^\n\r]+)[\n\r][ \t]+([^\n\r]+)}{From: $1 $2}gm;
 		$_mail->{'body'} =~ s{^[Tt]o:[ ]*([^\n\r]+)[\n\r][ \t]+([^\n\r]+)}{To: $1 $2}gm;
-		$_mail->{'body'} =~ s{^[Dd]iagnostic-[Cc]ode:[\s]*([^\n\r]+)
-								[\n\r][\s\t]+([^\n\r]+)
-								[\n\r][\s\t]+([^\n\r]+)
-								[\n\r][\s\t]+([^\n\r]+) }
-					{Diagnostic-Code: $1 $2 $3 $4}gmx;
+
+		if( $_mail->{'body'} =~ m{^[Dd]iagnostic-[Cc]ode:[\s]*([^\n\r]+)[\n\r]([\s\t]+.+)}ms )
+		{
+			my $_d1 = 'Diagnostic-Code: '.$1;
+			my $_d2 = $2; $_d2 =~ y{\r}{\n};
+
+			foreach my $__e ( split( qq(\n), $_d2 ) )
+			{
+				last unless $__e =~ m{\A[\s\t]+};
+				$_d1 .= ' '.$__e;
+			}
+
+			$_d1 =~ y{ }{}s;
+			$_mail->{'body'} =~ s{^[Dd]iagnostic-[Cc]ode:[\s]*[^\n\r]+[\n\r][\s\t]+[^\n\r]+}{$_d1}m;
+		}
 
 		# Delete non-required headers
 		$_mail->{'body'} =~ y{\n}{\n}s;		# Delete blank lines
