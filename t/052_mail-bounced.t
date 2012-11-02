@@ -1,4 +1,4 @@
-# $Id: 052_mail-bounced.t,v 1.8.2.1 2011/10/10 09:52:34 ak Exp $
+# $Id: 052_mail-bounced.t,v 1.8.2.2 2012/11/02 10:50:42 ak Exp $
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||L |||i |||b |||r |||a |||r |||i |||e |||s ||
 # ||__|||__|||__|||__|||__|||__|||__|||__|||__||
@@ -15,7 +15,7 @@ use Kanadzuchi::RFC2822;
 use Kanadzuchi::String;
 use Kanadzuchi::Time;
 use Path::Class::Dir;
-use Test::More ( tests => 1640 );
+use Test::More ( tests => 1862 );
 
 #  ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ 
 # ||G |||l |||o |||b |||a |||l |||       |||v |||a |||r |||s ||
@@ -164,6 +164,23 @@ CALL_PARSER: {
 				{
 					like( $tz, qr{\A[-+]\d{4}\z}, q{->timezoneoffset() is valid: }.$tz );
 					like( Kanadzuchi::Time->tz2second($tz), qr{\d+\z}, q{Kanadzuchi::Time->tz2second(}.$tz.q{)} );
+				}
+			}
+
+			SMTPAGENT: {
+				my $_smtpagents = qr{(?:Sendmail|unknown|qmail|JP::aubyKDDI|)};
+				is( $_p->description->{'smtpagent'}, $_p->smtpagent(), '->description->smtpagent == smtpagent()' );
+				foreach my $sa ( $_p->description->{'smtpagent'}, $_p->smtpagent )
+				{
+					like( $sa, $_smtpagents, '->smtpagent is '.$sa );
+				}
+			}
+
+			LISTID: {
+				is( $_p->description->{'listid'}, $_p->listid(), '->description->listid == listid()' );
+				foreach my $li ( $_p->description->{'listid'}, $_p->listid )
+				{
+					is( $li, q(), '->listid is empty' );
 				}
 			}
 		}

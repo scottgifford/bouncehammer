@@ -1,4 +1,4 @@
-# $Id: 504_bin-datadumper.t,v 1.20.2.2 2011/01/19 06:25:37 ak Exp $
+# $Id: 504_bin-datadumper.t,v 1.20.2.3 2012/11/02 10:50:42 ak Exp $
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||L |||i |||b |||r |||a |||r |||i |||e |||s ||
 # ||__|||__|||__|||__|||__|||__|||__|||__|||__||
@@ -91,7 +91,7 @@ SKIP: {
 		{
 			'name' => 'Dump by Reason',
 			'option' => ' --reason filtered',
-			'count' => 3,
+			'count' => 4,
 		},
 		{
 			'name' => 'Dump by Reason',

@@ -1,4 +1,4 @@
-# $Id: 050_mail.t,v 1.12.2.1 2011/01/18 06:35:27 ak Exp $
+# $Id: 050_mail.t,v 1.12.2.2 2012/11/02 10:50:42 ak Exp $
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||L |||i |||b |||r |||a |||r |||i |||e |||s ||
 # ||__|||__|||__|||__|||__|||__|||__|||__|||__||
@@ -11,7 +11,7 @@ use Kanadzuchi::Test;
 use Kanadzuchi::Test::Mail;
 use Kanadzuchi::Mail;
 use Kanadzuchi::String;
-use Test::More ( tests => 743 );
+use Test::More ( tests => 751 );
 
 #  ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ 
 # ||G |||l |||o |||b |||a |||l |||       |||v |||a |||r |||s ||
@@ -118,6 +118,8 @@ CLASS_METHODS: {
 				is( $o->hostgroup(), q(), q{->hostgroup() is empty} );
 				is( $o->diagnosticcode(), q(), q{->diagnosticcode() is empty} );
 				is( $o->deliverystatus(), q(), q{->deliverystatus() is empty} );
+				is( $o->smtpagent(), q(), q{->smtpagent() is empty} );
+				is( $o->listid(), q(), q{->listid() is empty} );
 			}
 		}
 	}

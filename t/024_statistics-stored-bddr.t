@@ -1,4 +1,4 @@
-# $Id: 024_statistics-stored-bddr.t,v 1.7 2010/10/26 03:46:25 ak Exp $
+# $Id: 024_statistics-stored-bddr.t,v 1.7.2.1 2012/11/02 10:50:42 ak Exp $
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||L |||i |||b |||r |||a |||r |||i |||e |||s ||
 # ||__|||__|||__|||__|||__|||__|||__|||__|||__||
@@ -10,7 +10,7 @@ use warnings;
 use Kanadzuchi::Test;
 use Kanadzuchi::Statistics::Stored::BdDR;
 use List::Util;
-use Test::More ( tests => 1169 );
+use Test::More ( tests => 1163 );
 
 #  ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ 
 # ||G |||l |||o |||b |||a |||l |||       |||v |||a |||r |||s ||
@@ -162,7 +162,7 @@ SKIP: {
 			{
 				like( $e->{'name'}, qr{\A[a-z]}, '+(WHERE Cond.)->aggregate('.$c.')->name = '.$e->{'name'} );
 				ok( ( $e->{'size'} > -1 ), '+(WHERE Cond.)->aggregate('.$c.')->size = '.$e->{'size'} );
-				ok( ( $e->{'freq'} > -1 ), '+(WHERE COnd.)->aggregate('.$c.')->freq = '.$e->{'freq'} );
+				ok( ( $e->{'freq'} > -1 ), '+(WHERE Cond.)->aggregate('.$c.')->freq = '.$e->{'freq'} );
 			}
 		}
 

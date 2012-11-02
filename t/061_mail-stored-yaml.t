@@ -1,4 +1,4 @@
-# $Id: 061_mail-stored-yaml.t,v 1.11 2010/10/05 14:04:22 ak Exp $
+# $Id: 061_mail-stored-yaml.t,v 1.11.2.1 2012/11/02 10:50:42 ak Exp $
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||L |||i |||b |||r |||a |||r |||i |||e |||s ||
 # ||__|||__|||__|||__|||__|||__|||__|||__|||__||
@@ -10,7 +10,7 @@ use warnings;
 use Kanadzuchi::Test;
 use Kanadzuchi::Test::Mail;
 use Kanadzuchi::Mail::Stored::YAML;
-use Test::More ( tests => 1430 );
+use Test::More ( tests => 1434 );
 
 #  ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ 
 # ||G |||l |||o |||b |||a |||l |||       |||v |||a |||r |||s ||
@@ -24,7 +24,7 @@ my $T = new Kanadzuchi::Test(
 		@{$Kanadzuchi::Test::Mail::MethodList->{'Stored::YAML'}}, ],
 	'instance' => undef(),
 );
-my $F = '././examples/hammer.1970-01-01.ffffffff.000000.tmp';
+my $F = './examples/hammer.1970-01-01.ffffffff.000000.tmp';
 
 #  ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ 
 # ||T |||e |||s |||t |||       |||c |||o |||d |||e |||s ||
@@ -93,7 +93,7 @@ CONSTRUCTORS: {
 	my $jsoned = shift @{ JSON::Syck::Load($Y) };
 	my $member = [ 'addresser', 'recipient', 'senderdomain', 'destination', 'reason',
 			'hostgroup', 'provider', 'token', ];
-	my $descrp = [ 'deliverystatus', 'diagnosticcode', 'timezoneoffset' ];
+	my $descrp = [ 'deliverystatus', 'diagnosticcode', 'timezoneoffset', 'smtpagent', 'listid' ];
 
 	LOAD: {
 
@@ -143,6 +143,8 @@ CONSTRUCTORS: {
 		is( $entity->deliverystatus(), '5.3.4', $T->class.q{->loadandnew()->deliverystatus() } );
 		is( $entity->diagnosticcode(), q(Test record), $T->class.q{->loadandnew()->diagnosticcode() } );
 		is( $entity->timezoneoffset(), q(+0900), $T->class.q{->loadandnew()->timezoneoffset() } );
+		is( $entity->smtpagent(), q(Sendmail), $T->class.q{->loadandnew()->smtpagent() } );
+		is( $entity->listid(), q(), $T->class.q{->loadandnew()->listid() } );
 	}
 } # 43
 
@@ -342,4 +344,4 @@ SKIP: {
 }
 
 __DATA__
-- { "bounced": 166222661, "addresser": "postmaster@example.jp", "recipient": "very-very-big-message-to-you@gmail.com", "senderdomain": "example.jp", "destination": "gmail.com", "reason": "mesgtoobig", "hostgroup": "webmail", "provider": "google", "description": { "deliverystatus": "5.3.4", "timezoneoffset": "+0900", "diagnosticcode": "Test record" }, "token": "aeaaeb939a918caaef3be00f19b66506" }
+- { "bounced": 166222661, "addresser": "postmaster@example.jp", "recipient": "very-very-big-message-to-you@gmail.com", "senderdomain": "example.jp", "destination": "gmail.com", "reason": "mesgtoobig", "hostgroup": "webmail", "provider": "google", "description": { "deliverystatus": "5.3.4", "timezoneoffset": "+0900", "diagnosticcode": "Test record", "smtpagent": "Sendmail", "listid": "" }, "token": "aeaaeb939a918caaef3be00f19b66506" }
