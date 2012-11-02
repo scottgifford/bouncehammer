@@ -1,8 +1,8 @@
-# $Id: Bounced.pm,v 1.30.2.6 2011/10/11 03:03:36 ak Exp $
+# $Id: Bounced.pm,v 1.30.2.7 2012/11/02 10:49:51 ak Exp $
 # -Id: Returned.pm,v 1.10 2010/02/17 15:32:18 ak Exp -
 # -Id: Returned.pm,v 1.2 2009/08/29 19:01:18 ak Exp -
 # -Id: Returned.pm,v 1.15 2009/08/21 02:44:15 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::
                                                  
  #####                                       ##  
@@ -307,6 +307,12 @@ sub eatit
 			}
 		}
 
+		unless( defined $bouncemesg->{'listid'} )
+		{
+			$tempheader->{'listid'} = $mimeparser->getit('List-Id') || q();
+			$bouncemesg->{'listid'} = Kanadzuchi::Address->canonify($tempheader->{'listid'});
+		}
+
 		#   ___  ____      _ _____ ____ _____ 
 		#  / _ \| __ )    | | ____/ ___|_   _|
 		# | | | |  _ \ _  | |  _|| |     | |  
@@ -324,6 +330,7 @@ sub eatit
 		next() if( $@ && ref $tempstring ne q|Time::Piece| );
 
 		$thisobject = __PACKAGE__->new(
+				'listid' => $bouncemesg->{'listid'},
 				'addresser' => $bouncemesg->{'addresser'},
 				'recipient' => $bouncemesg->{'recipient'},
 				'smtpagent' => $bouncemesg->{'smtpagent'},

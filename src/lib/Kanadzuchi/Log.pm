@@ -1,7 +1,7 @@
-# $Id: Log.pm,v 1.21.2.1 2011/08/19 09:03:59 ak Exp $
+# $Id: Log.pm,v 1.21.2.2 2012/11/02 10:49:51 ak Exp $
 # -Id: Log.pm,v 1.2 2009/10/06 06:21:47 ak Exp -
 # -Id: Log.pm,v 1.11 2009/07/16 09:05:33 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
 # Kanadzuchi::
                       
  ##                   
@@ -59,10 +59,10 @@ $OutputFormat->{'json'} .= qq|"description": %s, "token": "%s" }|;
 $OutputFormat->{'yaml'} .= qq|- |.$OutputFormat->{'json'};
 
 # Dump with CSV format
-$OutputFormat->{'csv'} .= qq|%d,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%s,%s|;
+$OutputFormat->{'csv'} .= qq|%d,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%s,%s,%s|;
 $OutputHeader->{'csv'} .= q|bounced,addresser,recipient,senderdomain,destination,reason,|;
 $OutputHeader->{'csv'} .= q|hostgroup,provider,frequency,deliverystatus,timezoneoffset,|;
-$OutputHeader->{'csv'} .= q|diagnosticcode,mta,token|.qq|\n|;
+$OutputHeader->{'csv'} .= q|diagnosticcode,mta,listid,token|.qq|\n|;
 
 #  ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
 # ||C |||l |||a |||s |||s |||       |||M |||e |||t |||h |||o |||d |||s ||
@@ -196,7 +196,8 @@ sub dumper
 						$damn->{'senderdomain'}, $damn->{'destination'}, $damn->{'reason'}, 
 						$damn->{'hostgroup'}, $damn->{'provider'}, $damn->{'frequency'}, 
 						$damn->{'deliverystatus'}, $damn->{'timezoneoffset'},
-						$damn->{'diagnosticcode'}, $damn->{'smtpagent'}, $damn->{'token'} );
+						$damn->{'diagnosticcode'}, $damn->{'smtpagent'}, $damn->{'listid'},
+						$damn->{'token'} );
 
 			}
 			else

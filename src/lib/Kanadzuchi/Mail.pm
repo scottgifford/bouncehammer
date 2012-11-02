@@ -1,7 +1,7 @@
-# $Id: Mail.pm,v 1.33.2.2 2011/03/09 07:25:19 ak Exp $
+# $Id: Mail.pm,v 1.33.2.3 2012/11/02 10:49:51 ak Exp $
 # -Id: Message.pm,v 1.1 2009/08/29 07:32:59 ak Exp -
 # -Id: BounceMessage.pm,v 1.13 2009/08/21 02:43:14 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
 # Kanadzuchi::
 
  ##  ##           ##  ###    
@@ -39,6 +39,7 @@ use Time::Piece;
 # |/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
 __PACKAGE__->mk_accessors(
+	'listid',		# (String) List-Id header of each ML
 	'token',		# (String) Message token/MD5 Hex digest
 	'reason',		# (String) Reason of rejection, bounce
 	'bounced',		# (Time::Piece) Date: in the original message
@@ -219,6 +220,8 @@ sub new
 
 	PARSE_DESCRIPTION: {
 
+		my $descr = [ qw(deliverystatus diagnosticcode timezoneoffset smtpagent listid) ];
+
 		if( defined($argvs->{'description'}) )
 		{
 			if( ref($argvs->{'description'}) eq q|HASH| )
@@ -230,7 +233,7 @@ sub new
 				# |____/ \___||___/\___|_|    |_|___/ |_| |_/_/   \_\____/|_| |_|
 				#                                                                
 				# 'description' is not empty, Build 'description' as hash reference.
-				foreach my $x ( 'deliverystatus', 'diagnosticcode', 'timezoneoffset', 'smtpagent' )
+				foreach my $x ( @$descr )
 				{
 					next() if( defined($argvs->{$x}) );
 					$argvs->{$x} = $argvs->{'description'}->{$x};
@@ -251,7 +254,7 @@ sub new
 				last() unless( ref($json) eq q|HASH| );
 				$argvs->{'description'} = $json;
 
-				foreach my $y ( 'deliverystatus', 'diagnosticcode', 'timezoneoffset', 'smtpagent' )
+				foreach my $y ( @$descr )
 				{
 					next() if( defined($argvs->{$y}) );
 					next() unless( defined($json->{$y}) );
@@ -278,12 +281,14 @@ sub new
 				'deliverystatus' => $argvs->{'deliverystatus'} || q(),
 				'diagnosticcode' => $argvs->{'diagnosticcode'} || q(),
 				'timezoneoffset' => $argvs->{'timezoneoffset'} || q(+0000),
-				'smtpagent'      => $argvs->{'smtpagent'} || q(), };
+				'smtpagent'      => $argvs->{'smtpagent'} || q(),
+				'listid'         => $argvs->{'listid'} || q(), };
 		}
 	}
 
 	SET_DEFAULT_VALUES: {
 
+		$argvs->{'listid'} = q() unless defined $argvs->{'listid'};
 		$argvs->{'frequency'} = 1 unless $argvs->{'frequency'};
 		$argvs->{'smtpagent'} = q() unless defined $argvs->{'smtpagent'};
 		$argvs->{'timezoneoffset'} = '+0000' unless $argvs->{'timezoneoffset'};
@@ -389,6 +394,8 @@ sub damn
 
 	$damn->{'bounced'} = $self->{'bounced'}->epoch() if( ref($self->{'bounced'}) eq q|Time::Piece| );
 	$damn->{'description'} = ${ Kanadzuchi::Metadata->to_string( $self->{'description'} ) };
+
+	$damn->{'listid'} = $self->{'description'}->{'listid'} || q();
 	$damn->{'smtpagent'} = $self->{'description'}->{'smtpagent'} || q();
 	$damn->{'diagnosticcode'} = $self->{'description'}->{'diagnosticcode'} || q();
 	$damn->{'deliverystatus'} = $self->{'description'}->{'deliverystatus'} || q();
