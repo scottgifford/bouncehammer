@@ -1,4 +1,4 @@
-# $Id: Google.pm,v 1.5.2.5 2011/10/07 06:23:15 ak Exp $
+# $Id: Google.pm,v 1.5.2.6 2013/04/08 08:46:27 ak Exp $
 # -Id: Google.pm,v 1.2 2010/07/04 23:45:49 ak Exp -
 # -Id: Google.pm,v 1.1 2009/08/29 08:50:36 ak Exp -
 # -Id: Google.pm,v 1.1 2009/07/31 09:04:38 ak Exp -
@@ -118,7 +118,7 @@ my $StateCodeMap = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '2.1.5' };
+sub version { '2.1.6' };
 sub description { 'Google Gmail' };
 sub xsmtpagent { 'X-SMTP-Agent: US::Google'.qq(\n); }
 sub emailheaders
@@ -188,6 +188,19 @@ sub reperit
 	#	mation about the cause of this error. The error that the other server re-
 	#	turned was: 450 450 4.2.2 <mailboxfull@example.jp>... Mailbox Full (state 14).
 	#
+	#   -- OR --
+	#
+	#	Delivery to the following recipient failed permanently:
+	#	
+	#	     userunknown@example.jp
+	#	
+	#	Technical details of permanent failure:=20
+	#	Google tried to deliver your message, but it was rejected by the server for=
+	#	 the recipient domain example.jp by mx.example.jp. [192.0.2.59].
+	#	
+	#	The error that the other server returned was:
+	#	550 5.1.1 <userunknown@example.jp>... User Unknown
+	#
 	return q() unless( $mhead->{'from'} =~ $RxFromGmail->{'from'} );
 	return q() unless( $mhead->{'subject'} =~ $RxFromGmail->{'subject'} );
 
@@ -219,6 +232,15 @@ sub reperit
 			# ation about the cause of this error. The error that the other server return=
 			# ed was: 554 554 5.7.0 Header error (state 18).
 			#
+			# -- OR --
+			#
+			# Technical details of permanent failure:=20
+			# Google tried to deliver your message, but it was rejected by the server for=
+			# the recipient domain example.jp by mx.example.jp. [192.0.2.49].
+			#
+			# The error that the other server returned was:
+			# 550 5.1.1 <userunknown@example.jp>... User Unknown
+			#
 			$el =~ s{=\z}{};
 			if( $el =~ m{\A\s+(.+[@].+)\z} )
 			{
@@ -227,6 +249,7 @@ sub reperit
 			}
 			else
 			{
+				next if $el =~ $RxFromGmail->{'endof'};
 				$rhostsaid .= $el;
 			}
 			next();
@@ -234,7 +257,7 @@ sub reperit
 	}
 
 	return q() unless $rhostsaid;
-	$rhostsaid =~ s/\A.*$RxFromGmail->{'begin'}.+$RxFromGmail->{'error'} //;
+	$rhostsaid =~ s/\A.*$RxFromGmail->{'begin'}.+$RxFromGmail->{'error'} ?//;
 	$rhostsaid =~ s/([(]state \d+[)][.]).+\z/$1/;
 	$rhostsaid =~ y{ }{}s;
 
@@ -255,6 +278,9 @@ sub reperit
 		$rcptintxt ||= Kanadzuchi::Address->canonify($rhostsaid);
 		$rcptintxt ||= $1 if( $rhostsaid =~ m{\s+([^\s]+[@][^\s]+)\s+[(]state \d+[)][.]\z} );
 	}
+
+	# New format of a bounce mail from Google, there is no (state xx).
+	$statintxt ||= $1 if $rhostsaid =~ m{([45][.]\d[.]\d+)};
 
 	if( ! $statintxt || $statintxt =~ m{\A[45][.]0[.]0\z} )
 	{
