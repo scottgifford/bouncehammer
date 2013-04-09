@@ -1,4 +1,4 @@
-# $Id: 055_mail-group.t,v 1.31.2.16 2012/09/28 05:53:05 ak Exp $
+# $Id: 055_mail-group.t,v 1.31.2.17 2013/04/08 08:45:25 ak Exp $
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||L |||i |||b |||r |||a |||r |||i |||e |||s ||
 # ||__|||__|||__|||__|||__|||__|||__|||__|||__||
@@ -177,7 +177,8 @@ my $Domains = {
 				hotmail.com windowslive.com mac.com me.com excite.com
 				lycos.com lycosmail.com facebook.com groups.facebook.com myspace.com
 				love.com ygm.com latinmail.com myopera.com outlook.com) ],
-	'smartphone'	=> [ qw( vertu.me mobileemail.vodafone.net 360.com ovi.com blackberry.orange.fr ) ],
+	'smartphone'	=> [ qw( vertu.me mobileemail.vodafone.net 360.com ovi.com blackberry.orange.fr 
+				nokiamail.com ) ],
 	'aesmartphone'	=> [ qw( du.blackberry.com etisalat.blackberry.com ) ],
 	'alsmartphone'	=> [ qw( amc.blackberry.com ) ],
 	'alwebmail'	=> [ qw( albaniaonline.net primo.al ) ],

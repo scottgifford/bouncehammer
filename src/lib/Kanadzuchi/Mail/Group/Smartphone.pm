@@ -1,4 +1,4 @@
-# $Id: Smartphone.pm,v 1.1.2.6 2012/09/28 05:51:40 ak Exp $
+# $Id: Smartphone.pm,v 1.1.2.7 2013/04/08 04:36:38 ak Exp $
 # Copyright (C) 2009-2011 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::
                                                    
@@ -33,7 +33,8 @@ sub nominisexemplaria
 		],
 		'nokia' => [
 			# Ovi by Nokia, http://www.ovi.com/
-			qr{\Aovi[.]com\z},
+			# Nokia Mail, https://www.nokiamail.com/home
+			qr{\A(?:ovi|nokiamail)[.]com\z},
 		],
 		'vertu' => [
 			# Vertu.Me; http://www.vertu.me/
