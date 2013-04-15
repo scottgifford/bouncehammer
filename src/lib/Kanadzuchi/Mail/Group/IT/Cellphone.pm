@@ -1,5 +1,5 @@
-# $Id: Cellphone.pm,v 1.1.2.1 2011/03/09 06:57:47 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Cellphone.pm,v 1.1.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::IT::
                                                             
   ####        ###  ###         ##                           
@@ -25,7 +25,7 @@ sub communisexemplar { return qr{[.]it\z}; }
 sub nominisexemplaria
 {
 	# *** NOT TESTED YET ***
-	my $self = shift();
+	my $self = shift;
 	return {
 		'vodafone' => [
 			# Vodafone; http://www.vodafone.com/
@@ -36,7 +36,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'vodafone'	=> 'Generic',
 	};

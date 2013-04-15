@@ -1,5 +1,5 @@
-# $Id: SystemError.pm,v 1.1.2.1 2011/10/11 03:03:55 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: SystemError.pm,v 1.1.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
 
   #####                  ##                ######                               
@@ -20,7 +20,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'System Error'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [
 		qr{local error in processing},
 		qr{mail system configuration error},

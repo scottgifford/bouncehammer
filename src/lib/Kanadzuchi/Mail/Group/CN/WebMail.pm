@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.3 2010/06/28 13:19:04 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.3.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::CN::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in China
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		# NetEase http://www.163.com/
 		'netease' => [
@@ -34,7 +34,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'netease'	=> 'Generic',
 	};

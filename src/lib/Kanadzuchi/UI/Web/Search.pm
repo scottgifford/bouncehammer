@@ -1,7 +1,7 @@
-# $Id: Search.pm,v 1.32.2.2 2011/01/15 21:02:08 ak Exp $
+# $Id: Search.pm,v 1.32.2.3 2013/04/15 04:20:53 ak Exp $
 # -Id: Search.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Search.pm,v 1.11 2009/08/13 07:13:58 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                            
   #####                            ##      
@@ -35,7 +35,7 @@ sub putsearchform
 	# @Description	Search form
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $file = 'startsearch.html';
 	return $self->tt_process($file);
 }
@@ -49,7 +49,7 @@ sub onlinesearch
 	# @Description	Send query and receive results
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $bddr = $self->{'database'};
 	my $tmpl = 'search.html';
 
@@ -162,9 +162,9 @@ sub onlinesearch
 		foreach my $s ( 'addresser', 'senderdomain', 'destination', 'token', 'provider' )
 		{
 			my $condinqp = $cgiqueryp->param('fe_'.$s) || q();
-			next() unless $condinqp;
+			next unless $condinqp;
 			( $wcparams->{$s} = lc($condinqp) ) =~ y{;'" }{}d;
-			next() unless( length($wcparams->{$s}) );
+			next unless length($wcparams->{$s});
 
 			$wherecond->{$s} = $wcparams->{$s};
 			$advancedx++;
@@ -283,9 +283,9 @@ sub onlinesearch
 		# |___|_| \_|_|    \___/  |_|  
 		#                              
 		# Decide cache directory
-		my $inputfile = undef();		# Input file name
-		my $md5digest = undef();		# Digest::MD5 Object
-		my $txtprefix = undef();		# Prefix of the text file
+		my $inputfile = undef;		# Input file name
+		my $md5digest = undef;		# Digest::MD5 Object
+		my $txtprefix = undef;		# Prefix of the text file
 		my $cacheddir = -w $sysconfig->{'directory'}->{'cache'}
 					? $sysconfig->{'directory'}->{'cache'}
 					: File::Spec::tmpdir();
@@ -342,7 +342,7 @@ sub onlinesearch
 					$zipdist = $zippedobj->output->dir().'/'.$zippedobj->filename();
 					File::Copy::copy( $zippedobj->output(), $zipdist );
 					$zippedobj->output( new Path::Class::File($zipdist) );
-					last();
+					last;
 				}
 
 				# Remove old cache file
@@ -367,11 +367,11 @@ sub onlinesearch
 					# Send query and receive results
 					$iteratorr = Kanadzuchi::Mail::Stored::BdDR->searchandnew(
 								$bddr->handle(), $wherecond, $paginated );
-					last() unless $iteratorr->count();
+					last unless $iteratorr->count();
 
 					while( my $obj = $iteratorr->next() )
 					{
-						push( @$tempstack, $obj );
+						push @$tempstack, $obj;
 					}
 
 					$kanazcilg = new Kanadzuchi::Log( 
@@ -384,7 +384,7 @@ sub onlinesearch
 					$kanazcilg->header(1) if $paginated->currentpagenum == 1;
 					$kanazcilg->dumper();
 
-					last() unless $paginated->hasnext();
+					last unless $paginated->hasnext();
 					$paginated->next();
 
 				}
@@ -411,12 +411,12 @@ sub onlinesearch
 			$zippedobj->cleanup(1);
 			$zippedobj->override(1);
 			$zippedobj->compress();
-			last();
+			last;
 
 		} # End of the block(CREATE_FILE)
 
 		# Set size of the archive file
-		return('Failed to create zip file') unless( $zippedobj->output->stat->size() );
+		return 'Failed to create zip file' unless $zippedobj->output->stat->size();
 
 		#  ____   _____        ___   _ _     ___    _    ____        __  
 		# |  _ \ / _ \ \      / / \ | | |   / _ \  / \  |  _ \       \ \ 
@@ -453,8 +453,8 @@ sub onlinesearch
 			$damnedobj->{'bounced'}  =
 				$o->bounced->ymd().'('.$o->bounced->wdayname().') '.$o->bounced->hms();
 			$damnedobj->{'bounced'} .=
-				' '.$o->timezoneoffset() if( $o->timezoneoffset() );
-			push( @$logrecord, $damnedobj );
+				' '.$o->timezoneoffset() if $o->timezoneoffset();
+			push @$logrecord, $damnedobj;
 		}
 
 		# Build date string in where condition

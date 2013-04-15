@@ -1,5 +1,5 @@
-# $Id: MTA.pm,v 1.6.2.3 2011/10/11 03:02:24 ak Exp $
-# Copyright (C) 2010-2011 Cubicroot Co. Ltd.
+# $Id: MTA.pm,v 1.6.2.4 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                      
  ##  ## ###### ##    
@@ -21,7 +21,7 @@ use Encode;
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { return '0.0.0'; }
+sub version { return '0.0.1'; }
 sub description { return q(); }
 sub emailheaders { return []; }
 sub reperit { return q(); }
@@ -51,8 +51,8 @@ sub xsmtpagent
 	# @Description	Return pseudo-header for SMTP Agent(MTA)
 	# @Param <str>	(String) SMTP agnet name
 	# @Returns	(String) Pseudo-header
-	my $class = shift(); 
-	my $agent = shift() || 'null';
+	my $class = shift; 
+	my $agent = shift || 'null';
 	return 'X-SMTP-Agent: '.$agent.qq(\n);
 }
 
@@ -65,8 +65,8 @@ sub xsmtpcommand
 	# @Description	Return pseudo-header for SMTP Command
 	# @Param <str>	(String) SMTP command name
 	# @Returns	(String) Pseudo-header
-	my $class = shift(); 
-	my $smtpc = shift() || 'CONN';
+	my $class = shift; 
+	my $smtpc = shift || 'CONN';
 	return 'X-SMTP-Command: '.$smtpc.qq(\n);
 }
 
@@ -79,8 +79,8 @@ sub xsmtpdiagnosis
 	# @Description	Return pseudo-header for Diagnostic-Code
 	# @Param <str>	(String) Diagnosis message
 	# @Returns	(String) Pseudo-header
-	my $class = shift(); 
-	my $xdiag = shift() || return q();
+	my $class = shift; 
+	my $xdiag = shift || return q();
 	return 'X-SMTP-Diagnosis: '.$xdiag.qq(\n);
 }
 
@@ -93,8 +93,8 @@ sub xsmtpstatus
 	# @Description	Return pseudo-header for SMTP Status
 	# @Param <str>	(String) SMTP Status(D.S.N.)
 	# @Returns	(String) Pseudo-header
-	my $class = shift(); 
-	my $dstat = shift() || return q();
+	my $class = shift; 
+	my $dstat = shift || return q();
 	return 'X-SMTP-Status: '.$dstat.qq(\n);
 }
 
@@ -107,8 +107,8 @@ sub xsmtprecipient
 	# @Description	Return pseudo-header for Final-Recipient
 	# @Param <str>	(String) Recipient Address
 	# @Returns	(String) Pseudo-header
-	my $class = shift(); 
-	my $xrcpt = shift() || return q();
+	my $class = shift; 
+	my $xrcpt = shift || return q();
 	return 'X-SMTP-Recipient: '.$xrcpt.qq(\n);
 }
 
@@ -121,8 +121,8 @@ sub xsmtpcharset
 	# @Description	Return pseudo-header for Content-Type
 	# @Param <str>	(String) Recipient Address
 	# @Returns	(String) Pseudo-header
-	my $class = shift(); 
-	my $xchar = shift() || return q();
+	my $class = shift; 
+	my $xchar = shift || return q();
 	return 'X-SMTP-Charset: '.$xchar.qq(\n);
 }
 

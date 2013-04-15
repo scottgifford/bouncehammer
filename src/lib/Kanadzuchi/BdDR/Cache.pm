@@ -1,5 +1,5 @@
-# $Id: Cache.pm,v 1.5 2010/07/07 11:21:42 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Cache.pm,v 1.5.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::BdDR::
                                     
   ####               ##             
@@ -37,7 +37,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	Kanadzuchi::BdDR::Page Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { 'cache' => {}, 'count' => {} };
 	return $class->SUPER::new($argvs);
 }
@@ -57,12 +57,12 @@ sub getit
 	# @Param <tab>	(String) Table name
 	# @Param <key>	(String) Key string
 	# @Return	(String|Integer) Value
-	my $self = shift();
-	my $ctab = shift() || return undef();
-	my $name = shift() || return undef();
-	my $data = $self->{'cache'}->{$ctab}->{$name};
+	my $self = shift;
+	my $ctab = shift || return undef;
+	my $name = shift || return undef;
+	my $data = $self->{'cache'}->{ $ctab }->{ $name };
 
-	$self->{'count'}->{$ctab}++ if( defined($data) );
+	$self->{'count'}->{ $ctab }++ if defined $data;
 	return $data;
 }
 
@@ -77,12 +77,12 @@ sub setit
 	# @Param <key>	(String) Key
 	# @Param <val>	(String) Value
 	# @Return	(K::B::Cache) This object
-	my $self = shift();
-	my $ctab = shift() || return $self;
-	my $thek = shift() || return $self;
-	my $thev = shift();
+	my $self = shift;
+	my $ctab = shift || return $self;
+	my $thek = shift || return $self;
+	my $thev = shift;
 
-	$self->{'cache'}->{$ctab}->{$thek} = $thev;
+	$self->{'cache'}->{ $ctab }->{ $thek } = $thev;
 	return $self;
 }
 
@@ -96,12 +96,12 @@ sub purgeit
 	# @Param <tab>	(String) Table name
 	# @Param <key>	(String) Key
 	# @Return	(K::B::Cache) This object
-	my $self = shift();
-	my $ctab = shift() || return $self;
-	my $thek = shift() || return $self;
+	my $self = shift;
+	my $ctab = shift || return $self;
+	my $thek = shift || return $self;
 
-	delete $self->{'cache'}->{$ctab}->{$thek};
-	$self->{'count'}->{$ctab}-- unless( defined $self->{'cache'}->{$ctab}->{$thek} );
+	delete $self->{'cache'}->{ $ctab }->{ $thek };
+	$self->{'count'}->{ $ctab }-- unless defined $self->{'cache'}->{ $ctab }->{ $thek };
 	return $self;
 }
 

@@ -1,7 +1,7 @@
-# $Id: HostUnknown.pm,v 1.9.2.1 2011/10/07 02:40:05 ak Exp $
+# $Id: HostUnknown.pm,v 1.9.2.2 2013/04/15 04:20:53 ak Exp $
 # -Id: HostUnknown.pm,v 1.1 2009/08/29 07:33:28 ak Exp -
 # -Id: HostUnknown.pm,v 1.1 2009/05/04 05:17:05 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
                                                                                 
  ##  ##                 ##   ##  ##         ##                                  
@@ -21,7 +21,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'Host Unknown'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [
 		qr{recipient domain must exist},	# qmail ?
 		qr{host or domain name not found},

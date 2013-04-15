@@ -1,5 +1,5 @@
-# $Id: Cellphone.pm,v 1.1.2.1 2011/03/09 06:56:03 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Cellphone.pm,v 1.1.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::IL::
                                                             
   ####        ###  ###         ##                           
@@ -23,7 +23,7 @@ use warnings;
 # sub communisexemplar { return qr{[.]il\z}; }
 sub nominisexemplaria
 {
-	my $self = shift();
+	my $self = shift;
 	return {
 		'spikko' => [
 			# Spikko; http://spikkosms.com/
@@ -34,7 +34,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'spikko'	=> 'Generic',
 	};

@@ -1,4 +1,4 @@
-# $Id: Delete.pm,v 1.5.2.2 2011/03/25 00:17:29 ak Exp $
+# $Id: Delete.pm,v 1.5.2.3 2013/04/15 04:20:53 ak Exp $
 # Copyright (C) 2010 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                        
@@ -37,10 +37,10 @@ sub deletetherecord
 	# @Description	Execute DELETE(Ajax)
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $bddr = $self->{'database'};
 	my $file = 'div-result.html';
-	my $iter = undef();	# (K::Iterator) Iterator object
+	my $iter = undef;	# (K::Iterator) Iterator object
 	my $cond = {};		# (Ref->Hash) WHERE Condition
 	my $cgiq = $self->query();
 
@@ -49,13 +49,13 @@ sub deletetherecord
 		'token' => $self->param('token') || $cgiq->param('fe_token') || q(),
 	};
 
-	return $self->e( 'invalidrecordid','ID: #'.$cond->{'id'} ) unless($cond->{'id'});
+	return $self->e( 'invalidrecordid','ID: #'.$cond->{'id'} ) unless $cond->{'id'};
 	$iter = Kanadzuchi::Mail::Stored::BdDR->searchandnew( $bddr->handle(), $cond );
 
 	if( $iter->count() )
 	{
-		my $this = undef();	# (K::Mail::Stored::YAML) YAML object
-		my $iitr = undef();	# (K::Iterator) Iterator for inner process
+		my $this = undef;	# (K::Mail::Stored::YAML) YAML object
+		my $iitr = undef;	# (K::Iterator) Iterator for inner process
 		my $data = [];		# (Ref->Array) Updated record
 		my $cdat = new Kanadzuchi::BdDR::Cache();
 		my $btab = new Kanadzuchi::BdDR::BounceLogs::Table( 'handle' => $bddr->handle() );
@@ -80,7 +80,7 @@ sub deletetherecord
 			$data = $this->damn();
 			$data->{'removed'}  = $this->updated->ymd().'('.$this->updated->wdayname().') '.$this->updated->hms();
 			$data->{'bounced'}  = $this->bounced->ymd().'('.$this->bounced->wdayname().') '.$this->bounced->hms();
-			$data->{'bounced'} .= ' '.$this->timezoneoffset() if( $this->timezoneoffset() );
+			$data->{'bounced'} .= ' '.$this->timezoneoffset() if $this->timezoneoffset();
 			$self->tt_params( 'pv_bouncemessages' => [ $data ], 'pv_isremoved' => 1 );
 			$self->tt_process( $file );
 

@@ -1,10 +1,10 @@
-# $Id: WebMail.pm,v 1.14.2.11 2012/09/28 05:52:05 ak Exp $
+# $Id: WebMail.pm,v 1.14.2.12 2013/04/15 04:20:53 ak Exp $
 # -Id: AOL.pm,v 1.1 2009/08/29 07:33:21 ak Exp -
 # -Id: Google.pm,v 1.1 2009/08/29 07:33:22 ak Exp -
 # -Id: Hotmail.pm,v 1.1 2009/08/29 07:33:22 ak Exp -
 # -Id: WebBased.pm,v 1.2 2009/09/03 18:45:31 ak Exp -
 # -Id: Yahoo.pm,v 1.2 2009/12/01 10:33:29 ak Exp -
-# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -28,7 +28,7 @@ use warnings;
 #  * http://en.wikipedia.org/wiki/Comparison_of_webmail_providers
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'aol' => [
 			# AOL; America OnLine
@@ -122,7 +122,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'aol'		=> 'Generic',
 		'apple'		=> 'Generic',

@@ -1,5 +1,5 @@
-# $Id: Select.pm,v 1.3 2010/07/12 17:55:00 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Select.pm,v 1.3.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::API::HTTP::
                                          
   #####        ###                 ##    
@@ -37,12 +37,12 @@ sub select
 	#
 	# @Description	Send message token and return serialized result.
 	# @Param	None
-	my $self = shift();
+	my $self = shift;
 	my $bddr = $self->{'database'};
 
-	my $iterator = undef();	# (Kanadzuchi::Iterator)
-	my $knlogger = undef();	# (Kanadzuchi::Log)
-	my $paginatd = undef();	# (Kanadzuchi::BdDR::Page)
+	my $iterator = undef;	# (Kanadzuchi::Iterator)
+	my $knlogger = undef;	# (Kanadzuchi::Log)
+	my $paginatd = undef;	# (Kanadzuchi::BdDR::Page)
 	my $jsondata = q();	# (String) Serialized data/JSON
 	my $wherecnd = {};	# (Ref->Hash) WHERE Condition
 	my $whichcol = q();	# (String) column name: id or token
@@ -63,11 +63,11 @@ sub select
 		return q();
 	}
 
-	$wherecnd->{$whichcol} = $identify;
+	$wherecnd->{ $whichcol } = $identify;
 	$paginatd = new Kanadzuchi::BdDR::Page( 'resultsperpage' => 1 );
 	$iterator = Kanadzuchi::Mail::Stored::BdDR->searchandnew(
 				$bddr->handle(), $wherecnd, $paginatd );
-	return q() unless( $iterator->count() );
+	return q() unless $iterator->count();
 
 	# Create serialized data for the format JSON
 	$knlogger = new Kanadzuchi::Log(

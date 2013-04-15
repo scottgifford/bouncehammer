@@ -1,5 +1,5 @@
-# $Id: NotAccept.pm,v 1.1.2.3 2011/10/11 03:03:55 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: NotAccept.pm,v 1.1.2.4 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
                                                             
  ##  ##          ##     ##                            ##    
@@ -20,7 +20,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'Not Accept'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [
 		# Rejected due to IP address or hostname.
 		qr{dns lookup failure: .+ try again later},

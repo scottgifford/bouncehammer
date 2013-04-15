@@ -1,8 +1,8 @@
-# $Id: BdDR.pm,v 1.5 2010/10/28 07:12:49 ak Exp $
+# $Id: BdDR.pm,v 1.5.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: RDB.pm,v 1.9 2010/03/04 08:31:40 ak Exp -
 # -Id: Database.pm,v 1.2 2009/08/29 19:01:14 ak Exp -
 # -Id: Database.pm,v 1.7 2009/08/13 07:13:28 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                               
  #####      ## ####   #####   
@@ -87,7 +87,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	Kanadzuchi::Database Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 
 	$argvs->{'error'} = { 'string' => q(), 'count' => 0 };
@@ -111,8 +111,8 @@ sub setup
 	# @Description	Setting up connection information
 	# @Param <ref>	(ref->Kanadzuchi) config->{database}
 	# @Return	(Kanadzuchi::BdDR) This object
-	my $self = shift();
-	my $conf = shift() || return $self;
+	my $self = shift;
+	my $conf = shift || return $self;
 
 	if( ref($conf) eq q|HASH| )
 	{
@@ -183,8 +183,8 @@ sub connect
 	# @Param 	<None>
 	# @Return	(DBI::db) Database handle
 	#		(undef) Failed to connect
-	my $self = shift();
-	my $dsnx = $self->{'datasn'} || return undef();
+	my $self = shift;
+	my $dsnx = $self->{'datasn'} || return undef;
 	my $dopt = {};
 
 	eval { 
@@ -197,11 +197,11 @@ sub connect
 		$self->{'handle'} = DBI->connect( 
 			$dsnx, $self->{'username'}, $self->{'password'}, $dopt );
 	};
-	return( $self->{'handle'} ) unless $@;
+	return $self->{'handle'} unless $@;
 
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return undef();
+	return undef;
 }
 
 sub disconnect
@@ -214,18 +214,20 @@ sub disconnect
 	# @Param 	<None>
 	# @Return	(Integer) 1 = Successfully disconnected
 	#		(Integer) 0 = Failed to disconnect
-	my $self = shift();
-	my $dbhx = $self->{'handle'} || return(0);
+	my $self = shift;
+	my $dbhx = $self->{'handle'} || return 0;
 
 	eval { 
 		$dbhx->disconnect();
-		$self->{'handle'} = undef();
+		$self->{'handle'} = undef;
 	};
 
-	return(1) unless $@;
+	return 1 unless $@;
+
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+
+	return 0;
 }
 
 sub DESTROY
@@ -237,7 +239,7 @@ sub DESTROY
 	# @Description	Destoractor
 	# @Param 	<None>
 	# @Return	(Integer) 1
-	my $self = shift();
+	my $self = shift;
 	return $self->disconnect();
 }
 

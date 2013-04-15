@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.1.2.1 2011/03/24 05:40:58 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.1.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::AL::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,20 +22,22 @@ use warnings;
 # sub communisexemplar { return qr{[.]al\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'primo' => [
 			# primo webmail; http://mail.albaniaonline.net/
 			qr{\Aalbaniaonline[.]net\z},
 			qr{\Aalbmail[.]com\z},
 			qr{\Aprimo[.]al\z},
+			qr{\A(?:get|my)primo[.]al\z},
+			qr{\Ashukelaw[.]com\z},
 		],
 	};
 }
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'primo'		=> 'Generic',
 	};

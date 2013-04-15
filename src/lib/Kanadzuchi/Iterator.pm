@@ -1,5 +1,5 @@
-# $Id: Iterator.pm,v 1.3 2010/07/07 11:21:37 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Iterator.pm,v 1.3.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                    
   ####  ##                      ##                 
@@ -38,8 +38,8 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param <ref>	(Ref->Array) Data
 	# @Return	(Kanadzuchi::Iterator) Ojbect
-	my $class = shift();
-	my $array = shift() || [];
+	my $class = shift;
+	my $array = shift || [];
 	my $argvs = { 'count' => 0, 'position' => 0, };
 
 	$argvs->{'data'} = ref($array) eq q|ARRAY| ? $array : [];
@@ -61,7 +61,7 @@ sub reset
 	# @Description	Reset/Initialize
 	# @Param	<None>
 	# @Return	(Kanadzuchi::Iterator) This ojbect
-	my $self = shift();
+	my $self = shift;
 	$self->{'position'} = 0;
 	return $self;
 }
@@ -75,7 +75,7 @@ sub flush
 	# @Description	Flush all of the data
 	# @Param	<None>
 	# @Return	(Kanadzuchi::Iterator) This ojbect
-	my $self = shift();
+	my $self = shift;
 	$self->{'data'} = [];
 	$self->{'count'} = 0;
 	$self->{'position'} = 0;
@@ -91,10 +91,10 @@ sub first
 	# @Description	Return first entity
 	# @Param	<None>
 	# @Return	First entity
-	my $self = shift();
+	my $self = shift;
 	$self->{'position'} = 0;
-	return $self->{'data'}->[0] if( $self->{'count'} );
-	return undef();
+	return $self->{'data'}->[0] if $self->{'count'};
+	return undef;
 }
 
 sub hasnext
@@ -106,10 +106,10 @@ sub hasnext
 	# @Description	There is next entity or not
 	# @Param	<None>
 	# @Return	(Boolean) 0 = does not exist, 1 = exists
-	my $self = shift();
+	my $self = shift;
 	my $xpos = $self->{'position'} + 1;
-	return(1) if( defined($self->{'data'}->[$xpos]) );
-	return(0);
+	return 1 if defined($self->{'data'}->[$xpos]);
+	return 0;
 }
 
 sub next
@@ -121,12 +121,12 @@ sub next
 	# @Description	Return the next entity
 	# @Param	<None>
 	# @Return	Next entity in the data
-	my $self = shift();
+	my $self = shift;
 	my $xpos = $self->{'position'} + 1;
-	my $next = undef();
+	my $next = undef;
 
-	return undef() if( $xpos > $self->{'count'} );
-	return $self->first() if( $xpos < 0 );
+	return undef if $xpos > $self->{'count'};
+	return $self->first() if $xpos < 0;
 
 	$next = $self->{'data'}->[ $self->{'position'} ];
 	$self->{'position'} = $xpos;
@@ -142,12 +142,12 @@ sub prev
 	# @Description	Return the previous entity
 	# @Param	<None>
 	# @Return	Previous entity in the data
-	my $self = shift();
+	my $self = shift;
 	my $xpos = $self->{'position'} - 1;
-	my $prev = undef();
+	my $prev = undef;
 
-	return undef() if( $xpos > $self->{'count'} );
-	return $self->first() if( $xpos < 0 );
+	return undef if $xpos > $self->{'count'};
+	return $self->first() if $xpos < 0;
 
 	$prev = $self->{'data'}->[ $self->{'position'} ];
 	$self->{'position'} = $xpos;
@@ -163,10 +163,9 @@ sub all
 	# @Description	Return all data
 	# @Param	<None>
 	# @Return	(Ref->Array) All of the data
-	my $self = shift();
+	my $self = shift;
 	return $self->{'data'};
 }
-
 
 1;
 __END__

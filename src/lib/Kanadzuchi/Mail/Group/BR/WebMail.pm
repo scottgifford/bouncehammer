@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.3.2.2 2011/03/24 05:40:58 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.3.2.3 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::BR::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,7 +22,7 @@ use warnings;
 # sub communisexemplar { return qr{[.]br\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'bol' => [
 			# BOL - O e-mail gratis do Brasil
@@ -42,7 +42,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'bol'		=> 'Generic',
 		'uol'		=> 'Generic',

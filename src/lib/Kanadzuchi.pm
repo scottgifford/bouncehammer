@@ -1,8 +1,8 @@
-# $Id: Kanadzuchi.pm,v 1.33.2.20 2012/08/01 17:24:21 ak Exp $
+# $Id: Kanadzuchi.pm,v 1.33.2.21 2013/04/15 04:21:24 ak Exp $
 # -Id: TheHammer.pm,v 1.4 2009/09/01 23:19:41 ak Exp -
 # -Id: Herculaneum.pm,v 1.13 2009/08/27 05:09:23 ak Exp -
 # -Id: Version.pm,v 1.35 2009/08/27 05:09:29 ak Exp -
-# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 
  ##  ##                          ##                     ##      ##    
  ## ##   ####  #####   ####      ## ###### ##  ##  #### ##            
@@ -49,9 +49,9 @@ __PACKAGE__->mk_accessors(
 # ||__|||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|
 #
-our $VERSION = q{2.7.10};
-our $SYSNAME = q{bounceHammer};
-our $SYSCONF = q{__KANADZUCHIROOT__/etc/bouncehammer.cf};
+our $VERSION = '2.7.10';
+our $SYSNAME = 'bounceHammer';
+our $SYSCONF = '__KANADZUCHIROOT__/etc/bouncehammer.cf';
 
 #  ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
 # ||C |||l |||a |||s |||s |||       |||M |||e |||t |||h |||o |||d |||s ||
@@ -67,12 +67,13 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	(Kanadzuchi) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { 
 		'myname' => $class || __PACKAGE__,
 		'version' => $VERSION,
 		'user' => $>, 
-		'config' => {}, };
+		'config' => {},
+	};
 
 	return $class->SUPER::new( $argvs );
 }
@@ -87,10 +88,10 @@ sub is_exception
 	# @Param <ref>	(Ref->*) Reference to something
 	# @Return	(Integer) 1 = is Kanadzuchi::Exception::* class
 	#		(Integer) 0 = Is not
-	my $class = shift();
-	my $excep = shift() || return(0);
-	return(1) if( ref($excep) =~ m{\AKanadzuchi::Exception::} );
-	return(0);
+	my $class = shift;
+	my $excep = shift || return 0;
+	return 1 if ref($excep) =~ m{\AKanadzuchi::Exception::};
+	return 0;
 }
 
 #  ____ ____ ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
@@ -108,15 +109,15 @@ sub load
 	# @Param	(String) Path to the config file
 	# @Return	(Integer) 1 = Successfully loaded
 	#		(Integer) 0 = Not loaded
-	my $self = shift();
-	my $conf = shift() || $SYSCONF;
+	my $self = shift;
+	my $conf = shift || $SYSCONF;
 	my $exception;		# (String)
 
-	return(0) if( $self->{'config'}->{'system'} );	# Already loaded
+	return 0 if $self->{'config'}->{'system'};	# Already loaded
 
-	$conf = $conf->stringify() if( ref($conf) eq q|Path::Class::File| );
+	$conf = $conf->stringify() if ref $conf eq 'Path::Class::File';
 
-	if( $conf ne q{/dev/null} )
+	if( $conf ne '/dev/null' )
 	{
 		# Read the config file
 		use Kanadzuchi::Metadata;
@@ -161,7 +162,7 @@ sub load
 			# |_____\___/ \__,_|\__,_|  \____\___/|_| |_|_| |_|\__, |
 			#                                                  |___/ 
 			# Load the config file
-			$self->{'config'} = shift( @{Kanadzuchi::Metadata->to_object($conf)} );
+			$self->{'config'} = shift @{ Kanadzuchi::Metadata->to_object($conf) };
 
 			#  _____                          _     _____         _   
 			# |  ___|__  _ __ _ __ ___   __ _| |_  |_   _|__  ___| |_ 
@@ -169,7 +170,7 @@ sub load
 			# |  _| (_) | |  | | | | | | (_| | |_    | |  __/\__ \ |_ 
 			# |_|  \___/|_|  |_| |_| |_|\__,_|\__|   |_|\___||___/\__|
 			#                                                         
-			if( ref($self->{'config'}) ne q|HASH| )
+			if( ref $self->{'config'} ne 'HASH' )
 			{
 				$et = $conf.q{: is not YAML/JSON file, errno = }.Errno::EFTYPE;
 				Kanadzuchi::Exception::File->throw( '-text' => $et );
@@ -182,7 +183,7 @@ sub load
 			}
 		}
 		otherwise {
-			$exception = shift();
+			$exception = shift;
 		};
 	}
 	else
@@ -207,9 +208,9 @@ sub historique
 	# @Param <str>	(String) Log message
 	# @Return	(Integer) 1 = No error occurred
 	#		(Integer) 0 = No log message or Error occurred
-	my $self = shift();
-	my $sllv = shift() || 'info';
-	my $mesg = shift() || return 0;
+	my $self = shift;
+	my $sllv = shift || 'info';
+	my $mesg = shift || return 0;
 
 	# Don't send message to syslogd if it's disabled in boncehammer.cf
 	return 0 unless $self->{'config'}->{'syslog'}->{'enabled'};
@@ -284,13 +285,13 @@ sub is_logfile
 	# @Return	(Integer) 1 = Is valid temporary file name
 	#		(Integer) 2 = Is valid regular file name
 	#		(Integer) 0 = Is not
-	my $self = shift();
-	my $file = shift() || return(0);
-	my $logf = ref($file) =~ m{\APath::Class::File} ? $file->stringify() : $file;
+	my $self = shift;
+	my $file = shift || return 0;
+	my $logf = ref $file =~ m{\APath::Class::File} ? $file->stringify() : $file;
 	my( $conf, $tstr, $trex, $rstr, $rrex );
 
 	# Check file name
-	$conf = $self->{'config'}->{'file'} || return(0);
+	$conf = $self->{'config'}->{'file'} || return 0;
 	$tstr = sprintf("%s.\\d{4}-\\d{2}-\\d{2}.[0-9A-Fa-f]{8}.[0-9A-Fa-f]{6}.%s",
 				$conf->{'templog'}->{'prefix'}, 
 				$conf->{'templog'}->{'suffix'} );
@@ -300,9 +301,9 @@ sub is_logfile
 	$trex = qr{/?$tstr\z}oi;	# Regualr expression for temporary log file
 	$rrex = qr{/?$rstr\z}oi;	# Regular expression for saved log file
 
-	return(2) if( $logf =~ $rrex );
-	return(1) if( $logf =~ $trex );
-	return(0);
+	return 2 if $logf =~ $rrex;
+	return 1 if $logf =~ $trex;
+	return 0;
 }
 
 sub get_logfile
@@ -315,9 +316,9 @@ sub get_logfile
 	# @Param <str>	(String) File type(regular,temp,fallback)
 	# @Param <opt>	(Ref->Hash) File name options
 	# @Return	(String) Log file name
-	my $self = shift();
-	my $type = shift() || 'temp';
-	my $lopt = shift() || { 'date' => q(), 'output' => q() };
+	my $self = shift;
+	my $type = shift || 'temp';
+	my $lopt = shift || { 'date' => q(), 'output' => q() };
 
 	my $char = substr(lc($type),0,1) || 't';
 	my $conf = $self->{'config'};
@@ -325,13 +326,13 @@ sub get_logfile
 	my $logf = $conf->{'file'}->{'storage'};
 	my $file = q();
 
-	$lopt->{'date'} = $time->ymd('-') unless( defined($lopt->{'date'}) );
-	$lopt->{'date'} = $time->ymd('-') unless( $lopt->{'date'} =~ m{\A\d{4}[-]\d{2}[-]\d{2}\z} );
+	$lopt->{'date'} = $time->ymd('-') unless defined $lopt->{'date'};
+	$lopt->{'date'} = $time->ymd('-') unless $lopt->{'date'} =~ m{\A\d{4}[-]\d{2}[-]\d{2}\z};
 
 	if( $char eq 'r' )
 	{
 		# Regular log file name
-		$lopt->{'output'} = $conf->{'directory'}->{'log'} if( ! defined($lopt->{'output'}) || -d $lopt->{'output'} );
+		$lopt->{'output'} = $conf->{'directory'}->{'log'} if( ! defined $lopt->{'output'} || -d $lopt->{'output'} );
 		$lopt->{'output'} =~ s{/\z}{}g;
 		$file = sprintf("%s/%s.%s.%s",
 				$lopt->{'output'}, $logf->{'prefix'}, $lopt->{'date'}, $logf->{'suffix'} );
@@ -339,7 +340,7 @@ sub get_logfile
 	else
 	{
 		my( $_rand, $_time );
-		$lopt->{'output'} = $conf->{'directory'}->{'spool'} unless( -d $lopt->{'output'} );
+		$lopt->{'output'} = $conf->{'directory'}->{'spool'} unless -d $lopt->{'output'};
 		$lopt->{'output'} =~ s{/\z}{}g;
 		$logf = $conf->{'file'}->{'templog'};
 
@@ -353,7 +354,7 @@ sub get_logfile
 				$file = sprintf("%s/%s.%s.%08x.%06x.%s", 
 						$lopt->{'output'}, $logf->{'prefix'}, $lopt->{'date'},
 						$_time, $_rand, $logf->{'suffix'} );
-				last() unless( -e $file );
+				last unless -e $file;
 			}
 		}
 		elsif( $char eq 'f' )
@@ -366,7 +367,7 @@ sub get_logfile
 				$file = sprintf("%s/%s.%s.%08x.%06x.%s", 
 						$lopt->{'output'}, $logf->{'prefix'}, $lopt->{'date'},
 						$_time, $_rand, $logf->{'suffix'} );
-				last() unless( -e $file );
+				last unless -e $file;
 			}
 		}
 		elsif( $char eq 'm' )
@@ -379,7 +380,7 @@ sub get_logfile
 				$file = sprintf("%s/%s.%s.%08x.%06x.%s", 
 						$lopt->{'output'}, $logf->{'prefix'}, $lopt->{'date'},
 						$_time, $_rand, $logf->{'suffix'} );
-				last() unless( -e $file );
+				last unless -e $file;
 			}
 		}
 	}

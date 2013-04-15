@@ -1,7 +1,7 @@
-# $Id: Why.pm,v 1.10.2.1 2011/04/29 06:58:53 ak Exp $
+# $Id: Why.pm,v 1.10.2.2 2013/04/15 04:20:53 ak Exp $
 # -Id: Pattern.pm,v 1.1 2009/08/29 07:33:13 ak Exp -
 # -Id: Pattern.pm,v 1.3 2009/05/29 08:22:25 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::
                        
  ##  ## ##             
@@ -47,8 +47,8 @@ sub textumhabet
 	# @Param <str>	(String)
 	# @Return	(Integer) 1 = included
 	# @Return	(Integer) 0 = not
-	my $class = shift();
-	my $etext = shift() || return 0;
+	my $class = shift;
+	my $etext = shift || return 0;
 	my $klass = $class; $klass =~ s{\A.+::}{};
 
 	unless( scalar @{ $Exemplaria->{ $klass } } )

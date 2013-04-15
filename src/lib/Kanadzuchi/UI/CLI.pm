@@ -1,5 +1,5 @@
-# $Id: CLI.pm,v 1.19.2.4 2011/04/02 05:23:17 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: CLI.pm,v 1.19.2.5 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::
                       
   ####  ##     ####   
@@ -67,34 +67,34 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	(Kanadzuchi::UI::CLI) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ }; 
 
 	DEFAULT_VALUES: {
 		$argvs->{'startedat'} = new Time::Piece();
-		$argvs->{'processid'} = $$ unless defined($argvs->{'processid'});
-		$argvs->{'operation'} = 0 unless defined($argvs->{'operation'});
-		$argvs->{'debuglevel'} = 0 unless defined($argvs->{'debuglevel'});
-		$argvs->{'calledfrom'} = File::Basename::basename([caller()]->[1]);
-		$argvs->{'option'} = {} unless defined($argvs->{'option'});
-		$argvs->{'silent'} = 0 unless defined($argvs->{'silent'});
+		$argvs->{'processid'} = $$ unless defined $argvs->{'processid'};
+		$argvs->{'operation'} = 0 unless defined $argvs->{'operation'};
+		$argvs->{'debuglevel'} = 0 unless defined $argvs->{'debuglevel'};
+		$argvs->{'calledfrom'} = File::Basename::basename( [caller()]->[1] );
+		$argvs->{'option'} = {} unless defined $argvs->{'option'};
+		$argvs->{'silent'} = 0 unless defined $argvs->{'silent'};
 		$argvs->{'stream'} = {
 			'in' => -t STDIN ? 1 : 0,
 			'out' => -t STDOUT ? 1 : 0,
 			'error' => -t STDERR ? 1 : 0,
 		};
 
-		last() unless defined($argvs->{'cf'});
-		last() if( ref($argvs->{'cf'}) eq q|Path::Class::File| );
+		last unless defined $argvs->{'cf'};
+		last if ref($argvs->{'cf'}) eq q|Path::Class::File|;
 
-		if( $argvs->{'cf'} !~ m{[\x00-\x1f\x7f]}  && -e $argvs->{'cf'} )
+		if( $argvs->{'cf'} !~ m{[\x00-\x1f\x7f]} && -e $argvs->{'cf'} )
 		{
 			$argvs->{'cf'} = new Path::Class::File( $argvs->{'cf'} );
 			$argvs->{'cf'}->cleanup();
 		}
 	}
 
-	return $class->SUPER::new($argvs);
+	return $class->SUPER::new( $argvs );
 }
 
 sub is_machine
@@ -107,9 +107,9 @@ sub is_machine
 	# @Param	<None>
 	# @Return	(Integer) 1 = Executed by machine
 	#		(Integer) 0 = Executed by not machine
-	my $class = shift();
-	return(0) if( $ENV{'SHELL'} && $ENV{'USER'} & $ENV{'LOGNAME'} & $ENV{'HOME'} );
-	return(1);
+	my $class = shift;
+	return 0 if( $ENV{'SHELL'} && $ENV{'USER'} & $ENV{'LOGNAME'} & $ENV{'HOME'} );
+	return 1;
 }
 
 #  ____ ____ ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
@@ -127,13 +127,13 @@ sub init
 	# @Param	<None>
 	# @Return	(Kanadzuchi::UI::CLI) This object = Successfully initialized
 	#		exit(1) = Failed to initialize.
-	my $self = shift();
-	my $dzci = shift();
+	my $self = shift;
+	my $dzci = shift;
 
 	# Remove Tainted variables, Set the character 'C' in language vars.
-	delete( @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'} ); 
-	$ENV{'LANG'} = q(C);
-	$ENV{'LC_ALL'} = q(C);
+	delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'}; 
+	$ENV{'LANG'} = 'C';
+	$ENV{'LC_ALL'} = 'C';
 
 	# Check process
 	try {
@@ -165,17 +165,17 @@ sub init
 		#   |_|\___|_| |_| |_| .__/   \__,_|_|_|   
 		#                    |_|                   
 		# Create the temporary directory
-		$_dname  = lc( $_kconf->{'system'} ).q(.).time().q(.).$self->{'processid'};
+		$_dname  = lc( $_kconf->{'system'} ).'.'.time().'.'.$self->{'processid'};
 		$_tempd  = $_kconf->{'directory'}->{'tmp'};
 		$_tempd =~ s|/[.]$_kconf->{'system'}/?\z||i;		# Backward compatible for old configuration file.
 		$_tempd  = File::Spec->tmpdir() if( $_tempd eq q() || $_tempd eq '/' || $_tempd =~ m{\A[.]/?\z} );
 		$_tempd  = File::Spec->tmpdir() if( ! -d $_tempd || ! -r _ || ! -w _ || ! -x _ );
-		$_tempd .= q(/).$_dname;
+		$_tempd .= '/'.$_dname;
 
 		eval {
 			$self->{'tmpdir'} = new Path::Class::Dir($_tempd);
 			$self->{'tmpdir'}->cleanup();
-			$self->{'tmpdir'}->mkpath() unless( -e $self->{'tmpdir'} );
+			$self->{'tmpdir'}->mkpath() unless -e $self->{'tmpdir'};
 		};
 
 		Kanadzuchi::Exception::Permission->throw( '-text' => $@ ) if $@;
@@ -206,7 +206,7 @@ sub init
 		$_pidFH->close();
 	}
 	otherwise {
-		$self->exception(shift());
+		$self->exception(shift);
 		$self->abort();
 	};
 
@@ -231,8 +231,8 @@ sub batchstatus
 	# @Description	Print batch job status to STDOUT
 	# @Param <ref>	(Ref->Scalar) Additional status information
 	# @Return	1
-	my $self = shift();
-	my $stat = shift();
+	my $self = shift;
+	my $stat = shift;
 	my $time = Time::Piece->new();
 	my $load = qx(uptime); chomp $load;
 
@@ -247,10 +247,10 @@ sub batchstatus
 	printf( STDOUT qq|  ended:   "%s"\n|, $time->cdate() );
 	printf( STDOUT qq|  elapsed: %d\n|, $time->epoch() - $self->{'startedat'}->epoch() );
 
-	return(1) unless( length($$stat) );
+	return 1 unless length $$stat;
 	printf( STDOUT qq|status:\n| );
 	printf( STDOUT $$stat );
-	return(1)
+	return 1
 }
 
 sub d
@@ -263,15 +263,15 @@ sub d
 	# @Param <Lv>	(Integer) debug level
 	# @Param <Msg>	(String) debug message
 	# @Return	(String) Empty or debug message
-	my $self = shift();
-	my $dlev = shift() || 0;
-	my $argv = shift() || return q();
+	my $self = shift;
+	my $dlev = shift || 0;
+	my $argv = shift || return q();
 	my $mesg = q();
 
 	return q() if( $self->{'silent'} || $self->{'debuglevel'} < $dlev );
 
 	$mesg = sprintf( qq{ *debug%d: %s}, $dlev, $argv );
-	defined wantarray() ? return($mesg) : printf( STDERR $mesg );
+	defined wantarray ? return($mesg) : printf( STDERR $mesg );
 	return q();
 }
 *debug = *d;
@@ -286,8 +286,8 @@ sub e
 	# @Param <Msg>	(String) error message
 	# @Return	<None>
 	# @See		abort(), DESTROY()
-	my $self = shift();
-	my $mesg = shift() || return q();
+	my $self = shift;
+	my $mesg = shift || return q();
 	Carp::carp( qq{ ***error: $mesg} ) unless( $self->{'silent'} );
 	$self->abort();
 }
@@ -302,11 +302,11 @@ sub catch_signal
 	# @Description	Catch a signal, and exits
 	# @Param <sig>	(String) Signal
 	# @Return	<None>
-	my $self = shift();
-	my $sign = shift() || return(0);
+	my $self = shift;
+	my $sign = shift || return 0;
 	my $mesg = q|***Catch the signal(|.$sign.q|)|;
 
-	if( $sign eq q(ALRM) ){ $mesg = q(Timed out, No data from STDIN); }
+	if( $sign eq 'ALRM' ){ $mesg = 'Timed out, No data from STDIN'; }
 	Carp::carp($mesg) if( $self->{'debuglevel'} > 0 && ! $self->{'silent'} );
 	$self->abort();
 }
@@ -320,9 +320,9 @@ sub finish
 	# @Description	Successfully exits
 	# @Param <sig>	<None>
 	# @Return	exit(0);
-	my $self = shift();
+	my $self = shift;
 	$self->DESTROY();
-	exit(0);
+	exit 0;
 }
 
 sub abort
@@ -335,24 +335,24 @@ sub abort
 	# @Param	<None>
 	# @Return	<None>
 	# @See		e(), DESTROY()
-	my $self = shift();
+	my $self = shift;
 	printf( STDERR qq{ ***abort\n} ) if( $self->{'debuglevel'} > 0 && ! $self->{'silent'} );
 	$self->DESTROY();
 
 	if( __PACKAGE__->is_machine() )
 	{
 		# Ignore error if the user is a machine
-		exit(0) if( $self->{'silent'} );
+		exit 0 if $self->{'silent'};
 
 		# exit(75) When it called from an MTA
 		#  * sendmail = sendmail-8.14.3/{cf/README,doc/op/op.me}
 		#  * postfix = http://www.postfix.org/local.8.html
 		#  * qmail = http://www.lifewithqmail.org/lwq.html#environment-variables
-		exit(75);
+		exit 75;
 	}
 	else
 	{
-		exit(1);
+		exit 1;
 	}
 }
 
@@ -366,17 +366,17 @@ sub DESTROY
 	# @Param	<None>
 	# @Return	(Integer) 1 = Always
 	# @See		UI::CLI::e(), abort()
-	my $self = shift();
-	if( defined($self->{'pf'}) && -w $self->{'pf'} )
+	my $self = shift;
+	if( defined $self->{'pf'} && -w $self->{'pf'} )
 	{
 		$self->{'pf'}->remove();
 	}
 
 	if( defined($self->{'tmpdir'}) && $self->{'tmpdir'}->is_dir() && -w $self->{'tmpdir'} )
 	{
-		$self->{'tmpdir'}->rmtree() if( $self->{'tmpdir'}->is_dir() );
+		$self->{'tmpdir'}->rmtree() if $self->{'tmpdir'}->is_dir();
 	}
-	return(1);
+	return 1;
 }
 
 sub exception
@@ -387,14 +387,14 @@ sub exception
 	#
 	# @Description	Print exceptional message
 	# @Param <obj>	(Kanadzuchi::Exception) object
-	my $self = shift();
-	my $eobj = shift();
-	my $head = q{E};
+	my $self = shift;
+	my $eobj = shift;
+	my $head = 'E';
 
 	eval { $head ||= $eobj->head(); };
 	unless( $self->{'silent'} )
 	{
-		if( ref($eobj) eq q|HASH| )
+		if( ref($eobj) eq 'HASH' )
 		{
 			printf( STDERR qq{ ***error: [%s] %s [%s:%d]\n}, 
 				$head, $eobj->{'-text'}, $eobj->{'-file'}, $eobj->{'-line'} );

@@ -1,7 +1,7 @@
 #__PERLEXECUTABLE__
-# $Id: messagetoken.PL,v 1.8.2.4 2011/10/07 06:22:03 ak Exp $
+# $Id: messagetoken.PL,v 1.8.2.5 2013/04/15 05:23:28 ak Exp $
 # -Id: messagetoken.PL,v 1.3 2010/02/21 20:09:01 ak Exp -
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi:Command::
                                                                                     
  ##  ##                                         ######         ##                   
@@ -70,7 +70,7 @@ try {
 	$Cmd->d( 1, sprintf( "Config file = %s\n", $Cmd->cf() ));
 }
 otherwise {
-	$Cmd->exception(shift());
+	$Cmd->exception(shift);
 	$Cmd->abort();
 };
 
@@ -101,7 +101,7 @@ if( $Cmd->operation & $Cmd->option->{'token'} )
 		}
 	}
 	catch Kanadzuchi::Exception::Data with {
-		$Cmd->exception(shift());
+		$Cmd->exception(shift);
 		$Cmd->abort();
 	};
 
@@ -151,13 +151,13 @@ sub parse_options
 	Getopt::Long::GetOptions(
 			'C=s'		=> \$opt_conf,
 			'conf=s'	=> \$opt_conf,
-			'help'		=> sub { help(); exit(0); },
+			'help'		=> sub { help(); exit 0; },
 			'T'		=> \$opt_test,
 			'test'		=> \$opt_test,
 			'silent'	=> sub { $Cmd->silent(1); },
 			'verbose'	=> \$opt_verbose,
 			'v+'		=> \$opt_verbose,
-			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit(0); },
+			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit 0; },
 
 			# Data source options
 			'a=s'		=> \$opt_addresser,
@@ -192,8 +192,8 @@ sub parse_options
 
 	CHECK_ADDRESSER_AND_RECIPIENT: {
 
-		last() unless( defined $opt_addresser );
-		last() unless( defined $opt_recipient );
+		last unless defined $opt_addresser;
+		last unless defined $opt_recipient;
 
 		if( $opt_addresser && $opt_recipient )
 		{
@@ -206,8 +206,8 @@ sub parse_options
 	}
 
 	# Check whether or not Required options are specified.
-	return(0) unless( values(%$AaR) );
-	return($operation);
+	return 0 unless values %$AaR;
+	return $operation;
 }
 
 sub help

@@ -1,7 +1,7 @@
-# $Id: UserUnknown.pm,v 1.12 2010/12/12 06:19:35 ak Exp $
+# $Id: UserUnknown.pm,v 1.12.2.1 2013/04/15 04:20:53 ak Exp $
 # -Id: UserUnknown.pm,v 1.1 2009/08/29 07:33:28 ak Exp -
 # -Id: UserUnknown.pm,v 1.2 2009/05/11 08:22:29 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
                                                                                 
  ##  ##                      ##  ##         ##                                  
@@ -21,7 +21,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'User Unknown'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [
 		qr{[#]5[.]1[.]1 bad address},
 		qr{destination server rejected recipients},

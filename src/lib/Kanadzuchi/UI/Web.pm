@@ -1,7 +1,7 @@
-# $Id: Web.pm,v 1.26.2.5 2012/09/27 06:42:43 ak Exp $
+# $Id: Web.pm,v 1.26.2.6 2013/04/15 04:20:53 ak Exp $
 # -Id: WebUI.pm,v 1.6 2009/10/05 08:51:03 ak Exp -
 # -Id: WebUI.pm,v 1.11 2009/08/27 05:09:29 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::
                         
  ##  ##         ##      
@@ -44,7 +44,7 @@ sub cgiapp_init
 	# +-+-+-+-+-+-+-+-+-+-+-+
 	# |c|g|i|a|p|p|_|i|n|i|t|
 	# +-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 
 	my $available = [ qw( en ja ) ];	# Avaiable languages
 	my $sysconfig = $self->param('cf');	# String, Config file
@@ -65,7 +65,7 @@ sub cgiapp_init
 	$self->loadconfig() if( -r $sysconfig && -T _ && -r $webconfig && -T _ );
 	$self->{'language'} = lc $self->{'webconfig'}->{'language'} || 'en';
 	$self->{'datetime'} = bless( localtime(), 'Time::Piece' );
-	$self->{'database'} = undef();
+	$self->{'database'} = undef;
 
 	# Detect browser language, Default is English
 	if( ! defined $htsession->param('language') )
@@ -114,7 +114,7 @@ sub setup
 	# +-+-+-+-+-+
 	# |s|e|t|u|p|
 	# +-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 
 	$self->start_mode('Index');
 	$self->error_mode('exception');
@@ -144,8 +144,8 @@ sub cgiapp_prerun
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+
 	# |c|g|i|a|p|p|_|p|r|e|r|u|n|
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
-	my $bddr = undef();	# (Kanadzuchi::BdDR) Database object
+	my $self = shift;
+	my $bddr = undef;	# (Kanadzuchi::BdDR) Database object
 	my $conf = $self->{'sysconfig'};
 
 	# Create database object
@@ -168,7 +168,7 @@ sub cgiapp_prerun
 		$self->{'database'} = $bddr;
 	}
 	catch Kanadzuchi::Exception::Web with {
-		$self->exception(shift())
+		$self->exception(shift)
 	};
 }
 
@@ -177,7 +177,7 @@ sub cgiapp_postrun
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	# |c|g|i|a|p|p|_|p|o|s|t|r|u|n|
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 }
 
 sub teardown
@@ -185,7 +185,7 @@ sub teardown
 	# +-+-+-+-+-+-+-+-+
 	# |t|e|a|r|d|o|w|n|
 	# +-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 }
 
 sub tt_pre_process
@@ -193,7 +193,7 @@ sub tt_pre_process
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	# |t|t|_|p|r|e|_|p|r|o|c|e|s|s|
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 
 	my $httpport = $ENV{'SERVER_PORT'} || 0;
 	my $httphost = $ENV{'HTTP_HOST'} || 'localhost';
@@ -224,7 +224,7 @@ sub tt_post_process
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	# |t|t|_|p|o|s|t|_|p|r|o|c|e|s|s|
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 }
 
 #   ____ ____ ____ ____ ____ ____ ____ 
@@ -241,17 +241,17 @@ sub loadconfig
 	#
 	# @Description	Load bounceHammer config file
 	# @Param	None
-	my $self = shift();
+	my $self = shift;
 	my $sysconfig = shift @{ Kanadzuchi::Metadata->to_object($self->param('cf')) };
 
-	if( ref($sysconfig) eq q|HASH| )
+	if( ref($sysconfig) eq 'HASH' )
 	{
 		$self->{'sysconfig'} = $sysconfig;
 		$self->{'kanadzuchi'}->{'config'}->{'syslog'} = $sysconfig->{'syslog'};
 	}
 
 	my $webconfig = shift @{ Kanadzuchi::Metadata->to_object($self->param('wf')) };
-	$self->{'webconfig'} = $webconfig if( ref($webconfig) eq q|HASH| );
+	$self->{'webconfig'} = $webconfig if ref($webconfig) eq 'HASH';
 	$self->{'configname'} = $self->{'webconfig'}->{'name'} || 'Undefined';
 }
 
@@ -266,9 +266,9 @@ sub e
 	# @Param <head>	(String) error header
 	# @Param <body>	(String) error message
 	# @See		template/l10n/??/error.tt
-	my $self = shift();
-	my $head = shift() || 'generic';
-	my $body = shift() || q();
+	my $self = shift;
+	my $head = shift || 'generic';
+	my $body = shift || q();
 	my $file = 'div-error.html';
 
 	$self->tt_params( 
@@ -288,8 +288,8 @@ sub exception
 	#
 	# @Description	Return exception to browser
 	# @Param <str>	(String) Error message
-	my $self = shift();
-	my $text = shift();
+	my $self = shift;
+	my $text = shift;
 	my $file = 'exception.html';
 	my $mode = $self->get_current_runmode() || q();
 

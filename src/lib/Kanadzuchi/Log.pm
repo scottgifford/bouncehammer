@@ -1,7 +1,7 @@
-# $Id: Log.pm,v 1.21.2.2 2012/11/02 10:49:51 ak Exp $
+# $Id: Log.pm,v 1.21.2.3 2013/04/15 04:20:52 ak Exp $
 # -Id: Log.pm,v 1.2 2009/10/06 06:21:47 ak Exp -
 # -Id: Log.pm,v 1.11 2009/07/16 09:05:33 ak Exp -
-# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                       
  ##                   
@@ -78,7 +78,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param
 	# @Return	Kanadzuchi::Log Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 
 	DEFAULT_VALUES: {
@@ -104,9 +104,9 @@ sub logger
 	# @Return	0 = device not found or no record to log
 	#		n = the number of logged records
 	# @See		dumper()
-	my $self = shift(); $self->{'format'} = q(yaml);
-	my $reqv = defined(wantarray()) ? 1 : 0;
-	my $data = undef();
+	my $self = shift; $self->{'format'} = q(yaml);
+	my $reqv = defined wantarray ? 1 : 0;
+	my $data = undef;
 
 	if( $reqv == 1 )
 	{
@@ -129,15 +129,15 @@ sub dumper
 	# @Param	<None>
 	# @Return	0 = No record to dump 
 	#		1 = Successfully dumped
-	my $self = shift();
-	my $atab = undef();
-	my $data = undef();
-	my $reqv = defined(wantarray()) ? 1 : 0;
+	my $self = shift;
+	my $atab = undef;
+	my $data = undef;
+	my $reqv = defined wantarray ? 1 : 0;
 	my $damn = {};
 	my $head = q();
 	my $foot = q();
 
-	return(0) if( $self->{'count'} == 0 );
+	return 0 if $self->{'count'} == 0;
 
 	# Output header
 	if( $self->{'format'} ne 'csv' )
@@ -150,12 +150,12 @@ sub dumper
 	if( $self->{'header'} )
 	{
 		$head .= $OutputHeader->{ $self->{'format'} };
-		$head .= q|# |.qq|$self->{'comment'}\n| if( length($self->{'comment'}) );
+		$head .= q|# |.qq|$self->{'comment'}\n| if length($self->{'comment'});
 	}
 
 	if( $self->{'footer'} )
 	{
-		$foot .= q|# |.qq|$self->{'comment'}\n| if( length($self->{'comment'}) );
+		$foot .= q|# |.qq|$self->{'comment'}\n| if length($self->{'comment'});
 	}
 
 	# Print header
@@ -173,7 +173,7 @@ sub dumper
 	}
 
 	# Print left square bracket character for the format JSON
-	$data .= '[ ' if( $self->{'format'} eq q(json) );
+	$data .= '[ ' if $self->{'format'} eq 'json';
 
 	PREPARE_LOG: foreach my $_e ( @{$self->{'entities'}} )
 	{
@@ -214,7 +214,7 @@ sub dumper
 	} # End of foreach() PREPARE_LOG:
 
 	# Replace the ',' at the end of data with right square bracket for the format JSON
-	$data =~ s{,\n\z}{ ]\n} if( $self->{'format'} eq 'json' );
+	$data =~ s{,\n\z}{ ]\n} if $self->{'format'} eq 'json';
 
 	if( defined($atab) && $atab->{'num'} > 0 )
 	{
@@ -224,7 +224,7 @@ sub dumper
 	}
 	else
 	{
-		$data .= $foot if( length($foot) );
+		$data .= $foot if length $foot;
 	}
 
 	if( $reqv == 1 )
@@ -235,7 +235,7 @@ sub dumper
 	else
 	{
 		# Dumped data are not required, return true;
-		if( ref($self->{'device'}) eq q|IO::File| )
+		if( ref($self->{'device'}) eq 'IO::File' )
 		{
 			print( {$self->{'device'}} $data );
 		}
@@ -243,7 +243,7 @@ sub dumper
 		{
 			print( STDOUT $data );
 		}
-		return(1);
+		return 1;
 	}
 }
 

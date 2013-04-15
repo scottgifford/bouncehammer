@@ -1,6 +1,6 @@
-# $Id: Smartphone.pm,v 1.1.2.1 2011/03/09 07:19:57 ak Exp $
+# $Id: Smartphone.pm,v 1.1.2.2 2013/04/15 04:20:53 ak Exp $
 # -Id: SmartPhone.pm,v 1.1 2009/08/29 07:33:22 ak Exp -
-# Copyright (C) 2011 Cubicroot Co. Ltd.
+# Copyright (C) 2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::UG::
                                                                         
   #####                        ##          ##                           
@@ -25,7 +25,7 @@ use warnings;
 sub communisexemplar { return qr{[.]com\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'mtngroup' => [
 			# MTN; http://www.mtn.co.ug/
@@ -40,7 +40,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'mtngroup'	=> 'Generic',
 		'utl'		=> 'Generic',

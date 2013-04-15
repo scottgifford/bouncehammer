@@ -1,7 +1,7 @@
-# $Id: Token.pm,v 1.6 2010/08/28 17:22:09 ak Exp $
+# $Id: Token.pm,v 1.6.2.1 2013/04/15 04:20:53 ak Exp $
 # -Id: Digest.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Digest.pm,v 1.4 2009/08/13 07:13:57 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                      
  ######         ##                   
@@ -36,7 +36,7 @@ sub maketoken
 	# @Description	Make message token
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $file = 'messagetoken.html';
 	my $cgiq = $self->query();
 
@@ -50,7 +50,7 @@ sub maketoken
 				? lc $cgiq->param('fe_recipient')
 				: q();
 		my $string = q();
-		return $self->e('missingargument') unless( $sender && $recipt );
+		return $self->e('missingargument') unless $sender && $recipt;
 
 		$string = Kanadzuchi::String->token( $sender, $recipt );
 		return $self->e('failedtocreate') unless $string;

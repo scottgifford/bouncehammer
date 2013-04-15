@@ -1,6 +1,6 @@
-# $Id: HTTP.pm,v 1.18.2.1 2011/06/20 03:43:39 ak Exp $
+# $Id: HTTP.pm,v 1.18.2.2 2013/04/15 04:20:52 ak Exp $
 # -Id: HTTP.pm,v 1.3 2009/10/06 00:36:49 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::API::
                               
  ##  ## ###### ###### #####   
@@ -37,13 +37,13 @@ sub cgiapp_init
 	# +-+-+-+-+-+-+-+-+-+-+-+
 	# |c|g|i|a|p|p|_|i|n|i|t|
 	# +-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 	my $conf = $self->param('cf');	# String, Config file
 	my $webc = $self->param('wf');	# String, WebUI config file
 
 	# Load config file, Template configuration, and so on
 	$self->loadconfig() if( -r $conf && -T _ && -r $webc && -T _ );
-	$self->{'database'} = undef();
+	$self->{'database'} = undef;
 }
 
 sub setup
@@ -51,7 +51,7 @@ sub setup
 	# +-+-+-+-+-+
 	# |s|e|t|u|p|
 	# +-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 
 	$self->start_mode('Empty');
 	$self->error_mode('exception');
@@ -68,8 +68,8 @@ sub cgiapp_prerun
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+
 	# |c|g|i|a|p|p|_|p|r|e|r|u|n|
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
-	my $bddr = undef();	# (Kanadzuchi::BdDR) Database object
+	my $self = shift;
+	my $bddr = undef;	# (Kanadzuchi::BdDR) Database object
 	my $conf = $self->{'sysconfig'};
 
 	# Create database object
@@ -92,7 +92,7 @@ sub cgiapp_prerun
 		$self->{'database'} = $bddr;
 	}
 	catch Kanadzuchi::Exception::API with {
-		$self->exception(shift())
+		$self->exception(shift)
 	};
 
 	# Set HTTP header, Character set, Language
@@ -104,7 +104,7 @@ sub cgiapp_postrun
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	# |c|g|i|a|p|p|_|p|o|s|t|r|u|n|
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 }
 
 sub teardown
@@ -112,7 +112,7 @@ sub teardown
 	# +-+-+-+-+-+-+-+-+
 	# |t|e|a|r|d|o|w|n|
 	# +-+-+-+-+-+-+-+-+
-	my $self = shift();
+	my $self = shift;
 }
 
 
@@ -131,18 +131,18 @@ sub loadconfig
 	#
 	# @Description	Load bounceHammer config file
 	# @Param	None
-	my $self = shift();
-	my $json = undef();	# Hash reference of config file(JSON::Syck)
-	my $yaml = undef();
+	my $self = shift;
+	my $json = undef;	# Hash reference of config file(JSON::Syck)
+	my $yaml = undef;
 	my $conf = $self->param('cf');
 	my $webc = $self->param('wf');
 
 	use Kanadzuchi::Metadata;
-	$json = shift( @{Kanadzuchi::Metadata->to_object($conf)} );
-	$self->{'sysconfig'} = $json if( ref($json) eq q|HASH| );
+	$json = shift( @{ Kanadzuchi::Metadata->to_object($conf) } );
+	$self->{'sysconfig'} = $json if ref($json) eq 'HASH';
 
-	$yaml = shift( @{Kanadzuchi::Metadata->to_object($webc)} );
-	$self->{'webconfig'} = $yaml if( ref($yaml) eq q|HASH| );
+	$yaml = shift( @{ Kanadzuchi::Metadata->to_object($webc) } );
+	$self->{'webconfig'} = $yaml if ref($yaml) eq 'HASH';
 }
 
 sub empty
@@ -153,8 +153,8 @@ sub empty
 	#
 	# @Description	Return empty page
 	# @Param	None
-	my $self = shift();
-	return();
+	my $self = shift;
+	return;
 }
 
 sub exception
@@ -165,9 +165,9 @@ sub exception
 	#
 	# @Description	Print exceptional message
 	# @Param <obj>	Kanadzuchi::Exception object
-	my $self = shift();
-	my $mesg = shift();
-	return($mesg);
+	my $self = shift;
+	my $mesg = shift;
+	return $mesg;
 }
 
 1;

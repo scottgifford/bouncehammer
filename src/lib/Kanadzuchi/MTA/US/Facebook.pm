@@ -1,5 +1,5 @@
-# $Id: Facebook.pm,v 1.1.2.5 2011/10/07 06:23:15 ak Exp $
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# $Id: Facebook.pm,v 1.1.2.6 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::US::
                                                        
  ######                   ##                   ##      
@@ -80,7 +80,7 @@ my $RxErrors = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '0.1.6' };
+sub version { '0.1.7' };
 sub description { 'Facebook mail' };
 sub xsmtpagent { 'X-SMTP-Agent: US::Facebook'.qq(\n); }
 sub reperit
@@ -93,9 +93,9 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 
 	#  _____              _                 _    
 	# |  ___|_ _  ___ ___| |__   ___   ___ | | __
@@ -103,8 +103,8 @@ sub reperit
 	# |  _| (_| | (_|  __/ |_) | (_) | (_) |   < 
 	# |_|  \__,_|\___\___|_.__/ \___/ \___/|_|\_\
 	#                                            
-	return q() unless( $mhead->{'subject'} =~ $RxFacebook->{'subject'} );
-	return q() unless( $mhead->{'from'} =~ $RxFacebook->{'from'} );
+	return q() unless $mhead->{'subject'} =~ $RxFacebook->{'subject'};
+	return q() unless $mhead->{'from'} =~ $RxFacebook->{'from'};
 
 	my $phead = q();	# (String) Pseudo email header
 	my $pstat = q();	# (String) #n.n.n Status code in message body
@@ -118,7 +118,7 @@ sub reperit
 	{
 		if( ($el =~ $RxFacebook->{'begin'}) .. ($el =~ $RxFacebook->{'endof'}) )
 		{
-			next() if( $rhostsaid && $rcptintxt );
+			next if( $rhostsaid && $rcptintxt );
 
 			# For future release or unknown pattern
 			if( $el =~ m{\ADiagnostic-Code: (.+)\z} )
@@ -134,23 +134,23 @@ sub reperit
 	} # End of foreach(EACH_LINE)
 
 	return q() unless length $rhostsaid;
-	$statintxt = $1 if( $rhostsaid =~ m{\s([A-Z]{3}[-][A-Z][1-9])\shttp} );
+	$statintxt = $1 if $rhostsaid =~ m{\s([A-Z]{3}[-][A-Z][1-9])\shttp};
 	$$mbody = q();	# For rewriting Status: header...
 
 	foreach my $_er ( keys %$RxErrors )
 	{
 		if( grep { $statintxt eq $_ } @{ $RxErrors->{$_er} } )
 		{
-			$pstat = Kanadzuchi::RFC3463->status($_er,'p','i');
-			last();
+			$pstat = Kanadzuchi::RFC3463->status( $_er, 'p', 'i' );
+			last;
 		}
 	}
 
-	$pstat ||= Kanadzuchi::RFC3463->status('undefined','p','i');
-	$phead  .= __PACKAGE__->xsmtprecipient($rcptintxt);
-	$phead  .= __PACKAGE__->xsmtpstatus($pstat);
-	$phead  .= __PACKAGE__->xsmtpdiagnosis($rhostsaid);
-	$phead  .= __PACKAGE__->xsmtpcommand($xsmtp);
+	$pstat ||= Kanadzuchi::RFC3463->status( 'undefined', 'p', 'i' );
+	$phead  .= __PACKAGE__->xsmtprecipient( $rcptintxt );
+	$phead  .= __PACKAGE__->xsmtpstatus( $pstat );
+	$phead  .= __PACKAGE__->xsmtpdiagnosis( $rhostsaid );
+	$phead  .= __PACKAGE__->xsmtpcommand( $xsmtp );
 	$phead  .= __PACKAGE__->xsmtpagent();
 	return $phead;
 }

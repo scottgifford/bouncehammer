@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.2 2010/06/16 08:15:40 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.2.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::NO::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in Norway
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		# http://www.runbox.com/
 		'runbox' => [
@@ -32,7 +32,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'runbox'	=> 'Generic',
 	};

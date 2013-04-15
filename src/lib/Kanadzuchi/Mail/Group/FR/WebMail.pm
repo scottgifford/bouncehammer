@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.1.2.4 2011/03/22 21:14:06 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.1.2.5 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::FR::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -18,11 +18,11 @@ use warnings;
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-# Major company's Webmail domains in République Française/French Republic
+# Major company's Webmail domains in French Republic
 # sub communisexemplar { return qr{[.]fr\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'sfr' => [
 			# SFR; http://www.sfr.fr/
@@ -39,7 +39,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'sfr'		=> 'Generic',
 		'voila'		=> 'Generic',

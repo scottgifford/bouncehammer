@@ -1,5 +1,5 @@
-# $Id: Address.pm,v 1.10.2.7 2012/02/06 10:42:55 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Address.pm,v 1.10.2.8 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                    
    ##       ##     ##                              
@@ -45,23 +45,23 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	(Kanadzuchi::Address) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ }; 
 
-	return undef() unless( defined($argvs->{'address'}) );
+	return undef unless defined $argvs->{'address'};
 
 	if( $argvs->{'address'} =~ m{\A([^@]+)[@]([^@]+)\z} )
 	{
-		$argvs->{'user'} = lc($1);
-		$argvs->{'host'} = lc($2);
+		$argvs->{'user'} = lc $1;
+		$argvs->{'host'} = lc $2;
 
 		map { $_ =~ y{`'"<>}{}d } %$argvs;
-		$argvs->{'address'} = $argvs->{'user'}.q{@}.$argvs->{'host'};
+		$argvs->{'address'} = sprintf( "%s@%s", $argvs->{'user'}, $argvs->{'host'} );
 		return $class->SUPER::new($argvs);
 	}
 	else
 	{
-		return undef();
+		return undef;
 	}
 }
 
@@ -74,28 +74,28 @@ sub parse
 	# @Description	Mail address parser
 	# @Param <ref>	(Ref->Array) text include any email address
 	# @Return	(Ref->Array) K::Address Objects in the array
-	my $class = shift();
-	my $argvs = shift() || return undef();
-	my $email = undef();
+	my $class = shift;
+	my $argvs = shift || return undef;
+	my $email = undef;
 	my $aobjs = [];
 
-	return [] unless( ref($argvs) eq q|ARRAY| );
+	return [] unless ref($argvs) eq q|ARRAY|;
 
 	PARSE_ARRAY: foreach my $x ( @$argvs )
 	{
-		next() unless( defined($x) );
-		next() unless( $x =~ m{[@]} );
+		next unless defined $x;
+		next unless $x =~ m{[@]};
 
 		# Avoid ``Invalid mailbox list:'' Error from Email::AddressParser
 		# If ESC(0x1b) is included in a phrase part of a mail address.
-		next() if( $x =~ m{[^\x20-\x7e]} );
+		next if( $x =~ m{[^\x20-\x7e]} );
 
 		PARSE_ADDRESS: foreach my $e ( Email::AddressParser->parse($x) )
 		{
-			next(PARSE_ADDRESS) unless( $e->address() );
+			next(PARSE_ADDRESS) unless $e->address();
 			$email = __PACKAGE__->new( 'address' => $e->address() );
-			next(PARSE_ADDRESS) unless( defined($email) );
-			push( @$aobjs, $email );
+			next(PARSE_ADDRESS) unless defined $email;
+			push @$aobjs, $email;
 		}
 	}
 
@@ -111,8 +111,8 @@ sub canonify
 	# @Description	Canonify a mail address(S3=canonify,S4=final)
 	# @Param <str>	(String) Email address
 	# @Return	(String) Canonified email address
-	my $class = shift();
-	my $input = shift();
+	my $class = shift;
+	my $input = shift;
 
 	return q() unless defined $input;
 	return q() if ref $input;
@@ -123,22 +123,23 @@ sub canonify
 
 	my $canon = q();
 	my $addrs = [];
-	my $token = [ reverse split( q{ }, $input ) ];
+	my $token = [ split( q{ }, $input ) ];
 
 	# Convert character entity; "&lt;" -> ">", "&gt;" -> "<".
 	map { $_ =~ s/&lt;/</g; $_ =~ s/&gt;/>/g; } @$token;
+	map { $_ =~ s/,\z//g; } @$token;
 
 	if( scalar(@$token) == 1 )
 	{
-		push( @$addrs, $token->[0] );
+		push @$addrs, $token->[0];
 	}
 	else
 	{
 		foreach my $e ( @$token )
 		{
-			chomp($e);
-			next() unless( $e =~ m{\A[<]?.+[@][-.0-9A-Za-z]+[.][A-Za-z]{2,}[>]?\z} );
-			push( @$addrs, $e );
+			chomp $e;
+			next unless $e =~ m{\A[<]?.+[@][-.0-9A-Za-z]+[.][A-Za-z]{2,}[>]?\z};
+			push @$addrs, $e;
 		}
 	}
 

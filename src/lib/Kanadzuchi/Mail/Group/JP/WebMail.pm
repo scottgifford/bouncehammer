@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.8 2010/06/22 09:02:15 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.8.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::JP::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in Japan
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'aubykddi' => [
 			# KDDI auone(Gmail); http://auone.jp/
@@ -62,7 +62,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'aubykddi'	=> 'Generic',
 		'goo'		=> 'Generic',

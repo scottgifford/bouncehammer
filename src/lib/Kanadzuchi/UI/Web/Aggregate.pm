@@ -1,5 +1,5 @@
-# $Id: Aggregate.pm,v 1.3 2010/08/28 17:22:09 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Aggregate.pm,v 1.3.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
    ##                                              ##          
   ####   #####  ##### #####   ####   #####  #### ###### ####   
@@ -33,11 +33,11 @@ sub aggregation
 	# +-+-+-+-+-+-+-+-+-+-+-+
 	#
 	# @Description	Aggregation
-	my $self = shift();
+	my $self = shift;
 	my $file = 'aggregate.html';
 	my $bddr = $self->{'database'};
 
-	my $statistics = undef();	# (Kanazuchi::Statistics::Stored::*) Statistics object
+	my $statistics = undef;	# (Kanazuchi::Statistics::Stored::*) Statistics object
 	my $tableclass = q();		# (String) Mastertable class
 	my $samplesize = 0;		# (Integer) Sample size
 	my $afrequency = 0;		# (Integer) Sum. of frequency

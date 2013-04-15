@@ -1,5 +1,5 @@
-# $Id: Courier.pm,v 1.3.2.4 2011/10/07 06:23:14 ak Exp $
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# $Id: Courier.pm,v 1.3.2.5 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::
                                                  
   ####                        ##                 
@@ -40,7 +40,7 @@ my $RxCourier = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '2.1.4' };
+sub version { '2.1.5' };
 sub description { 'Courier-MTA' };
 sub xsmtpagent { 'X-SMTP-Agent: Courier'.qq(\n); }
 sub reperit
@@ -53,11 +53,11 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 
-	return q() unless( grep { $mhead->{'subject'} =~ $_ } @{ $RxCourier->{'subject'} } );
+	return q() unless grep { $mhead->{'subject'} =~ $_ } @{ $RxCourier->{'subject'} };
 	# return q() unless( defined $mhead->{'message-id'} );
 	# return q() unless( $mhead->{'message-id'} =~ $RxCourier->{'message-id'} );
 
@@ -78,7 +78,7 @@ sub reperit
 		{
 			$endof = 1 if( $endof == 0 && $el =~ $RxCourier->{'endof'} );
 			$endof = 1 if( $endof == 0 && $el =~ $RxCourier->{'hline'} );
-			next() if( $endof || $el =~ m{\A\z} );
+			next if( $endof || $el =~ m{\A\z} );
 
 			if( $el =~ m{\A[>]{3}[ ]([A-Z]{4})[ ]?} )
 			{
@@ -102,13 +102,13 @@ sub reperit
 				# status is not included in this report.  You may or may not receive
 				# other delivery status notifications for additional recipients.
 				$xsmtp ||= $1;
-				next();
+				next;
 			}
 
 			if( $el =~ m{\A[<]{3}[ ](.+)\z} )
 			{
 				$rhostsaid = $1;
-				next();
+				next;
 			}
 
 			if( $rhostsaid )
@@ -144,14 +144,14 @@ sub reperit
 			if( $rhostsaid =~ $esmtpcomm->{ $cmd } )
 			{
 				$xsmtp = uc $cmd;
-				last();
+				last;
 			}
 		}
 	}
 
-	$phead .= __PACKAGE__->xsmtpdiagnosis($rhostsaid);
-	$phead .= __PACKAGE__->xsmtpcommand($xsmtp);
-	$phead .= __PACKAGE__->xsmtpstatus($pstat);
+	$phead .= __PACKAGE__->xsmtpdiagnosis( $rhostsaid );
+	$phead .= __PACKAGE__->xsmtpcommand( $xsmtp );
+	$phead .= __PACKAGE__->xsmtpstatus( $pstat );
 	$phead .= __PACKAGE__->xsmtpagent();
 	return $phead;
 }

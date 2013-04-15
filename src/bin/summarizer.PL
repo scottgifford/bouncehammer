@@ -1,9 +1,9 @@
 #__PERLEXECUTABLE__
-# $Id: summarizer.PL,v 1.14.2.6 2011/10/07 06:22:03 ak Exp $
+# $Id: summarizer.PL,v 1.14.2.7 2013/04/15 05:23:28 ak Exp $
 # -Id: summarizer.PL,v 1.13 2010/02/22 05:09:01 ak Exp -
 # -Id: summarizer.PL,v 1.2 2009/10/06 09:10:32 ak Exp -
 # -Id: summarizer.PL,v 1.3 2009/08/27 05:09:59 ak Exp -
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi:Command::
                                              ##                       
   ##### ##  ## ##  ## ##  ##  ####  #####        ###### ####  #####   
@@ -81,7 +81,7 @@ try {
 	$Cmd->d( 1, sprintf( "Config file = %s\n", $Cmd->cf() ));
 }
 otherwise {
-	$Cmd->exception(shift());
+	$Cmd->exception(shift);
 	$Cmd->abort();
 };
 
@@ -93,20 +93,20 @@ foreach my $sig ( 'INT','QUIT','TERM','KILL','ALRM')
 
 if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdates'} ) )
 {
-	my $statistics = undef();	# (Kanazuchi::Statistics::Stored::*) Statistics object
-	my $dailyulogs = undef();	# (Kanadzuchi::BdDR::DailyUpdates::*) DailyUpdates Table object
-	my $asciitable = undef();	# (Text::ASCIITable) ASCII Table object
-	my $smprogress = undef();	# (Term::ProgressBar ) Progress bar object
-	my $whereconds = undef();	# (Ref->Hash) WHERE Condition
-	my $samplesize = 0;		# (Integer) Sample size
-	my $afrequency = 0;		# (Integer) Sum. of frequency
-	my $aggregated = {};		# (Ref->Hash) Aggregated Data(Ref->Array)
-	my $summarized = {};		# (Ref->Hash) Summarized Data(Ref->Array)
-	my $outputdata = q();		# (String) Output data for displaying
-	my $graphchara = '+';		# (String) Graph character in ASCII Table
-	my $graphscale = 100;		# (Integer) Graph scale in ASCII Table
+	my $statistics = undef;	# (Kanazuchi::Statistics::Stored::*) Statistics object
+	my $dailyulogs = undef;	# (Kanadzuchi::BdDR::DailyUpdates::*) DailyUpdates Table object
+	my $asciitable = undef;	# (Text::ASCIITable) ASCII Table object
+	my $smprogress = undef;	# (Term::ProgressBar ) Progress bar object
+	my $whereconds = undef;	# (Ref->Hash) WHERE Condition
+	my $samplesize = 0;	# (Integer) Sample size
+	my $afrequency = 0;	# (Integer) Sum. of frequency
+	my $aggregated = {};	# (Ref->Hash) Aggregated Data(Ref->Array)
+	my $summarized = {};	# (Ref->Hash) Summarized Data(Ref->Array)
+	my $outputdata = q();	# (String) Output data for displaying
+	my $graphchara = '+';	# (String) Graph character in ASCII Table
+	my $graphscale = 100;	# (Integer) Graph scale in ASCII Table
 
-	require Text::ASCIITable if( $Fmt eq 'asciitable' );
+	require Text::ASCIITable if $Fmt eq 'asciitable';
 
 	if( $Rdb && ( $Cmd->operation & $Cmd->option->{'database'} ) )
 	{
@@ -114,8 +114,8 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 		try {
 			$Rdb->setup( $Zci->config->{'database'} );
 			Kanadzuchi::Exception::Database->throw( 
-				'-text' => 'Failed to connect DB' ) unless( $Rdb->connect() );
-			$Cmd->d(2,"Connecting to the database\n") if( defined $Rdb->handle() );
+				'-text' => 'Failed to connect DB' ) unless $Rdb->connect();
+			$Cmd->d(2,"Connecting to the database\n") if defined $Rdb->handle();
 
 			( $Rdb->hostname() ne 'localhost' && $Rdb->port() ne q() )
 				? $Cmd->d(2,sprintf("Database host = %s:%s\n", $Rdb->hostname(), $Rdb->port()))
@@ -125,7 +125,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 			$Cmd->d(2,sprintf("Database user = %s\n", $Rdb->username()));
 		}
 		catch Kanadzuchi::Exception::Database with {
-			my $e = shift();
+			my $e = shift;
 			my $b = '-' x 64;
 			my $m = $e;
 
@@ -152,7 +152,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 		elsif( $Cmd->operation & $Cmd->option->{'dailyupdates'} )
 		{
 			# Daily Updates
-			require Kanadzuchi::Statistics if( $Cmd->operation & $Cmd->option->{'summary'} );
+			require Kanadzuchi::Statistics if $Cmd->operation & $Cmd->option->{'summary'};
 			require Kanadzuchi::BdDR::DailyUpdates;
 			require Kanadzuchi::BdDR::Page;
 
@@ -169,7 +169,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 			$statistics = new Kanadzuchi::Statistics::Stored::YAML();
 
 			# Create the log file name by the day(-t, -y, -b, or -d option )
-			if( scalar(@$Log) == 0 && scalar(@$Date) )
+			if( scalar @$Log == 0 && scalar @$Date )
 			{
 				# Set the log file name
 				push( @$Log, new Path::Class::File( 
@@ -179,11 +179,11 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 			try {
 				foreach my $f ( @$Log )
 				{
-					next() if( -e $f && -s _ && -T _ && -r _ );
-					Kanadzuchi::Exception::File->throw( '-text' => 'No such file: '.$f ) unless( -e $f );
-					Kanadzuchi::Exception::File->throw( '-text' => 'Cannot read: '.$f ) unless( -r $f );
-					Kanadzuchi::Exception::File->throw( '-text' => 'Empty file: '.$f ) unless( -s $f );
-					Kanadzuchi::Exception::File->throw( '-text' => 'Not text: '.$f ) unless( -T $f );
+					next if( -e $f && -s _ && -T _ && -r _ );
+					Kanadzuchi::Exception::File->throw( '-text' => 'No such file: '.$f ) unless -e $f;
+					Kanadzuchi::Exception::File->throw( '-text' => 'Cannot read: '.$f ) unless -r $f;
+					Kanadzuchi::Exception::File->throw( '-text' => 'Empty file: '.$f ) unless -s $f;
+					Kanadzuchi::Exception::File->throw( '-text' => 'Not text: '.$f ) unless -T $f;
 				}
 				continue
 				{
@@ -191,7 +191,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 				}
 			}
 			catch Kanadzuchi::Exception::File with {
-				$Cmd->exception(shift());
+				$Cmd->exception(shift);
 				$Cmd->abort();
 			};
 
@@ -262,7 +262,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 			$aggregated->{$c} = $statistics->aggregate($c,$whereconds);
 			map { $samplesize += $_->{'size'} } @{ $statistics->cache() } unless $samplesize;
 			map { $afrequency += $_->{'freq'} } @{ $statistics->cache() } unless $afrequency;
-			$smprogress->update() if( defined $smprogress );
+			$smprogress->update() if defined $smprogress;
 
 			if( $Cmd->operation & $Cmd->option->{'summary'} )
 			{
@@ -286,7 +286,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 					}
 				}
 			}
-			$smprogress->update() if( defined $smprogress );
+			$smprogress->update() if defined $smprogress;
 		}
 
 		foreach my $col ( keys %$aggregated )
@@ -294,7 +294,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 			unless( $samplesize )
 			{
 				$Cmd->d( 1, sprintf("No data, sample size = %d\n", $samplesize ) );
-				last();
+				last;
 			}
 
 			my $_ratio = {};
@@ -321,7 +321,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 								$_graph->{$e} );
 				}
 
-				$asciitable->addRowLine() if( scalar @{ $asciitable->{'tbl_rows'} } );
+				$asciitable->addRowLine() if scalar @{ $asciitable->{'tbl_rows'} };
 				$asciitable->addRow( 'Sum', $samplesize, $afrequency, ' 1.000 / 1.000' );
 
 				if( $Cmd->operation & $Cmd->option->{'summary'} )
@@ -394,8 +394,8 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 		 ## ## ##  ##   ##   ##   ##### ##  ##  #####  ##  ##  ##  ##  ##  ##         ##  
 		 ####   #####  #### ####    ##   ####   ##      #####   #####   ### ####  #####   
 		                         ####           ##                                        
-		my $pagination = undef();	# (Kanadzuchi::BdDR::Page) Pagination object
-		my $duiterator = undef();	# (Kanadzuchi::Iterator) Iterator object
+		my $pagination = undef;		# (Kanadzuchi::BdDR::Page) Pagination object
+		my $duiterator = undef;		# (Kanadzuchi::Iterator) Iterator object
 		my $nrecordsin = 0;		# (Integer) The number of records in the DB
 		my $sampledata = [];		# (Ref->Array) Samples for summary
 		my $outputform = {};		# (Ref->Hash) Output format( YAML and CSV )
@@ -501,7 +501,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 		$nrecordsin = $dailyulogs->db->count( $whereconds );
 		$Cmd->finish() unless $nrecordsin;
 
-		$statistics = new Kanadzuchi::Statistics() if( $Cmd->operation & $Cmd->option->{'summary'} );
+		$statistics = new Kanadzuchi::Statistics() if $Cmd->operation & $Cmd->option->{'summary'};
 		$pagination = new Kanadzuchi::BdDR::Page();
 		$pagination->resultsperpage( $rppforunit->{ $Unit } );
 		$pagination->set( $nrecordsin );
@@ -511,7 +511,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 		# Prepare the progress bar
 		if( $Cmd->stream->{out} && $Cmd->debuglevel > -1 )
 		{
-			require Term::ProgressBar if( $Cmd->debuglevel > -1 );
+			require Term::ProgressBar if $Cmd->debuglevel > -1;
 			$smprogress = new Term::ProgressBar( { 
 						'fh' => \*STDERR,
 						'ETA' => 'linear',
@@ -529,15 +529,15 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 				my $thisy = q();	# This year and month
 
 				# Output header string of YAML or CSV
-				printf( $outputform->{'head'}, lc $stunitname->{ $Unit } ) if( $Fmt eq 'yaml' );
+				printf( $outputform->{'head'}, lc $stunitname->{ $Unit } ) if $Fmt eq 'yaml';
 				printf( $outputform->{'head'}, lc $stunitname->{ $Unit },
-					map( lc($_), @$columnname ), 'last-modified' ) if( $Fmt eq 'csv' );
+					map( lc $_, @$columnname ), 'last-modified' ) if $Fmt eq 'csv';
 
 				while( my $_r = $duiterator->next() )
 				{
 					if( $Fmt eq 'asciitable' )
 					{
-						$thisy = $1 if( $_r->{'thedate'} =~ m{\A(\d{4}[-]\d{2})} );
+						$thisy = $1 if $_r->{'thedate'} =~ m{\A(\d{4}[-]\d{2})};
 
 						if( $duiterator->count > 10 && $lasty && ( $thisy ne $lasty ) )
 						{
@@ -559,7 +559,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 							$_r->{'executed'}, $_r->{'modified'}->cdate() );
 					}
 
-					push( @$sampledata, $_r ) if( $Cmd->operation & $Cmd->option->{'summary'} );
+					push @$sampledata, $_r if $Cmd->operation & $Cmd->option->{'summary'};
 				}
 			}
 			else
@@ -567,8 +567,8 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 				$dailyulogs->congregat( $duiterator->all() );
 			}
 
-			$smprogress->update() if( $smprogress );
-			last() unless $pagination->hasnext();
+			$smprogress->update() if $smprogress;
+			last unless $pagination->hasnext();
 			$pagination->next();
 
 		} # End of while(1)
@@ -576,9 +576,9 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 		if( scalar @{ $dailyulogs->subtotal() } )
 		{
 			# Output header string of YAML or CSV
-			printf( $outputform->{'head'}, lc $stunitname->{ $Unit } ) if( $Fmt eq 'yaml' );
+			printf( $outputform->{'head'}, lc $stunitname->{ $Unit } ) if $Fmt eq 'yaml';
 			printf( $outputform->{'head'}, lc $stunitname->{ $Unit },
-				map( lc($_), @$columnname ), 'last-modified' ) if( $Fmt eq 'csv' );
+				map( lc $_, @$columnname ), 'last-modified' ) if $Fmt eq 'csv';
 
 			foreach my $_s ( @{ $dailyulogs->subtotal() } )
 			{
@@ -598,7 +598,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 						$_s->{'updated'}, $_s->{'skipped'}, $_s->{'failed'},
 						$_s->{'executed'}, $_s->{'modified'}->cdate() );
 				}
-				push( @$sampledata, $_s ) if( $Cmd->operation & $Cmd->option->{'summary'} );
+				push @$sampledata, $_s if $Cmd->operation & $Cmd->option->{'summary'};
 			}
 		}
 
@@ -648,7 +648,7 @@ if( $Cmd->operation & ( $Cmd->option->{'aggregate'} + $Cmd->option->{'dailyupdat
 			}
 		}
 
-		print $asciitable->draw() if( defined $asciitable );
+		print $asciitable->draw() if defined $asciitable;
 	}
 }
 
@@ -702,13 +702,13 @@ sub parse_options
 	Getopt::Long::GetOptions(
 			'C=s'		=> \$opt_conf,
 			'conf=s'	=> \$opt_conf,
-			'help'		=> sub { help(); exit(0); },
+			'help'		=> sub { help(); exit 0; },
 			'T'		=> \$opt_test,
 			'test'		=> \$opt_test,
 			'silent'	=> sub { $Cmd->silent(1); },
 			'verbose'	=> \$opt_verbose,
 			'v+'		=> \$opt_verbose,
-			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit(0); },
+			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit 0; },
 
 			# Date options
 			'b=i'		=> \$opt_before,
@@ -750,7 +750,7 @@ sub parse_options
 	$Cmd->debuglevel( ( $opt_verbose ? $opt_verbose : 0 ) - 1 );
 
 	# Specify Config File(YAML)	
-	if( defined($opt_conf) )
+	if( defined $opt_conf )
 	{
 		# Use specified config file(YAML)
 		$operation |= $Cmd->option->{'conf'};
@@ -781,13 +781,13 @@ sub parse_options
 			{
 				$opt_aggregate = 'w' if( lc $opt_aggregate eq 'r' );
 				$Col = [ $mastertable->whichtable( lc substr($opt_aggregate,0,1) )];
-				$Cmd->e('Invalid column name: '.$opt_aggregate ) unless( $Col->[0] );
+				$Cmd->e('Invalid column name: '.$opt_aggregate ) unless $Col->[0];
 			}
 			else
 			{
 				foreach my $c ( qw(s d h p w) )
 				{
-					push( @$Col, $mastertable->whichtable(lc $c) );
+					push @$Col, $mastertable->whichtable(lc $c);
 				}
 			}
 
@@ -847,8 +847,8 @@ sub parse_options
 			{
 				my @_period = split(':',$opt_period);
 				my $_theday = q();
-				$Cmd->e('-p(--period) option requires -D(--database) option') unless( $Rdb );
-				$Cmd->e('Invalid period format: '.$opt_period.', See --help') unless( scalar(@_period) == 2 );
+				$Cmd->e('-p(--period) option requires -D(--database) option') unless $Rdb;
+				$Cmd->e('Invalid period format: '.$opt_period.', See --help') unless scalar(@_period) == 2;
 
 				foreach my $_d ( @_period )
 				{
@@ -860,7 +860,7 @@ sub parse_options
 						$_theday = '2038-01-19' if( $1 >= 2038 && $2 >= 1 && $3 >= 19 );
 						$_theday = '1970-01-01' if( $1  < 1970 );
 
-						push( @$Date, $_theday );
+						push @$Date, $_theday;
 					}
 					else
 					{
@@ -871,7 +871,7 @@ sub parse_options
 			else
 			{
 				# Default is 'today' if there is no database option
-				$Date->[0] = Kanadzuchi::Time->o2d(0) unless( $Rdb );
+				$Date->[0] = Kanadzuchi::Time->o2d(0) unless $Rdb;
 			}
 			@$Date = sort @$Date if scalar @$Date;
 
@@ -900,7 +900,7 @@ sub parse_options
 
 		}
 
-		$operation |= $Cmd->option->{'summary'} if( $opt_summary );
+		$operation |= $Cmd->option->{'summary'} if $opt_summary;
 	}
 	else
 	{
@@ -921,7 +921,7 @@ sub parse_options
 	}
 
 	# Check whether or not Required options are specified.
-	return($operation);
+	return $operation;
 }
 
 sub help
@@ -990,7 +990,7 @@ sub help
 	printf( STDERR "    modified  = Last modified date of each record.\n" );
 	printf( STDERR "\n" );
 
-	return(1);
+	return 1;
 }
 
 

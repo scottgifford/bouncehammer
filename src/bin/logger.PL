@@ -1,9 +1,9 @@
 #__PERLEXECUTABLE__
-# $Id: logger.PL,v 1.17.2.7 2011/10/07 06:22:03 ak Exp $
+# $Id: logger.PL,v 1.17.2.8 2013/04/15 05:23:28 ak Exp $
 # -Id: logger.PL,v 1.13 2010/02/21 20:09:01 ak Exp -
 # -Id: logger.PL,v 1.1 2009/08/29 14:36:53 ak Exp -
 # -Id: logger.PL,v 1.12 2009/08/27 05:09:59 ak Exp -
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Command::
                                            
   ###                                      
@@ -88,7 +88,7 @@ try {
 	}
 }
 otherwise {
-	my $e = shift();
+	my $e = shift;
 	$Cmd->exception($e);
 	$Zci->historique('err','stat='.$e);
 	$Cmd->abort();
@@ -110,7 +110,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 	my $statusbydate = {};		# (Ref->Hash) Status of records by date
 	my $hashoftmplog = {};		# (Ref->Hash) Key = MD5 Hash, Value = Temp log file name
 
-	if( scalar( @{$Arg->{'dirs'}} ) == 0 && scalar( @{$Arg->{'files'}} ) == 0 )
+	if( scalar @{$Arg->{'dirs'}} == 0 && scalar @{$Arg->{'files'}} == 0 )
 	{
 		push( @{ $Arg->{'dirs'} }, 
 			new Path::Class::Dir($Zci->config->{'directory'}->{'spool'}) );
@@ -127,10 +127,10 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 		opendir( my $directoryh, $_d );
 		while( my $_f = readdir($directoryh) )
 		{
-			next() if( ! -f $_d.'/'.$_f || ! -T _ || ! -s _ );
-			push( @{ $Arg->{'files'} }, Path::Class::File::Lockable->new($_d.'/'.$_f) );
+			next if( ! -f $_d.'/'.$_f || ! -T _ || ! -s _ );
+			push @{ $Arg->{'files'} }, Path::Class::File::Lockable->new($_d.'/'.$_f);
 		}
-		closedir($directoryh);
+		closedir $directoryh;
 
 	} # End of the loop foreach(SEEK_TEMPLOG_DIRS)
 	$Arg->{'dirs'} = [];
@@ -144,19 +144,19 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 		# |  _|  | || |\  | |_| |   | | | |  | |  __/| |__| |_| | |_| |
 		# |_|   |___|_| \_|____/    |_| |_|  |_|_|   |_____\___/ \____|
 		#
-		my $_md5digestv = undef();	# (Digest::MD5) object
-		my $_tmploglock = undef();	# (Path::Class::File::Lockable)
+		my $_md5digestv = undef;	# (Digest::MD5) object
+		my $_tmploglock = undef;	# (Path::Class::File::Lockable)
 		my $_eachtmplog = $_f->stringify();
 
 		# Does not match with regular expression
-		next() unless( $Zci->is_logfile($_f) == 1 );
-		next() if( $_f->is_dir() || ! -f $_eachtmplog || ! -T $_eachtmplog );
+		next unless $Zci->is_logfile($_f) == 1;
+		next if( $_f->is_dir() || ! -f $_eachtmplog || ! -T $_eachtmplog );
 
 		if( -z $_eachtmplog )
 		{
 			# It is an empty file
-			eval { $_f->remove() if( $Cmd->operation & $Cmd->option->{'remove'} ); };
-			next();
+			eval { $_f->remove() if $Cmd->operation & $Cmd->option->{'remove'}; };
+			next;
 		}
 
 		# Create MD5 Digest of the file
@@ -166,10 +166,10 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 		if( defined $hashoftmplog->{ $_md5digestv } && -r $hashoftmplog->{ $_md5digestv } )
 		{
 			# Temporary log file is now locked by mailboxparser?
-			next() if( $_tmploglock->locked() );
+			next if $_tmploglock->locked();
 
 			# If the file has same digest, remove it and skip to the next.
-			eval { truncate( $_eachtmplog, 0 ) } if( $Cmd->operation & $Cmd->option->{'truncate'} );
+			eval { truncate( $_eachtmplog, 0 ) } if $Cmd->operation & $Cmd->option->{'truncate'};
 			if( $Cmd->operation & $Cmd->option->{'remove'} )
 			{
 				eval { $_f->remove(); };
@@ -180,9 +180,9 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 
 		# Record the file name using MD5 Digest as a hash key
 		$hashoftmplog->{ $_md5digestv } = $_eachtmplog;
-		push( @$tmplogsinhdd, $_tmploglock );
+		push @$tmplogsinhdd, $_tmploglock;
 		$sizeoftmplog += -s $_tmploglock;
-		$Cmd->d(5, sprintf("Temporary log file(#%d) = %s (%s)\n", scalar(@$tmplogsinhdd), $_eachtmplog, $_md5digestv ));
+		$Cmd->d(5, sprintf("Temporary log file(#%d) = %s (%s)\n", scalar @$tmplogsinhdd, $_eachtmplog, $_md5digestv ));
 
 		# Put temporary log file name in Verbosed List mode.
 		if( $Cmd->operation & $Cmd->option->{'list'} && $Cmd->debuglevel > -1 )
@@ -198,7 +198,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 
 
 	# There is no temporary log file.
-	if( scalar(@$tmplogsinhdd) == 0 )
+	if( scalar @$tmplogsinhdd == 0 )
 	{
 		$Cmd->d(1,q{There is no temporary log file}.qq{\n} );
 		$Zci->historique('notice','stat=There is no temporary log file');
@@ -223,13 +223,13 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 	my $countofchunk = int($sizeoftmplog/$logthreshold) + 1;
 
 
-	while( scalar(@$tmplogsinhdd) > 0 )
+	while( scalar @$tmplogsinhdd > 0 )
 	{
 		my $objectbydate = {};		# (Ref->Hash) key is '2009-01-03', value is pointer to array
 		my $recordhashes = {};		# (Ref->Hash) Record digest
 		my $templogfiles = [];		# (Ref->Array) Path::Class::File object of Temp log
-		my $dataoftheday = undef();	# (Ref->Array) data of the day
-		my $pprogressbar = undef();	# (Term::ProgressBar)
+		my $dataoftheday = undef;	# (Ref->Array) data of the day
+		my $pprogressbar = undef;	# (Term::ProgressBar)
 		my $sizeofloaded = 0;		# (Integer) File size of loaded temporary logs.
 		my $recsofloaded = 0;		# (Integer) The number of loaded records
 		my $howmanydealt = 0;		# (Integer) The number of dealt records
@@ -258,9 +258,9 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 			# 
 			my $_tempstored = Kanadzuchi::Metadata->to_object($_f);
 			$sizeofloaded += -s $_f;
-			$pprogressbar->update() if( $pprogressbar );
+			$pprogressbar->update() if $pprogressbar;
 
-			next() unless( scalar @$_tempstored );
+			next unless scalar @$_tempstored;
 
 			LOAD_RECORDS_IN_TEMPLOG: foreach my $_o ( @$_tempstored )
 			{
@@ -268,7 +268,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 				my $_datestring = Time::Piece->new($_o->{'bounced'})->ymd('-');
 
 				# Skip if it have same token and same timestamp
-				next() if( exists($recordhashes->{ $_tokenthing }) );
+				next if exists $recordhashes->{ $_tokenthing };
 				$recordhashes->{$_tokenthing} = 1;
 
 				unless( exists($objectbydate->{$_datestring}) )
@@ -277,24 +277,24 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 					$objectbydate->{$_datestring} = [];
 				}
 
-				push( @{ $objectbydate->{$_datestring} }, $_o );
+				push @{ $objectbydate->{$_datestring} }, $_o;
 				$recsofloaded++;
 				$statusbydate->{ $_datestring }++;	# Count for --batch(-B) mode
 
 			} # End of the loop foreach(LOAD_RECORDS_IN_TEMPLOG)
 
 			$sizeofloaded += -s $_f;
-			push( @$templogfiles, $_f );
-			last(LOAD_TEMPLOG_FILES) if( $sizeofloaded > $logthreshold );
+			push @$templogfiles, $_f;
+			last(LOAD_TEMPLOG_FILES) if $sizeofloaded > $logthreshold;
 
 		} # End of the loop foreach(LOAD_TEMPLOG_FILES)
-		$pprogressbar->update(scalar(@$tmplogsinhdd)) if( $pprogressbar );
+		$pprogressbar->update( scalar @$tmplogsinhdd) if $pprogressbar;
 
 		# There is no valid record
-		next() unless( @$templogfiles );
+		next unless @$templogfiles;
 
 		# progress bar
-		if( $Cmd->stream->{out} && $Cmd->debuglevel > -1 )
+		if( $Cmd->stream->{'out'} && $Cmd->debuglevel > -1 )
 		{
 			my $__pbname = $Cmd->operation & $Cmd->option->{'merge'} ? 'Merge' : 'Concatenate';
 			$pprogressbar = new Term::ProgressBar( { 
@@ -302,10 +302,10 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 						'ETA' => q(linear),
 						'name' => $__pbname.q{ logs(}.$countofchunk.q{)},
 						'count' => $recsofloaded,
-				});
+			});
 		}
 
-		WRITE_TO_REGULAR_LOG: foreach my $_key ( sort(keys(%$objectbydate)) )
+		WRITE_TO_REGULAR_LOG: foreach my $_key ( sort keys %$objectbydate )
 		{
 			# __        ______  ___ _____ _____   ____  _____ _   _  ____ _        _    ____    _     ___   ____ 
 			# \ \      / /  _ \|_ _|_   _| ____| |  _ \| ____| | | |/ ___| |      / \  |  _ \  | |   / _ \ / ___|
@@ -313,7 +313,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 			#   \ V  V / |  _ < | |  | | | |___  |  _ <| |___| |_| | |_| | |___ / ___ \|  _ <  | |__| |_| | |_| |
 			#    \_/\_/  |_| \_\___| |_| |_____| |_| \_\_____|\___/ \____|_____/_/   \_\_| \_\ |_____\___/ \____|
 			#
-			my $_handleoflog = undef();	# (IO::File) Saved regular log's file handle of the day
+			my $_handleoflog = undef;	# (IO::File) Saved regular log's file handle of the day
 			my $_logfconfigs = $Zci->config->{'file'};
 			my $_logdconfigs = $Zci->config->{'directory'};
 			my $_eachregrlog = new Path::Class::File::Lockable( $Zci->get_logfile('r',{ 'date' => $_key }) );
@@ -342,24 +342,24 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 					{
 						push( @$__wrbuff, $___datum );
 						$__ndealt++;
-						$pprogressbar->update() if( $pprogressbar );
+						$pprogressbar->update() if $pprogressbar;
 
-						next() if( scalar(@$__wrbuff) < 10000 );
+						next if scalar @$__wrbuff < 10000;
 						print( $__handle ${ Kanadzuchi::Metadata->to_string($__wrbuff) } );
 						$__wrbuff = [];
 					}
 
-					if( scalar(@$__wrbuff) )
+					if( scalar @$__wrbuff )
 					{
 						print( $__handle ${ Kanadzuchi::Metadata->to_string($__wrbuff) } );
-						$pprogressbar->update( $__ndealt ) if( $pprogressbar );
+						$pprogressbar->update( $__ndealt ) if $pprogressbar;
 						$__wrbuff = [];
 					}
 				}
 
 				$__fallbk->unlock();
 				$__handle->close();
-				next() 
+				next;
 			}
 
 			if( $Cmd->operation & $Cmd->option->{'merge'} )
@@ -372,9 +372,9 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 				#                                 
 				my $_cacheofdata = q();		# (String) Buffer of 'data of the day'
 				my $_eachlogbuff = q();		# (String) Buffer of each line contents
-				my $_handleoftmp = undef();	# (IO::File) Working reglar logs's file handle of the day
-				my $_eachregrtmp = undef();	# (Path::Class::File) Working regular log's object
-				my $_statregrlog = undef();	# (File::stat) stat() of the regular log
+				my $_handleoftmp = undef;	# (IO::File) Working reglar logs's file handle of the day
+				my $_eachregrtmp = undef;	# (Path::Class::File) Working regular log's object
+				my $_statregrlog = undef;	# (File::stat) stat() of the regular log
 				my $_theheaddata = {};
 
 				$dataoftheday = Kanadzuchi::Metadata->mergesort( $objectbydate->{$_key}, 'bounced' );
@@ -389,7 +389,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 
 				if( $_handleoflog )
 				{
-					$_statregrlog = stat($_eachregrlog);
+					$_statregrlog = stat $_eachregrlog;
 
 					READ_REGULAR_LOG: while( my $_eachlogline = <$_handleoflog> )
 					{
@@ -407,10 +407,10 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 						else
 						{
 							# Broken data in the regular log?
-							next();
+							next;
 						}
 
-						if( scalar(@$dataoftheday) == 0 )
+						if( scalar @$dataoftheday == 0 )
 						{
 							# Temporary log data is empty
 							$_eachlogbuff .= $_eachlogline;
@@ -422,10 +422,10 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 								$_eachlogbuff = q();
 								$_cacheofdata = q();
 							}
-							next();
+							next;
 						}
 
-						$_theheaddata  = $dataoftheday->[0] unless( %$_theheaddata );
+						$_theheaddata  = $dataoftheday->[0] unless %$_theheaddata;
 						$_eachlogbuff .= $_eachlogline;
 
 						if( $_bounceddate == $_theheaddata->{'bounced'} && $_tokenstring eq $_theheaddata->{'token'} )
@@ -434,7 +434,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 							$howmanyskipd++;
 							shift @$dataoftheday;
 							$_theheaddata = {};
-							$pprogressbar->update() if( $pprogressbar );
+							$pprogressbar->update() if $pprogressbar;
 						}
 						else
 						{
@@ -451,7 +451,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 								$_cacheofdata = q();
 								$_theheaddata = {};
 								$howmanydealt++;
-								$pprogressbar->update() if( $pprogressbar );
+								$pprogressbar->update() if $pprogressbar;
 							}
 							elsif( length($_eachlogbuff) + length($_cacheofdata) > $logthreshold )
 							{
@@ -467,7 +467,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 
 				$_cacheofdata .= ${ Kanadzuchi::Metadata->to_string($dataoftheday) };
 
-				if( length($_eachlogbuff) + length($_cacheofdata) )
+				if( length $_eachlogbuff + length $_cacheofdata )
 				{
 					print( $_handleoftmp $_cacheofdata );
 					print( $_handleoftmp $_eachlogbuff );
@@ -481,8 +481,8 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 					}
 				}
 
-				$_handleoftmp->close() if( $_handleoftmp );
-				$_handleoflog->close() if( $_handleoflog );
+				$_handleoftmp->close() if $_handleoftmp;
+				$_handleoflog->close() if $_handleoflog;
 
 
 				unless( -s $_eachregrtmp )
@@ -491,7 +491,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 					$_eachregrtmp->unlokc();
 					$_eachregrtmp->remove();
 					utime( $_statregrlog->atime(), $_statregrlog->mtime(), $_eachregrlog );
-					next();
+					next;
 				}
 
 				if( File::Copy::copy( $_eachregrtmp->stringify(), $_eachregrlog->stringify() ))
@@ -518,12 +518,12 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 
 				foreach my $_eachtmpdata ( @$dataoftheday )
 				{
-					push( @$_writebuffer, $_eachtmpdata );
+					push @$_writebuffer, $_eachtmpdata;
 					$_howmanybufd = scalar @$_writebuffer;
 					$howmanydealt++;
-					$pprogressbar->update() if( $pprogressbar );
+					$pprogressbar->update() if $pprogressbar;
 
-					next() if( $_howmanybufd < 10000 );
+					next if $_howmanybufd < 10000;
 					print( $_handleoflog ${ Kanadzuchi::Metadata->to_string($_writebuffer) } );
 					$_writebuffer = [];
 				}
@@ -531,10 +531,10 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 				if( $_howmanybufd )
 				{
 					print( $_handleoflog ${ Kanadzuchi::Metadata->to_string($_writebuffer) } );
-					$pprogressbar->update( $howmanydealt ) if( $pprogressbar );
+					$pprogressbar->update( $howmanydealt ) if $pprogressbar;
 					$_writebuffer = [];
 				}
-				$_handleoflog->close() if( $_handleoflog );
+				$_handleoflog->close() if $_handleoflog;
 				$_eachregrlog->unlock();
 			}
 
@@ -543,7 +543,7 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 		} # End of the loop foreach(WRITE_TO_REGULAR_LOG)
 		continue
 		{
-			$objectbydate->{$_key} = undef();
+			$objectbydate->{$_key} = undef;
 		}
 
 		$Cmd->d(3,sprintf("The number of dealt/skipped/loaded records = %d/%d/%d\n",
@@ -564,14 +564,14 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 				# Truncate the temp log
 				if( $Cmd->operation & $Cmd->option->{'truncate'} )
 				{
-					eval{ truncate($_t->stringify(),0); } unless( $_t->locked() );
+					eval { truncate($_t->stringify(),0); } unless $_t->locked();
 					$Cmd->d(3,"Failed to truncate temp log\n") if $@;
 				}
 
 				# Remove the temp log
 				if( $Cmd->operation & $Cmd->option->{'remove'} )
 				{
-					eval{ $_t->remove(); } unless( $_t->locked() );
+					eval{ $_t->remove(); } unless $_t->locked();
 					$Cmd->d(3,"Failed to remove temp log\n") if $@;
 				}
 
@@ -606,14 +606,14 @@ if( $Cmd->operation & ( $Cmd->option->{'concatenate'} + $Cmd->option->{'merge'} 
 		$batchinfo .= sprintf( qq|    all-of-temporary-logs:  %d\n|, $howmanytemps );
 		$batchinfo .= sprintf( qq|    size-of-temporary-logs: %d\n|, $sizeoftmplog );
 		$batchinfo .= sprintf( qq|  records:\n| );
-		map { $batchinfo .= sprintf( qq|    %s: %d\n|, $_, $statusbydate->{$_} ) } sort keys(%$statusbydate);
+		map { $batchinfo .= sprintf( qq|    %s: %d\n|, $_, $statusbydate->{$_} ) } sort keys %$statusbydate;
 
 		$Cmd->batchstatus(\$batchinfo);
 	}
 
 	$Zci->historique('info', 
 		sprintf("size=%d, temporarylogs=%d, regularlogs=%d, mode=%s, stat=ok",
-			$sizeoftmplog, $howmanytemps, scalar(keys(%$statusbydate)),
+			$sizeoftmplog, $howmanytemps, scalar keys %$statusbydate,
 			( $Cmd->operation & $Cmd->option->{'merge'} ) ? 'merge' : 'concatenate' ));
 
 }
@@ -662,11 +662,11 @@ sub parse_options
 			'C=s'		=> \$opt_conf,
 			'test'		=> \$opt_test,
 			'T'		=> \$opt_test,
-			'help'		=> sub { help(); exit(0); },
+			'help'		=> sub { help(); exit 0; },
 			'silent'	=> sub { $Cmd->silent(1); },
 			'verbose'	=> \$opt_verbose,
 			'v+'		=> \$opt_verbose,
-			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit(0); },
+			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit 0; },
 
 			# Log file options
 			'backup=s'	=> \$opt_backup,
@@ -708,12 +708,12 @@ sub parse_options
 	{
 		my @_argvs = @ARGV;
 
-		last() unless( scalar @_argvs );
+		last unless scalar @_argvs;
 		map { $_ =~ y{[ ]}{}d; } @_argvs;
 		my @_logfs = grep { -f $_ && -T _ && -r _ } @_argvs;
 		my @_logds = grep { -d $_ && -x _ && -r _ } @_argvs;
 
-		if( scalar(@_logfs) == 0 && scalar(@_logds) == 0 )
+		if( scalar @_logfs == 0 && scalar @_logds == 0 )
 		{
 			$Cmd->e( 'Neither the temporary log file nor the temporary '
 				.'log directory exists nor it is not valid: '.join(', ',@_argvs) );
@@ -724,32 +724,32 @@ sub parse_options
 
 		@{ $Arg->{'files'} } = map { Path::Class::File::Lockable->new($_) } @_logfs;
 		map { $_->cleanup(); } @{ $Arg->{'files'} };
-		push( @{ $Arg->{'dirs'}  }, @_logds );
+		push @{ $Arg->{'dirs'}  }, @_logds;
 	}
 
 	if( $opt_truncate || $opt_remove )
 	{
-		$operation |= $Cmd->option->{'truncate'} if( $opt_truncate );
-		$operation |= $Cmd->option->{'remove'} if( $opt_remove );
+		$operation |= $Cmd->option->{'truncate'} if $opt_truncate;
+		$operation |= $Cmd->option->{'remove'} if $opt_remove;
 	}
-	elsif( defined($opt_backup) && -d $opt_backup && -r _ && -x _ && -w _ )
+	elsif( defined $opt_backup && -d $opt_backup && -r _ && -x _ && -w _ )
 	{
 		$operation |= $Cmd->option->{'backup'};
 		$Bak = $opt_backup;
 	}
 
 	# List
-	$operation |= $Cmd->option->{'list'} if( $opt_list );
+	$operation |= $Cmd->option->{'list'} if $opt_list;
 
 	# Concatenate or Merge
 	if( $opt_concatenate ){ $operation |= $Cmd->option->{'concatenate'}; }
 	elsif( $opt_merge ){ $operation |= $Cmd->option->{'merge'}; }
 
 	# Output results as a YAML in batch mode 
-	$operation |= $Cmd->option->{'batch'} if($opt_batch);
+	$operation |= $Cmd->option->{'batch'} if $opt_batch;
 
 	# Check whether or not Required options are specified.
-	return($operation);
+	return $operation;
 }
 
 sub help

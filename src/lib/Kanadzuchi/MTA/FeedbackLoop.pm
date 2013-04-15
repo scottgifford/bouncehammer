@@ -1,5 +1,5 @@
-# $Id: FeedbackLoop.pm,v 1.1.2.3 2012/04/09 06:37:52 ak Exp $
-# Copyright (C) 2012 Cubicroot Co. Ltd.
+# $Id: FeedbackLoop.pm,v 1.1.2.4 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2012-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::
                                                                                    
  ######                  ## ##                  ##     ##                          
@@ -59,7 +59,7 @@ my $FeedbackTypes = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '0.0.1' }
+sub version { '0.0.2' }
 sub description { '(Experimental) Feedback Loop' };
 sub xsmtpagent { 'X-SMTP-Agent: FeedbackLoop'.qq(\n); }
 sub reperit
@@ -72,9 +72,9 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 	my $isfbl = 0;
 
 	HEADERS:while(1)
@@ -102,7 +102,7 @@ sub reperit
 				last(HEADERS);
 			}
 		}
-		last();
+		last;
 	}
 
 	return q() unless $isfbl;
@@ -193,10 +193,10 @@ sub reperit
 	$rhostsaid = join( ', ', @$fblheader );
 	$statintxt = Kanadzuchi::RFC3463->status( $FeedbackTypes->{ $fbacktype },'p','i' );
 
-	$phead .= __PACKAGE__->xsmtprecipient($rcptintxt) if $rcptintxt;
+	$phead .= __PACKAGE__->xsmtprecipient( $rcptintxt ) if $rcptintxt;
 	$phead .= __PACKAGE__->xsmtpdiagnosis( join(', ', @$fblheader) );
-	$phead .= __PACKAGE__->xsmtpcommand($xsmtp);
-	$phead .= __PACKAGE__->xsmtpstatus($statintxt);
+	$phead .= __PACKAGE__->xsmtpcommand( $xsmtp );
+	$phead .= __PACKAGE__->xsmtpstatus( $statintxt );
 	$phead .= __PACKAGE__->xsmtpagent();
 
 	return $phead;

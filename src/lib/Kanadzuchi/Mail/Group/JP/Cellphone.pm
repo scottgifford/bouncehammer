@@ -1,5 +1,5 @@
-# $Id: Cellphone.pm,v 1.7.2.5 2011/02/02 01:28:43 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Cellphone.pm,v 1.7.2.6 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009-2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::JP::
                                                             
   ####        ###  ###         ##                           
@@ -23,7 +23,7 @@ use warnings;
 sub communisexemplar { return qr{[.]ne[.]jp\z}; }
 sub nominisexemplaria
 {
-	my $self = shift();
+	my $self = shift;
 	return {
 		'nttdocomo' => [ 
 			qr{\Adocomo[.]ne[.]jp\z},
@@ -58,7 +58,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'nttdocomo'	=> 'Generic',
 		'aubykddi'	=> 'Generic',

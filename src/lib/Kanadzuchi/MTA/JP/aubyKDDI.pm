@@ -1,7 +1,7 @@
-# $Id: aubyKDDI.pm,v 1.6.2.7 2011/10/07 06:23:15 ak Exp $
+# $Id: aubyKDDI.pm,v 1.6.2.8 2013/04/15 04:20:53 ak Exp $
 # -Id: aubyKDDI.pm,v 1.1 2009/08/29 08:50:38 ak Exp -
 # -Id: aubyKDDI.pm,v 1.1 2009/07/31 09:04:51 ak Exp -
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::JP::
                                                             
                  ##              ##  ## ####   ####  ####   
@@ -16,12 +16,23 @@ use base 'Kanadzuchi::MTA';
 use strict;
 use warnings;
 
+#  ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ 
+# ||G |||l |||o |||b |||a |||l |||       |||v |||a |||r |||s ||
+# ||__|||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__||
+# |/__\|/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|
+#
+my $RxKDDI = {
+	'from' => qr{[<]?(?>postmaster[@]ezweb[.]ne[.]jp)[>]?},
+	'reply-to' => qr{[<]?.+[@]\w+[.]auone-net[.]jp[>]?\z},
+	'received' =>qr{\Afrom[ ](?:.+[.])?ezweb[.]ne[.]jp[ ]},
+	'subject' => qr{\AMail System Error - Returned Mail\z},
+};
 #  ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
 # ||C |||l |||a |||s |||s |||       |||M |||e |||t |||h |||o |||d |||s ||
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '2.1.6' };
+sub version { '2.1.7' };
 sub description { 'au by KDDI' };
 sub xsmtpagent { 'X-SMTP-Agent: JP::aubyKDDI'.qq(\n); }
 sub emailheaders
@@ -33,7 +44,7 @@ sub emailheaders
 	# @Description	Required email headers
 	# @Param 	<None>
 	# @Return	(Ref->Array) Header names
-	my $class = shift();
+	my $class = shift;
 	return [ 'X-SPASIGN' ];
 }
 
@@ -47,9 +58,9 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 	my $isau1 = 0;
 
 	# Pre-Process eMail headers of NON-STANDARD bounce message
@@ -59,14 +70,14 @@ sub reperit
 	# Received: from ezweb.ne.jp (wmflb12na02.ezweb.ne.jp [222.15.69.197])
 	# Received: from nmomta.auone-net.jp ([aaa.bbb.ccc.ddd]) by ...
 	#
-	$isau1++ if( lc($mhead->{'from'}) =~ m{[<]?(?>postmaster[@]ezweb[.]ne[.]jp)[>]?} );
-	$isau1++ if( $mhead->{'reply-to'} && lc($mhead->{'reply-to'}) =~ m{[<]?.+[@]\w+[.]auone-net[.]jp[>]?\z} );
-	$isau1++ if( $mhead->{'subject'} eq 'Mail System Error - Returned Mail' );
+	$isau1++ if lc($mhead->{'from'}) =~ $RxKDDI->{'from'};
+	$isau1++ if $mhead->{'reply-to'} && lc $mhead->{'reply-to'} =~ $RxKDDI->{'reply-to'};
+	$isau1++ if $mhead->{'subject'} =~ $RxKDDI->{'subject'};
 	return q() unless( $isau1 || scalar @{ $mhead->{'received'} } );
 
 	$isau1++ if( grep { $_ =~ m{\Afrom ezweb[.]ne[.]jp } } @{ $mhead->{'received'} } );
 	$isau1++ if( grep { $_ =~ m{\Afrom \w+[.]auone[-]net[.]jp } } @{ $mhead->{'received'} } );
-	return q() unless( $isau1 );
+	return q() unless $isau1;
 
 	my $phead = q();	# (String) Pseudo-Header
 	my $pstat = q();	# (String) Pseudo Status for X-SMTP-STatus
@@ -87,7 +98,7 @@ sub reperit
 		return $phead;
 	}
 
-	if( grep { $_ =~ m{\Afrom[ ](?:.+[.])?ezweb[.]ne[.]jp[ ]} } @{ $mhead->{'received'} } )
+	if( grep { $_ =~ $RxKDDI->{'received'} } @{ $mhead->{'received'} } )
 	{
 		#    ____                         _                    _       
 		#   / __ \  ___ ______      _____| |__   _ __   ___   (_)_ __  
@@ -217,20 +228,20 @@ sub reperit
 				}
 
 				$statintxt = $1 if( $rhostsaid =~ m{\b[#]?([45][.]\d[.]\d+)\b} );
-				last();
+				last;
 			}
 		}
 
-		if( Kanadzuchi::RFC2822->is_emailaddress($rcptintxt) )
+		if( Kanadzuchi::RFC2822->is_emailaddress( $rcptintxt ) )
 		{
-			$phead .= __PACKAGE__->xsmtprecipient($rcptintxt);
+			$phead .= __PACKAGE__->xsmtprecipient( $rcptintxt );
 		}
 
 		$pstat  = $statintxt || Kanadzuchi::RFC3463->status( $causa, $typemap->{ $causa }, 'i' );
-		$phead .= __PACKAGE__->xsmtpstatus($pstat);
-		$phead .= __PACKAGE__->xsmtpdiagnosis($rhostsaid);
+		$phead .= __PACKAGE__->xsmtpstatus( $pstat );
+		$phead .= __PACKAGE__->xsmtpdiagnosis( $rhostsaid );
 		$phead .= __PACKAGE__->xsmtpagent();
-		$phead .= __PACKAGE__->xsmtpcommand($xsmtp);
+		$phead .= __PACKAGE__->xsmtpcommand( $xsmtp );
 
 		return $phead;
 	}
@@ -263,7 +274,7 @@ sub reperit
 			if( (grep { $el =~ $_ } @{ $RxauOne->{'begin'} }) .. ($el =~ $RxauOne->{'endof'}) )
 			{
 				$endof = 1 if( $endof == 0 && $el =~ $RxauOne->{'endof'} );
-				next() if( $endof || $el =~ m{\A--} || $el =~ m{\A\z} );
+				next if( $endof || $el =~ m{\A--} || $el =~ m{\A\z} );
 				$rhostsaid .= $el;
 			}
 		}
@@ -292,15 +303,15 @@ sub reperit
 			#     Could not be delivered to <*****@***.**.***> 
 			#     As the remote domain doesnt exist.
 			$pstat  = Kanadzuchi::RFC3463->status('hostunknown','p','i');
-			last();
+			last;
 		}
 
 		if( $pstat )
 		{
-			$phead .= __PACKAGE__->xsmtpstatus($pstat);
-			$phead .= __PACKAGE__->xsmtpdiagnosis($rhostsaid);
+			$phead .= __PACKAGE__->xsmtpstatus( $pstat );
+			$phead .= __PACKAGE__->xsmtpdiagnosis( $rhostsaid );
 			$phead .= __PACKAGE__->xsmtpagent();
-			$phead .= __PACKAGE__->xsmtpcommand($xsmtp);
+			$phead .= __PACKAGE__->xsmtpcommand( $xsmtp );
 		}
 
 		return $phead;

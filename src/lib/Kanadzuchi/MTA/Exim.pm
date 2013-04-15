@@ -1,5 +1,5 @@
-# $Id: Exim.pm,v 1.6.2.5 2011/10/07 06:23:14 ak Exp $
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# $Id: Exim.pm,v 1.6.2.6 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::
                               
  ######           ##          
@@ -96,7 +96,7 @@ my $RxTrError = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '2.1.5' };
+sub version { '2.1.6' };
 sub description { 'Exim' };
 sub xsmtpagent { 'X-SMTP-Agent: Exim'.qq(\n); }
 sub emailheaders
@@ -108,7 +108,7 @@ sub emailheaders
 	# @Description	Required email headers
 	# @Param 	<None>
 	# @Return	(Ref->Array) Header names
-	my $class = shift();
+	my $class = shift;
 	return [ 'X-Failed-Recipients' ];
 }
 
@@ -122,13 +122,13 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 
 	return q() unless defined $mhead->{'x-failed-recipients'};
-	return q() unless( $mhead->{'subject'} =~ $RxEximMTA->{'subject'} );
-	return q() unless( $mhead->{'from'} =~ $RxEximMTA->{'from'} );
+	return q() unless $mhead->{'subject'} =~ $RxEximMTA->{'subject'};
+	return q() unless $mhead->{'from'} =~ $RxEximMTA->{'from'};
 	# return q() unless( $mhead->{'message-id'} =~ $RxEximMTA->{'message-id'} );
 
 	my $pstat = q();	# (String) Stauts code
@@ -146,7 +146,7 @@ sub reperit
 	EACH_LINE: foreach my $el ( split( qq{\n}, $$mbody ) )
 	{
 		$endof = 1 if( $endof == 0 && $el =~ $RxEximMTA->{'endof'} );
-		next() if( $endof || $el =~ m{\A\z} );
+		next if( $endof || $el =~ m{\A\z} );
 
 		if( ($el =~ $RxEximMTA->{'begin'}) .. ($el =~ $RxEximMTA->{'endof'}) )
 		{
@@ -160,13 +160,10 @@ sub reperit
 				# could not be delivered to one or more of its recipients. The following
 				# address(es) failed: ***@****.**
 				$rhostsaid = $el;
-				next();
+				next;
 			}
 
-			if( $rhostsaid )
-			{
-				$rhostsaid .= ' '.$el;
-			}
+			$rhostsaid .= ' '.$el if $rhostsaid;
 		}
 	}
 
@@ -182,7 +179,7 @@ sub reperit
 		if( $rhostsaid =~ $RxSMTPErr->{ $s } )
 		{
 			$xsmtp = uc $s;
-			last();
+			last;
 		}
 	}
 
@@ -192,7 +189,7 @@ sub reperit
 		if( grep { $rhostsaid =~ $_ } @{ $RxTrError->{ $t } } )
 		{
 			$causa = $t;
-			last();
+			last;
 		}
 	}
 
@@ -217,7 +214,7 @@ sub reperit
 			if( $rhostsaid =~ $esmtpcomm->{ $cmd } )
 			{
 				$xsmtp = uc $cmd;
-				last();
+				last;
 			}
 		}
 
@@ -228,14 +225,14 @@ sub reperit
 			#  X-Failed-Recipients: hoge@example.jp
 			(my $_dest = $frcpt) =~ s{\A.+[@]}{};
 
-			$xsmtp = 'DATA' if( $mhead->{'from'} =~ $_dest );
+			$xsmtp = 'DATA' if $mhead->{'from'} =~ $_dest;
 		}
 	}
 
-	$phead .= __PACKAGE__->xsmtprecipient($frcpt);
-	$phead .= __PACKAGE__->xsmtpdiagnosis($rhostsaid);
-	$phead .= __PACKAGE__->xsmtpcommand($xsmtp);
-	$phead .= __PACKAGE__->xsmtpstatus($pstat);
+	$phead .= __PACKAGE__->xsmtprecipient( $frcpt );
+	$phead .= __PACKAGE__->xsmtpdiagnosis( $rhostsaid );
+	$phead .= __PACKAGE__->xsmtpcommand( $xsmtp );
+	$phead .= __PACKAGE__->xsmtpstatus( $pstat );
 	$phead .= __PACKAGE__->xsmtpagent();
 
 	return $phead;

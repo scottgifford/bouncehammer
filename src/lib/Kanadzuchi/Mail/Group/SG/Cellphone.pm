@@ -1,5 +1,5 @@
-# $Id: Cellphone.pm,v 1.1.2.1 2011/03/09 07:17:19 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Cellphone.pm,v 1.1.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009-2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::SG::
                                                             
   ####        ###  ###         ##                           
@@ -25,7 +25,7 @@ use warnings;
 sub nominisexemplaria
 {
 	# *** NOT TESTED YET ***
-	my $self = shift();
+	my $self = shift;
 	return {
 		'm1' => [
 			# M1; http://m1.com.sg/M1/site/M1Corp/
@@ -40,7 +40,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'm1'		=> 'Generic',
 		'starhub'	=> 'Generic',

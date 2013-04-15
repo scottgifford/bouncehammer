@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.8.2.4 2011/08/21 18:48:47 ak Exp $
-# Copyright (C) 2010-2011 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.8.2.5 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::US::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in the United States of America
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'bluetie' => [
 			# EXPERIMENTAL(Not Tested), Does anyone know other domains of bluetie.com?
@@ -166,7 +166,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'bluetie'	=> 'Generic',
 		'inbox.com'	=> 'Generic',

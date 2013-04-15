@@ -1,5 +1,5 @@
-# $Id: BdDR.pm,v 1.2 2010/08/16 12:05:03 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: BdDR.pm,v 1.2.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Statistics::Stored::
                               
  #####      ## ####   #####   
@@ -37,12 +37,12 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param <ref>	(Ref->Hash)
 	# @Return	(Kanadzuchi::Statistics::Stored::BdDR) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 
 	# Default values
-	$argvs->{'handle'} = undef() unless( ref($argvs->{'handle'}) eq q|DBI::db| );
-	return $class->SUPER::new(%$argvs);
+	$argvs->{'handle'} = undef unless ref($argvs->{'handle'}) eq 'DBI::db';
+	return $class->SUPER::new( %$argvs );
 }
 
 #  ____ ____ ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
@@ -60,16 +60,16 @@ sub congregat
 	# @Param <str>	(String) Table name or alias
 	# @Param <ref>	(Ref->Hash) WHERE Condition
 	# @Return	(Ref->Hash)
-	my $self = shift();
-	my $name = shift() || return undef();
-	my $cond = shift() || {};
-	my $bddr = undef();
+	my $self = shift;
+	my $name = shift || return undef;
+	my $cond = shift || {};
+	my $bddr = undef;
 
-	return undef() unless( ref($self->{'handle'}) eq q|DBI::db| );
-	return undef() if ref $name;
-	return undef() if( $cond && ref $cond ne q|HASH| );
+	return undef unless ref($self->{'handle'}) eq 'DBI::db';
+	return undef if ref $name;
+	return undef if( $cond && ref $cond ne q|HASH| );
 
-	$cond = undef() unless keys %$cond;
+	$cond = undef unless keys %$cond;
 	$bddr = Kanadzuchi::BdDR::BounceLogs::Table->new( 'handle' => $self->{'handle'} );
 	return $bddr->groupby( $name, $cond );
 }

@@ -1,8 +1,8 @@
-# $Id: Crypt.pm,v 1.1 2010/08/28 17:10:29 ak Exp $
+# $Id: Crypt.pm,v 1.1.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: Index.pm,v 1.7 2010/07/11 06:48:03 ak Exp -
 # -Id: Index.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Index.pm,v 1.3 2009/08/13 07:13:57 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                     
   ####                        ##    
@@ -44,7 +44,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	Kanadzuchi::Crypt Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 	my $lname = $argvs->{'cipher'} || 'DES';
 	my $lpath = 'Crypt/'.$lname.'.pm';
@@ -70,9 +70,9 @@ sub cryptcbc
 	# @Param <flg>	(Character) e = Encrypt, d = Decrypt
 	# @Return	(String) Encrypted hex string
 	#		(String) Decrypted plain text
-	my $self = shift();
-	my $data = shift() || q();
-	my $flag = shift() || 'e';
+	my $self = shift;
+	my $data = shift || q();
+	my $flag = shift || 'e';
 
 	my $hakata = $self->{'salt'} || 'kanadzuchi';
 	my $seckey = $self->{'key'} || '794-Uguisu-Heiankyo';

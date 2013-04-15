@@ -1,5 +1,5 @@
-# $Id: Smartphone.pm,v 1.1.2.7 2013/04/08 04:36:38 ak Exp $
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# $Id: Smartphone.pm,v 1.1.2.8 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::
                                                    
   #####                        ##          ##                           
@@ -22,7 +22,7 @@ use warnings;
 # Major smartphone provider's domains in The World
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'orange' => [
 			# Orange; http://www.orange.com/
@@ -54,7 +54,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'orange'	=> 'Generic',
 		'nokia'		=> 'Generic',

@@ -1,7 +1,7 @@
-# $Id: Statistics.pm,v 1.10 2010/07/15 00:33:13 ak Exp $
+# $Id: Statistics.pm,v 1.10.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: Statistics.pm,v 1.1 2009/08/29 09:00:23 ak Exp -
 # -Id: Statistics.pm,v 1.1 2009/07/16 09:05:33 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                                
   ##### ##          ##    ##           ##    ##                
@@ -43,15 +43,15 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param
 	# @Return	(Kanadzuchi::Statistics) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 
 	# Default values
-	$argvs->{'rounding'} = 4 unless( defined($argvs->{'rounding'}) );
-	$argvs->{'unbiased'} = 1 unless( defined($argvs->{'unbiased'}) );
+	$argvs->{'rounding'} = 4 unless defined $argvs->{'rounding'};
+	$argvs->{'unbiased'} = 1 unless defined $argvs->{'unbiased'};
 	$argvs->{'sample'} ||= [];
 	$argvs->{'label'} ||= q();
-	return $class->SUPER::new($argvs);
+	return $class->SUPER::new( $argvs );
 }
 
 sub is_number
@@ -64,12 +64,12 @@ sub is_number
 	# @Param <str>	(String) Number
 	# @Return	(Integer) 1 = Is a number
 	#		(Integer) 0 = Is not a number
-	my $class = shift();
-	my $n = shift();
+	my $class = shift;
+	my $n = shift;
 
-	return 1 if( $n =~ m{\A[-+]?\d+\z} );			# Integer
-	return 1 if( $n =~ m{\A[-+]?\d+[.]\d+\z} );		# Float
-	return 1 if( $n =~ m{\A[-+]?\d+[Ee][-+]?\d+\z} );	# Float(e)
+	return 1 if $n =~ m{\A[-+]?\d+\z};		# Integer
+	return 1 if $n =~ m{\A[-+]?\d+[.]\d+\z};	# Float
+	return 1 if $n =~ m{\A[-+]?\d+[Ee][-+]?\d+\z};	# Float(e)
 	return 0;
 }
 
@@ -87,13 +87,13 @@ sub round
 	# @Description	Rounding
 	# @Param <num>	(Float) Number
 	# @Return	(Float) Rounded number
-	my $self = shift();
-	my $n = shift();
+	my $self = shift;
+	my $n = shift;
 	my $p = 0;
 
-	return NA() unless( $self->is_number($n) );
-	return $n if( $self->{'rounding'} == 0 );
-	return int($n) if( $self->{'rounding'} == 1 );
+	return NA() unless $self->is_number( $n );
+	return $n if $self->{'rounding'} == 0;
+	return int($n) if $self->{'rounding'} == 1;
 
 	$p = 10 ** ( $self->{'rounding'} - 1 );
 	return int( $n * $p + 0.5 ) / $p;
@@ -109,12 +109,12 @@ sub size
 	# @Description	Sample size
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Integer) Sample size
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 	my $size = 0;
 
-	return -1 unless( ref($smpl) eq q|ARRAY| );
-	return scalar(@$smpl);
+	return -1 unless ref($smpl) eq 'ARRAY';
+	return scalar @$smpl;
 }
 
 sub sum
@@ -126,11 +126,11 @@ sub sum
 	# @Description	Sum
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Sum
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq 'ARRAY';
+	return NA() if $self->size( $smpl ) < 1;
 	return $self->round( List::Util::sum( @$smpl ) );
 }
 
@@ -143,12 +143,12 @@ sub mean
 	# @Description	Mean
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Mean
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 	my $mean = 0;
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq 'ARRAY';
+	return NA() if $self->size( $smpl ) < 1;
 
 	$mean = List::Util::sum( @$smpl ) / $self->size( $smpl );
 	return $self->round( $mean );
@@ -164,8 +164,8 @@ sub variance
 	# @Description	Variance
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Variance
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 	my $mean = 0;
 	my $diff = [];
 	my $size = 0;
@@ -173,23 +173,23 @@ sub variance
 	my $rounding = $self->{'rounding'};
 	my $variance = 0;
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq q|ARRAY|;
+	return NA() if $self->size( $smpl ) < 1;
 
 	$size = $self->size($smpl) - $self->{'unbiased'} || $self->size($smpl);
-	return NA() if( $size < 0 );
-	return 0 if( $size == 1 );
+	return NA() if $size < 0;
+	return 0 if $size == 1;
 
 	$self->{'rounding'} = 0;
 	$mean = $self->mean($smpl);
 	$self->{'rounding'} = $rounding;
 
-	return NA() unless( __PACKAGE__->is_number( $mean ) );
+	return NA() unless __PACKAGE__->is_number( $mean );
 
 	$diff = [ map { ( $_ - $mean ) ** 2 } @$smpl ];
 	$variance = List::Util::sum(@$diff) / $size;
 
-	return $self->round($variance);
+	return $self->round( $variance );
 }
 
 *sd = *stddev;
@@ -202,13 +202,13 @@ sub stddev
 	# @Description	Standard Deviation
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Standard Deviation
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 	my $rounding = $self->{'rounding'};
 	my $variance = 0;
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq q|ARRAY|;
+	return NA() if $self->size( $smpl ) < 1;
 
 	$self->{'rounding'} = 0;
 	$variance = $self->variance( $smpl );
@@ -226,11 +226,11 @@ sub max
 	# @Description	Maximum
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Maximum
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq q|ARRAY|;
+	return NA() if $self->size( $smpl ) < 1;
 	return List::Util::max( @$smpl );
 }
 
@@ -243,11 +243,11 @@ sub min
 	# @Description	Minimum
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Minimum
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq q|ARRAY|;
+	return NA() if $self->size( $smpl ) < 1;
 	return List::Util::min( @$smpl );
 }
 
@@ -261,24 +261,24 @@ sub quartile
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Param <int>	(Integer) Quartile(1..3), default = 2
 	# @Return	(Float) 1st or 2nd or 3rd Quartile
-	my $self = shift();
-	my $q = shift() || 2;
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $q = shift || 2;
+	my $smpl = shift || $self->{'sample'};
 
 	my $sorted = [];
 	my $qindex = 0;
 	my $remain = 0;
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq q|ARRAY|;
+	return NA() if $self->size( $smpl ) < 1;
 
 	$q = 2 if( $q < 1 || $q > 3 );
 	$sorted = [ sort { $a <=> $b } @$smpl ];
 	$qindex = 1 - ( 0.25 * $q ) + ( 0.25 * $q * $self->size( $smpl ) );
 	$remain = ( $qindex * 100 ) % 100;
-	return $sorted->[$qindex-1] if( $remain == 0 );
+	return $sorted->[ $qindex-1 ] if( $remain == 0 );
 
-	$qindex = int($qindex);
+	$qindex = int $qindex;
 	$remain = $remain / 100;
 	return $sorted->[$qindex-1] + ( $remain * ( $sorted->[$qindex] - $sorted->[$qindex-1] ) );
 }
@@ -292,8 +292,8 @@ sub median
 	# @Description	Median
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Median
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 	return $self->quartile( 2, $smpl );
 }
 
@@ -306,11 +306,11 @@ sub range
 	# @Description	Range
 	# @Param <ref>	(Ref->Array) Array of sample(optional)
 	# @Return	(Float) Range
-	my $self = shift();
-	my $smpl = shift() || $self->{'sample'};
+	my $self = shift;
+	my $smpl = shift || $self->{'sample'};
 
-	return NA() unless( ref($smpl) eq q|ARRAY| );
-	return NA() if( $self->size( $smpl ) < 1 );
+	return NA() unless ref($smpl) eq 'ARRAY';
+	return NA() if $self->size( $smpl ) < 1;
 	return List::Util::max( @$smpl ) - List::Util::min( @$smpl );
 }
 

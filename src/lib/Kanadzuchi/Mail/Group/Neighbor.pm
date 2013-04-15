@@ -1,5 +1,5 @@
-# $Id: Neighbor.pm,v 1.6 2010/07/11 09:20:30 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Neighbor.pm,v 1.6.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009-2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::
                                                           
  ##  ##           ##         ##     ##                    
@@ -36,21 +36,21 @@ sub reperit
 	# @Description	Detect and load the class for the domain
 	# @Param <str>	(String) Domain part
 	# @Return	(Ref->Hash) Class, Group, Provider name or Empty string
-	my $class = shift();
-	my $dpart = shift() || return({});
+	my $class = shift;
+	my $dpart = shift || return {};
 	my $mdata = { 'class' => q(), 'group' => q(), 'provider' => q(), };
 
-	foreach my $d ( keys(%$OurDomain) )
+	foreach my $d ( keys %$OurDomain )
 	{
-		next() unless( grep { $dpart eq $_ } @{ $OurDomain->{$d} } );
+		next unless grep { $dpart eq $_ } @{ $OurDomain->{$d} };
 
 		$mdata->{'class'} = q|Kanadzuchi::Mail::Bounced::Generic|;
 		$mdata->{'group'} = 'neighbor';
 		$mdata->{'provider'} = $d;
-		last();
+		last;
 	}
 
-	return($mdata);
+	return $mdata;
 }
 
 1;

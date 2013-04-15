@@ -1,7 +1,7 @@
-# $Id: Index.pm,v 1.9 2010/08/29 22:26:37 ak Exp $
+# $Id: Index.pm,v 1.9.2.1 2013/04/15 04:20:53 ak Exp $
 # -Id: Index.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Index.pm,v 1.3 2009/08/13 07:13:57 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                      
   ####             ##                
@@ -34,7 +34,7 @@ sub putindexpage
 	# @Description	Index page, WebUI Dashboard
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $file = 'index.html';
 	my $bddr = $self->{'database'};
 	my $date = localtime;
@@ -77,8 +77,8 @@ sub putindexpage
 						? $recs->{'modified'}->ymd('/') : '?';
 			$recs->{'modifiedtime'} = ref $recs->{'modified'} eq q|Time::Piece| 
 						? $recs->{'modified'}->hms(':') : '?';
-			push( @$thelatest, $recs );
-			$flag += 1 if( $recs->{'estimated'} > -1 );
+			push @$thelatest, $recs;
+			$flag += 1 if $recs->{'estimated'} > -1;
 		}
 
 		if( $flag == 0 )
@@ -98,7 +98,7 @@ sub putindexpage
 							? $recs->{'modified'}->ymd('/') : '?';
 				$recs->{'modifiedtime'} = ref $recs->{'modified'} eq q|Time::Piece|
 							? $recs->{'modified'}->hms(':') : '?';
-				push( @$thelatest, $recs );
+				push @$thelatest, $recs;
 			}
 		}
 	}

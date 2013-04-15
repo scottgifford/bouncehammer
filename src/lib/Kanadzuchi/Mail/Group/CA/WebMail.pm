@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.4.2.1 2011/03/24 05:40:58 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.4.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::CA::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in Canada
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'hush' => [
 			# Hushmail http://www.hushmail.com/
@@ -39,7 +39,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'hush'		=> 'Generic',
 		'zworg'		=> 'Generic',

@@ -1,7 +1,7 @@
-# $Id: RFC2822.pm,v 1.15 2010/10/25 19:21:15 ak Exp $
+# $Id: RFC2822.pm,v 1.15.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: RFC2822.pm,v 1.1 2009/08/29 08:52:03 ak Exp -
 # -Id: RFC2822.pm,v 1.6 2009/05/29 08:22:21 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                   
  #####  ###### ####   ####   ####   ####   ####   
@@ -20,7 +20,7 @@ use warnings;
 # |/__\|/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|
 #
 # Regular expression of valid RFC-2822 email address(<addr-spec>)
-my $Rx = { 'rfc2822' => undef(), 'ignored' => undef(), 'domain' => undef(), };
+my $Rx = { 'rfc2822' => undef, 'ignored' => undef, 'domain' => undef, };
 
 # See http://www.ietf.org/rfc/rfc2822.txt
 #  or http://www.ex-parrot.com/pdw/Mail-RFC822-Address.html ...
@@ -62,11 +62,11 @@ sub is_emailaddress
 	# @Return	(Integer) 1 = is valid e-mail address
 	#		(Integer) 0 = is not
 	# return(1) if( $_[1] =~ $Rx->{rfc2822} );
-	my $class = shift();
-	my $email = shift() || return(0);
-	return(0) if( $email =~ m{([\x00-\x1f]|\x1f)} );
-	return(1) if( $email =~ $Rx->{'ignored'} );
-	return(0);
+	my $class = shift;
+	my $email = shift || return 0;
+	return 0 if $email =~ m{([\x00-\x1f]|\x1f)};
+	return 1 if $email =~ $Rx->{'ignored'};
+	return 0;
 }
 
 sub is_domainpart
@@ -79,11 +79,11 @@ sub is_domainpart
 	# @Param <addr>	(String) Domain name
 	# @Return	(Integer) 1 = is valid domain part
 	#		(Integer) 0 = is not
-	my $class = shift();
-	my $dpart = shift() || return(0);
-	return(0) if( $dpart =~ m{([\x00-\x1f]|\x1f)} );
-	return(1) if( $dpart =~ $Rx->{'domain'} );
-	return(0);
+	my $class = shift;
+	my $dpart = shift || return 0;
+	return 0 if $dpart =~ m{([\x00-\x1f]|\x1f)};
+	return 1 if $dpart =~ $Rx->{'domain'};
+	return 0;
 }
 
 sub is_mailerdaemon
@@ -96,10 +96,10 @@ sub is_mailerdaemon
 	# @Param <addr>	(String) e-Mail address
 	# @Return	(Integer) 1 = is MAILER-DAEMON
 	#		(Integer) 0 = is not
-	my $class = shift();
-	my $email = shift() || return(0);
-	return(1) if( lc($email) =~ m{\bmailer-daemon\b} );
-	return(0);
+	my $class = shift;
+	my $email = shift || return 0;
+	return 1 if lc( $email ) =~ m{\bmailer-daemon\b};
+	return 0;
 }
 
 sub is_subaddress
@@ -113,13 +113,13 @@ sub is_subaddress
 	# @Return	(Integer) 1 = is sub-address
 	#		(Integer) 0 = is not
 	# @See		http://tools.ietf.org/html/rfc5233
-	my $class = shift();
-	my $email = shift() || return(0);
+	my $class = shift;
+	my $email = shift || return 0;
 	my $lpart = [ split('@',$email) ]->[0];
 
-	return(0) unless( $class->is_emailaddress($email) );
-	return(1) if( $lpart =~ m{\A[-_\w]+?[+][^@]+\z} );
-	return(0);
+	return 0 unless $class->is_emailaddress( $email );
+	return 1 if $lpart =~ m{\A[-_\w]+?[+][^@]+\z};
+	return 0;
 }
 
 sub expand_subaddress
@@ -133,8 +133,8 @@ sub expand_subaddress
 	# @Return	(String) Expanded e-Mail address
 	#		(String) Empty
 	# @See		http://tools.ietf.org/html/rfc5233
-	my $class = shift();
-	my $email = shift() || return q();
+	my $class = shift;
+	my $email = shift || return q();
 	my $lpart = [ split('@',$email) ]->[0];
 	my $xtemp = q();
 	my $xaddr = q();
@@ -142,9 +142,10 @@ sub expand_subaddress
 	return q() unless( $class->is_subaddress($email) );
 	if( $lpart =~ m{\A[-_\w]+?[+](\w[-._\w]+\w)[=](\w[-.\w]+\w)\z} )
 	{
-		$xtemp = $1.q{@}.$2;
-		$xaddr = $xtemp if( $class->is_emailaddress($xtemp) );
+		$xtemp = $1.'@'.$2;
+		$xaddr = $xtemp if $class->is_emailaddress( $xtemp );
 	}
+
 	return $xaddr;
 }
 
@@ -157,8 +158,8 @@ sub cleanup
 	# @Description	OBSOLETE
 	# @Param <addr>	email address
 	# @Return	(String) email address
-	my $class = shift();
-	return shift();
+	my $class = shift;
+	return shift;
 }
 
 1;

@@ -1,9 +1,9 @@
 #__PERLEXECUTABLE__
-# $Id: mailboxparser.PL,v 1.40.2.13 2011/10/11 08:50:38 ak Exp $
+# $Id: mailboxparser.PL,v 1.40.2.14 2013/04/15 05:23:28 ak Exp $
 # -Id: mailboxparser.PL,v 1.21 2010/02/21 20:09:01 ak Exp -
 # -Id: mailboxparser.PL,v 1.2 2009/09/30 03:20:26 ak Exp -
 # -Id: mailboxparser.PL,v 1.16 2009/08/27 05:09:59 ak Exp -
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Command::
                                                                                         
                  ##  ###  ##                                                            
@@ -98,7 +98,7 @@ try {
 	}
 }
 otherwise {
-	my $e = shift();
+	my $e = shift;
 	$Cmd->exception($e);
 	$Zci->historique('err','stat='.$e);
 	$Cmd->abort();
@@ -127,14 +127,14 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 
 	my $howmanymboxes = 0;		# (Integer) How many mailbox files
 	my $sizeofmailbox = 0;		# (Integer) Total size of mailboxes
-	my $parseprogress = undef();	# (Term::ProgressBar) Progress bar object
+	my $parseprogress = undef;	# (Term::ProgressBar) Progress bar object
 	my $progressbarcr = sub {};	# (Ref->Code) Term::ProgressBar
 	my $debugmessages = q();	# (String) Debug message for Term::ProgressBar
 	my $chunksofemail = [];		# (Ref->Array) Path::Class::File objects
 	my $chunkmboxsize = ( $Zci->config->{'file'}->{'maxsize'} * 0.08 ) || 1048576;
 
-	$chunkmboxsize = 102400 if( $chunkmboxsize < 102400 );		# 100 KB
-	$chunkmboxsize = 1048576 if( $chunkmboxsize > 1048576 );	# 1 MB
+	$chunkmboxsize = 102400 if $chunkmboxsize < 102400;	# 100 KB
+	$chunkmboxsize = 1048576 if $chunkmboxsize > 1048576;	# 1 MB
 
 	# Set timeout(ALRM) for reading from STDIN
 	eval { alarm( ( $Zci->config->{'environment'}->{'timeout'} || 180 ) ) };
@@ -163,17 +163,17 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 			opendir( $directoryh, $d );
 			READ_FILES_IN_THE_DIRECTORY: while( my $mf = readdir($directoryh) )
 			{
-				next() if( -z $d.'/'.$mf || ! -r _ || ! -f _ || ! -T _ || ! -s _ );
-				push( @{ $Mail->{'files'} }, $d.'/'.$mf );
+				next if( -z $d.'/'.$mf || ! -r _ || ! -f _ || ! -T _ || ! -s _ );
+				push @{ $Mail->{'files'} }, $d.'/'.$mf;
 				$filesindir++;
 				alarm(0);
 			}
-			closedir( $directoryh );
+			closedir $directoryh;
 
 		} # End of foreach(SEEK_EACH_DIRECTORY) 
 
-		$Cmd->d( 1, sprintf( "The number of files in the directories = %d\n", $filesindir )) if( $filesindir );
-		$Cmd->e('There is no valid email in the directories') unless( scalar @{$Mail->{'files'}} );
+		$Cmd->d( 1, sprintf( "The number of files in the directories = %d\n", $filesindir )) if $filesindir;
+		$Cmd->e('There is no valid email in the directories') unless scalar @{$Mail->{'files'}};
 
 
 
@@ -206,11 +206,11 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 			# |_|   |_|_|\___||___/
 			#                      
 			$progressbarcr->();
-			next() if( -z $mf || ! -s _ );
+			next if( -z $mf || ! -s _ );
 
 			$filedigest = Digest::MD5->new->addfile(new IO::File(q{< }.$mf))->hexdigest();
-			next() if( grep( { $_ eq $filedigest } @$md5digests ) );
-			push( @$md5digests, $filedigest );
+			next if grep { $_ eq $filedigest } @$md5digests;
+			push @$md5digests, $filedigest;
 
 			unless( $mboxhandle )
 			{
@@ -227,55 +227,55 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 			# Skip to the next loop if the file does not seem to email.
 			read( $_eachmailfh, $first5char, 5 );
 			seek( $_eachmailfh, 0, 0 );
-			do { $_eachmailfh->close(); next() } unless( $first5char =~ m{\A[A-Za-z]} );
+			do { $_eachmailfh->close(); next } unless $first5char =~ m{\A[A-Za-z]};
 
 			# Does first 5 bytes of the message is 'From_' ?
 			read( $_eachmailfh, $mfcontents, -s $mf );
 			print( $mboxhandle $pseudofrom ) if( $first5char ne 'From ' );
 			print( $mboxhandle $mfcontents ) if( $mfcontents );
 
-			$_eachmailfh->close() if( $_eachmailfh );
+			$_eachmailfh->close() if $_eachmailfh;
 			$sizeofmailbox += -s $mf;
 			$howmanymboxes++;
 			alarm(0);
 
 			# Cleanup
-			unlink($mf) if( $Cmd->operation & $Cmd->option->{'remove'} );
-			truncate($mf,0) if( $Cmd->operation & $Cmd->option->{'truncate'} );
-			File::Copy::move( $mf, $Bak ) if( $Cmd->operation & $Cmd->option->{'backup'} );
+			unlink $mf if $Cmd->operation & $Cmd->option->{'remove'};
+			truncate($mf,0) if $Cmd->operation & $Cmd->option->{'truncate'};
+			File::Copy::move( $mf, $Bak ) if $Cmd->operation & $Cmd->option->{'backup'};
 
 			if( $tmpmailbox->stat->size > $chunkmboxsize )
 			{
 				# The size of temporary mailbox file is bigger than the limit
-				push( @$chunksofemail, $tmpmailbox );
-				$mboxhandle->close() if( $mboxhandle );
-				$mboxhandle = undef();
-				$tmpmailbox = undef();
+				push @$chunksofemail, $tmpmailbox;
+				$mboxhandle->close() if $mboxhandle;
+				$mboxhandle = undef;
+				$tmpmailbox = undef;
 			}
 
 		} # End of foreach(SEEK_EACH_FILE)
 
 		if( defined $tmpmailbox && defined $mboxhandle )
 		{
-			push( @$chunksofemail, $tmpmailbox );
-			$mboxhandle->close() if( $mboxhandle );
-			$mboxhandle = undef();
-			$tmpmailbox = undef();
+			push @$chunksofemail, $tmpmailbox;
+			$mboxhandle->close() if $mboxhandle;
+			$mboxhandle = undef;
+			$tmpmailbox = undef;
 		}
 
 		# Flush the variables
-		$Mail = undef();
-		$filedigest = undef();
+		$Mail = undef;
+		$filedigest = undef;
 		$md5digests = [];
 	}
 	
-	if( defined($parseprogress) )
+	if( defined $parseprogress )
 	{
 		$debugmessages = $Cmd->d( 2, sprintf( "Size of all mailboxes = %d bytes\n", $sizeofmailbox ));
-		$parseprogress->message( $debugmessages ) if( $debugmessages );
+		$parseprogress->message( $debugmessages ) if $debugmessages;
 	}
 
-	if( scalar(@$chunksofemail) == 0 && $Argc > 0 )
+	if( scalar @$chunksofemail == 0 && $Argc > 0 )
 	{
 		$Cmd->e('No data in the mailboxes');
 		$Zci->historique('notice','stat=No data in the mailboxes');
@@ -283,7 +283,7 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 	}
 
 	my $kanadzuchilog = new Kanadzuchi::Log();
-	my $templogdevice = undef();	# (IO::File) Temporary log
+	my $templogdevice = undef;	# (IO::File) Temporary log
 
 	if( $Cmd->operation & $Cmd->option->{'log'} )
 	{
@@ -315,15 +315,15 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 		$kanadzuchilog->logfile->lock();
 		$kanadzuchilog->device( $templogdevice );
 
-		if( defined($parseprogress) )
+		if( defined $parseprogress )
 		{
 			$debugmessages = $Cmd->d(1,sprintf( "Log directory = %s\n", $Out ));
-			$parseprogress->message( $debugmessages ) if( $debugmessages );
+			$parseprogress->message( $debugmessages ) if $debugmessages;
 			$debugmessages = $Cmd->d(1,sprintf( "Temporary log = %s\n", $kanadzuchilog->logfile() ));
-			$parseprogress->message( $debugmessages ) if( $debugmessages );
+			$parseprogress->message( $debugmessages ) if $debugmessages;
 		}
 	}
-	push( @$chunksofemail, q|<STDIN>| ) unless( scalar @$chunksofemail );
+	push @$chunksofemail, q|<STDIN>| unless scalar @$chunksofemail;
 
 	my $howmanyemails = 0;		# (Integer) How many email messages
 	my $howmanybounce = 0;		# (Integer) How many bounce messages
@@ -359,8 +359,8 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 			$mailboxparser = new Kanadzuchi::Mbox();
 			$debugmessages = $Cmd->d(1, 'Waiting for data from STDIN..., timeout = '
 						.( $Zci->config->{'environment'}->{'timeout'} || 180 ) );
-			$parseprogress->message( $debugmessages ) if( $parseprogress && $debugmessages );
-			undef($Mbox);
+			$parseprogress->message( $debugmessages ) if $parseprogress && $debugmessages;
+			undef $Mbox;
 		}
 
 		#  ____  _    _   _ ____  ____  
@@ -371,7 +371,7 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 		# 
 		# Slurp the mailbox
 		$mailboxparser->greed( $Cmd->operation & $Cmd->option->{'greed'} ? 1 : 0 );
-		$mailboxparser->slurpit() || next();
+		$mailboxparser->slurpit() || next;
 		$howmanyemails += $mailboxparser->nmails();
 
 		# Progress bar for each parser
@@ -381,14 +381,14 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 			$parseprogress = new Term::ProgressBar( { 
 						'fh' => \*STDERR,
 						'ETA' => 'linear',
-						'name' => 'Parse mailboxes('.(scalar(@$chunksofemail) + 1).')',
+						'name' => 'Parse mailboxes('.(scalar @$chunksofemail + 1).')',
 						'count' => $mailboxparser->nmails() * 2,
 					});
 		}
 
 		$mailboxparser->parseit( 
 			$Cmd->operation & $Cmd->option->{'save'} ? 1 : 0,
-			$progressbarcr ) || do { $progressbarcr->(); next(); };
+			$progressbarcr ) || do { $progressbarcr->(); next; };
 		$howmanybounce += $mailboxparser->nmesgs();
 
 		#  _____    _  _____   ___ _____ 
@@ -401,10 +401,10 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 		$mboxpiterator = Kanadzuchi::Mail::Bounced->eatit( 
 					$mailboxparser, $failedtoparse, $parseroptions, $progressbarcr );
 		$howmanyparsed += $mboxpiterator->count();
-		$parseprogress->update( $mailboxparser->nmails * 2 ) if( $parseprogress );
+		$parseprogress->update( $mailboxparser->nmails * 2 ) if $parseprogress;
 
 		# There is no parsed messages
-		next() unless( $mboxpiterator->count() );
+		next unless $mboxpiterator->count();
 
 		$kanadzuchilog->entities( $mboxpiterator->all() );
 		$kanadzuchilog->count( $mboxpiterator->count() );
@@ -438,7 +438,7 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 	}
 	continue
 	{
-		if( ( $Cmd->operation & $Cmd->option->{'save'} ) && scalar(@$failedtoparse) )
+		if( ( $Cmd->operation & $Cmd->option->{'save'} ) && scalar @$failedtoparse )
 		{
 			#      __    _____ _    ___ _     _____ ____    _____ ___    ____   _    ____  ____  _____ 
 			#      \ \  |  ___/ \  |_ _| |   | ____|  _ \  |_   _/ _ \  |  _ \ / \  |  _ \/ ___|| ____|
@@ -446,14 +446,14 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 			# |_____/ / |  _/ ___ \ | || |___| |___| |_| |   | || |_| | |  __/ ___ \|  _ < ___) | |___ 
 			#      /_/  |_|/_/   \_\___|_____|_____|____/    |_| \___/  |_| /_/   \_\_| \_\____/|_____|
 			#                                                                                          
-			my $failprog = undef();
+			my $failprog = undef;
 			my $spooldir = $Zci->config->{'directory'}->{'spool'};
 			my $filename = q();
 			my $maildata = q();
-			my $feobject = undef();
-			my $fehandle = undef();
+			my $feobject = undef;
+			my $fehandle = undef;
 
-			$spooldir = $Zci->config->{'directory'}->{'tmp'} unless( -w $spooldir );
+			$spooldir = $Zci->config->{'directory'}->{'tmp'} unless -w $spooldir;
 			$Cmd->d(2,sprintf( "Failed messages = %d\n", scalar @$failedtoparse ));
 			$Cmd->d(2,sprintf( "Failed messages are saved to = %s\n", $spooldir ));
 
@@ -497,8 +497,8 @@ if( $Cmd->operation & $Cmd->option->{'parse'} )
 
 	if( $kanadzuchilog->logfile() )
 	{
-		$kanadzuchilog->device->close() if( ref($kanadzuchilog->device()) eq q|IO::File| );
-		$kanadzuchilog->logfile->unlock() if( $kanadzuchilog->logfile->locked() );
+		$kanadzuchilog->device->close() if ref($kanadzuchilog->device()) eq q|IO::File|;
+		$kanadzuchilog->logfile->unlock() if $kanadzuchilog->logfile->locked();
 		$kanadzuchilog->logfile->remove() if( -f $kanadzuchilog->logfile && ! -s _ );
 	}
 
@@ -588,11 +588,11 @@ sub parse_options
 			'C=s'		=> \$opt_conf,
 			'test'		=> \$opt_test,
 			'T'		=> \$opt_test,
-			'help'		=> sub { help(); exit(0); },
+			'help'		=> sub { help(); exit 0; },
 			'silent'	=> sub { $Cmd->silent(1); },
 			'verbose'	=> \$opt_verbose,
 			'v+'		=> \$opt_verbose,
-			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit(0); },
+			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit 0; },
 
 			# Log file options
 			'2'		=> \$opt_2way,
@@ -649,14 +649,14 @@ sub parse_options
 
 	CHECK_MAIL_FILES_AND_DIRS:
 	{
-		last() if( scalar(@ARGV) == 0 || $ARGV[0] eq '-' );
+		last if( scalar @ARGV == 0 || $ARGV[0] eq '-' );
 
 		my @_argvs = @ARGV;
 
 		@{ $Mail->{'files'} } = grep { -f $_ && -T _ && -r _ } @_argvs;
 		@{ $Mail->{'dirs'}  } = grep { -d $_ && -x _ && -r _ } @_argvs;
 
-		if( scalar(@{$Mail->{'files'}}) == 0 && scalar(@{$Mail->{'dirs'}}) == 0 )
+		if( scalar @{$Mail->{'files'}} == 0 && scalar @{$Mail->{'dirs'}} == 0 )
 		{
 			$Cmd->e( 'Neither the mailbox nor the maildir exists '
 				.'nor it is not valid: '.join(', ',@_argvs) );
@@ -667,10 +667,10 @@ sub parse_options
 
 		if( $opt_truncate || $opt_remove )
 		{
-			$operation |= $Cmd->option->{'truncate'} if( $opt_truncate );
-			$operation |= $Cmd->option->{'remove'} if( $opt_remove );
+			$operation |= $Cmd->option->{'truncate'} if $opt_truncate;
+			$operation |= $Cmd->option->{'remove'} if $opt_remove;
 		}
-		elsif( defined($opt_backup) && -d $opt_backup && -r _ && -x _ && -w _ )
+		elsif( defined $opt_backup && -d $opt_backup && -r _ && -x _ && -w _ )
 		{
 			$operation |= $Cmd->option->{'backup'};
 			$Bak = $opt_backup;
@@ -728,7 +728,7 @@ sub parse_options
 	$operation |= $Cmd->option->{'save'} if $opt_save;
 
 	$operation |= $Cmd->option->{'parse'};
-	return($operation);
+	return $operation;
 }
 
 sub help

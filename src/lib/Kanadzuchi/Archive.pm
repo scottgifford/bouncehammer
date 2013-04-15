@@ -1,7 +1,7 @@
-# $Id: Archive.pm,v 1.7 2010/07/07 11:21:37 ak Exp $
+# $Id: Archive.pm,v 1.7.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: Compress.pm,v 1.1 2009/08/29 08:04:54 ak Exp -
 # -Id: Compress.pm,v 1.2 2009/05/29 08:22:21 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                 
    ##                ##      ##                 
@@ -62,20 +62,20 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	Kanadzuchi::Archive::* Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 	my $plmod = q();
 	my $afext = { 'zip' => 'zip', 'gzip' => 'gz', 'bzip2' => 'bz2' };
 
 	MODULENAME: {
-		$plmod = [split( q{::}, $class )]->[2] || $class->ARCHIVEFORMAT();
+		$plmod = [ split( q{::}, $class ) ]->[2] || $class->ARCHIVEFORMAT();
 		$argvs->{'module'} = q|IO::Compress::|.$plmod;
 	}
 
 	INPUT: {
 		if( defined($argvs->{'input'}) )
 		{
-			last() if( ref($argvs->{'input'}) =~ m{\APath::Class::File} );
+			last if ref($argvs->{'input'}) =~ m{\APath::Class::File};
 			$argvs->{'input'} = new Path::Class::File( $argvs->{'input'} );
 		}
 	}
@@ -87,8 +87,8 @@ sub new
 
 		if( defined($argvs->{'output'}) )
 		{
-			last() if( ref($argvs->{'output'}) =~ m{\APath::Class::File} );
-			$argvs->{'output'} .= $argvs->{'prefix'} unless( $argvs->{'output'} =~ m{[.](zip|gz|bz2)\z} );
+			last if ref($argvs->{'output'}) =~ m{\APath::Class::File};
+			$argvs->{'output'} .= $argvs->{'prefix'} unless $argvs->{'output'} =~ m{[.](zip|gz|bz2)\z};
 			$argvs->{'output'}  = new Path::Class::File( $argvs->{'output'} );
 		}
 		else
@@ -107,19 +107,19 @@ sub new
 			}
 			else
 			{
-				$argvs->{'filename'} = [reverse(split(q{/}, $argvs->{'filename'}))]->[0];
+				$argvs->{'filename'} = [ reverse(split(q{/}, $argvs->{'filename'})) ]->[0];
 			}
 		}
 		else
 		{
-			last() unless( defined($argvs->{'input'}) );
+			last unless defined $argvs->{'input'};
 			$argvs->{'filename'} = $argvs->{'input'}->basename();
 		}
 	}
 
 	$argvs->{'override'} = $argvs->{'override'} ? 1 : 0;
-	$argvs->{'cleanup'} = $argvs->{'cleanup'} ? 1 : 0;
-	$argvs->{'level'} ||= 6;
+	$argvs->{'cleanup'}  = $argvs->{'cleanup'} ? 1 : 0;
+	$argvs->{'level'}  ||= 6;
 
 	return $class->SUPER::new($argvs);
 }
@@ -139,15 +139,15 @@ sub is_available
 	# @Param	<None>
 	# @Return	1 = Is available
 	#		0 = Is not.
-	my $self = shift();
+	my $self = shift;
 	my $path = $self->{'module'};
 
 	$path =~ y{:}{/}s;
 	$path .= '.pm';
 
 	eval { require $path; };
-	return(1) unless $@;
-	return(0);
+	return 1 unless $@;
+	return 0;
 }
 
 sub compress { };

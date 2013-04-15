@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.4.2.3 2012/09/28 05:52:24 ak Exp $
-# Copyright (C) 2010,2012 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.4.2.4 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2012-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::DE::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,7 +22,7 @@ use warnings;
 # sub communisexemplar { return qr{[.]de\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		# GMX - http://www.gmx.net/
 		'gmx' => [
@@ -38,7 +38,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'gmx'	=> 'Generic',
 	};

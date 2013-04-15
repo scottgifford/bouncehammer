@@ -1,7 +1,7 @@
-# $Id: Test.pm,v 1.23.2.5 2011/11/14 01:20:06 ak Exp $
+# $Id: Test.pm,v 1.23.2.6 2013/04/15 04:20:53 ak Exp $
 # -Id: Test.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Test.pm,v 1.10 2009/08/17 12:39:31 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                
  ######                  ##    
@@ -38,7 +38,7 @@ sub puttestform
 	# @Description	Test pagsing page
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $file = 'test.html';
 	$self->tt_params( 
 		'pv_maxsize' => $self->{'webconfig'}->{'upload'}->{'maxsize'}
@@ -55,7 +55,7 @@ sub onlineparser
 	# @Description	Execute test parsing on the web.
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $file = 'iframe-parseddata.html';
 	my $cgiq = $self->query();
 	my $data = [];
@@ -70,8 +70,8 @@ sub onlineparser
 		require Path::Class;
 		require File::Spec;
 
-		my $objzcimbox = undef();	# (Kanadzuchi::Mbox) Mailbox object
-		my $mpiterator = undef();	# (Kanadzuchi::Iterator) Iterator for mailbox parser
+		my $objzcimbox = undef;		# (Kanadzuchi::Mbox) Mailbox object
+		my $mpiterator = undef;		# (Kanadzuchi::Iterator) Iterator for mailbox parser
 		my $damnedobjs = [];		# (Ref->Array) Damned hash references 
 		my $datasource = q();		# (String) Email text as data source
 		my $errortitle = q();		# (String) Error string
@@ -93,7 +93,7 @@ sub onlineparser
 
 		my $sourcelist = [];		# (Ref->Array) Data source names
 		my $givenctype = q();		# (String) Content-Type of the email file
-		my $givenemail = $emailfile || undef();
+		my $givenemail = $emailfile || undef;
 		my $pastedmail = $emailtext || q();
 
 		# Read email from uploaded file
@@ -105,24 +105,24 @@ sub onlineparser
 				$sizeofmail = -s $givenemail;
 				$givenctype = lc $cgiq->uploadInfo( $givenemail )->{'Content-Type'} || 'text/plain';
 				$errortitle = 'toobig' if( $maxtxtsize > 0 && length $sizeofmail > $maxtxtsize );
-				$errortitle = 'nottext' if( $givenctype =~ m{\A(audio|image|video)/}m );
-				last() if( $errortitle );
+				$errortitle = 'nottext' if $givenctype =~ m{\A(audio|image|video)/}m;
+				last if $errortitle;
 
 				# Check first 5bytes of the email
 				read( $givenemail, $first5byte, 5 );
 				seek( $givenemail, 0, 0 );
-				$datasource .= $pseudofrom unless( $first5byte eq 'From ' );
+				$datasource .= $pseudofrom unless $first5byte eq 'From ';
 
 				READ: while( my $__thisline = <$givenemail> )
 				{
 					$__thisline =~ s{(\x0d\x0a|\x0d|\x0a)}{\n}gm;		# CRLF, CR -> LF
-					next() if( $__thisline =~ m{\A[a-zA-Z0-9+/=]+\z}gm );	# Skip if it is Base64 encoded text
+					next if $__thisline =~ m{\A[a-zA-Z0-9+/=]+\z}gm;	# Skip if it is Base64 encoded text
 					$datasource .= $__thisline;
 
 				} # End of while(READ)
 
 				$datasource .= qq(\n);
-				last();
+				last;
 
 			} # Enf of while(READ_EMAIL_FILE)
 		}
@@ -130,15 +130,15 @@ sub onlineparser
 		# Read email from pasted text
 		if( length $pastedmail )
 		{
-			$sizeofmail += length($pastedmail);
+			$sizeofmail += length $pastedmail;
 			$first5byte  = substr( $pastedmail, 0, 5 );
-			$datasource .= $pseudofrom unless( $first5byte eq 'From ' );
+			$datasource .= $pseudofrom unless $first5byte eq 'From ';
 			$datasource .= $pastedmail;
-			push( @$sourcelist, 'Pasted email test' );
+			push @$sourcelist, 'Pasted email test';
 		}
 
 		# Check the size of email text
-		$errortitle = 'nosize' if( $sizeofmail == 0 );
+		$errortitle = 'nosize' if $sizeofmail == 0;
 		$errortitle = 'toobig' if( $maxtxtsize > 0 && length($datasource) > $maxtxtsize );
 
 		if( $errortitle )
@@ -151,15 +151,15 @@ sub onlineparser
 
 		SLURP_AND_EAT: while(1)
 		{
-			last() if( $errortitle );
+			last if $errortitle;
 			my $temporaryd = ( -w '/tmp' ? '/tmp' : File::Spec->tmpdir() );
 			my $counter4id = 0;
 
 			# Slurp , parse, and eat
 			$objzcimbox = new Kanadzuchi::Mbox( 'file' => \$datasource );
 			$objzcimbox->greed(1);
-			$objzcimbox->slurpit() || last();
-			$objzcimbox->parseit() || last();
+			$objzcimbox->slurpit() || last;
+			$objzcimbox->parseit() || last;
 			$mpiterator = Kanadzuchi::Mail::Bounced->eatit( 
 					$objzcimbox, [], { 'cache' => $temporaryd, 'verbose' => 0, 'fast' => 1, } );
 
@@ -168,7 +168,7 @@ sub onlineparser
 				$kanadzuchi->historique('err',
 					sprintf("stat=there is no bounced email, name=%s",
 						$self->{'configname'} ));
-				last();
+				last;
 			}
 
 			if( $mpiterator->count > $parseuntil )
@@ -204,8 +204,8 @@ sub onlineparser
 					$eachdamned->{'id'} = sprintf( "TEMP-%03d", ++$counter4id );
 					$eachdamned->{'updated'}  = $tmpupdated->ymd().'('.$tmpupdated->wdayname().') '.$tmpupdated->hms();
 					$eachdamned->{'bounced'}  = $o->bounced->ymd().'('.$o->bounced->wdayname().') '.$o->bounced->hms();
-					$eachdamned->{'bounced'} .= ' '.$o->timezoneoffset() if( $o->timezoneoffset() );
-					push( @$damnedobjs, $eachdamned );
+					$eachdamned->{'bounced'} .= ' '.$o->timezoneoffset() if $o->timezoneoffset();
+					push @$damnedobjs, $eachdamned;
 				}
 			}
 			else
@@ -241,12 +241,12 @@ sub onlineparser
 				require Kanadzuchi::Mail::Stored::YAML;
 				require Kanadzuchi::Mail::Stored::BdDR;
 
-				my $tablecache = undef();	# (Kanadzuchi::BdDR::Cache) Table cache object
-				my $xntableobj = undef();	# (Kanadzuchi::BdDR::BounceLogs::Table) Txn table object
+				my $tablecache = undef;		# (Kanadzuchi::BdDR::Cache) Table cache object
+				my $xntableobj = undef;		# (Kanadzuchi::BdDR::BounceLogs::Table) Txn table object
 				my $mastertabs = {};		# (Ref->Hash) Kanadzuchi::BdDR::BounceLogs::Masters::Table objects
 				my $xntabalias = q();		# (String) lower cased txn table alias
 
-				my $dupdataobj = undef();	# (Kanadzuchi::BdDR::DailyUpdates::Data) Daily Updates
+				my $dupdataobj = undef;		# (Kanadzuchi::BdDR::DailyUpdates::Data) Daily Updates
 				my $dupdatarec = 0;		# (Integer) The number of data in the t_dailyupdates tables
 				my $theupdated = {};		# (Ref->Hash) Data for Daily Updates
 				my $tobupdated = [];
@@ -277,14 +277,14 @@ sub onlineparser
 					my $thisstatus = 0;		# (Integer) Returned status value
 					my $execinsert = 0;		# (Integer) Flag; Exec INSERT
 
-					bless( $o, q|Kanadzuchi::Mail::Stored::YAML| );
+					bless( $o, 'Kanadzuchi::Mail::Stored::YAML' );
 
 					# Check limit the number of records
 					if( $xsoftlimit > 0 && ( $execstatus->{'insert'} + $recinthedb) >= $xsoftlimit )
 					{
 						# Exceeds limit!
 						$execstatus->{'exceed'}++;
-						next();
+						next;
 					}
 
 					# Check cached data
@@ -293,7 +293,7 @@ sub onlineparser
 					$thisdateis = $o->bounced->ymd('-');
 					$thiscached = $tablecache->getit( $xntabalias, $thismtoken );
 
-					if( exists($thiscached->{'bounced'}) )
+					if( exists $thiscached->{'bounced'} )
 					{
 						# Cache hit!
 						# This record's bounced date is OLDER THAN the record in the cache.
@@ -301,7 +301,7 @@ sub onlineparser
 						{
 							$execstatus->{'tooold'}++;
 							$theupdated->{$thisdateis}->{'skipped'}++;
-							next();
+							next;
 						}
 					}
 					else
@@ -317,14 +317,14 @@ sub onlineparser
 								# This record's bounced date is older than the record in the database.
 								$execstatus->{'tooold'}++;
 								$theupdated->{$thisdateis}->{'skipped'}++;
-								next();
+								next;
 							}
 							elsif( $thiscached->{'reason'} eq 'whitelisted' )
 							{
 								# The whitelisted record is not updated without --force option.
 								$execstatus->{'whited'}++;
 								$theupdated->{$thisdateis}->{'skipped'}++;
-								next();
+								next;
 							}
 						}
 						else
@@ -340,7 +340,7 @@ sub onlineparser
 								# The senderdomain DOES NOT EXIST in the mastertable
 								$execstatus->{'nofrom'}++;
 								$theupdated->{$thisdateis}->{'skipped'}++;
-								next();
+								next;
 							}
 						}
 					}
@@ -368,13 +368,13 @@ sub onlineparser
 				{
 					foreach my $d ( keys %$theupdated )
 					{
-						push( @$tobupdated, { 
-								'thedate' => $d,
-								'inserted' => $theupdated->{$d}->{'inserted'} || 0,
-								'updated' => $theupdated->{$d}->{'updated'} || 0,
-								'skipped' => $theupdated->{$d}->{'skipped'} || 0,
-								'failed' => $theupdated->{$d}->{'failed'} || 0,
-							} );
+						push @$tobupdated, { 
+							'thedate' => $d,
+							'inserted' => $theupdated->{$d}->{'inserted'} || 0,
+							'updated' => $theupdated->{$d}->{'updated'} || 0,
+							'skipped' => $theupdated->{$d}->{'skipped'} || 0,
+							'failed' => $theupdated->{$d}->{'failed'} || 0,
+						};
 					}
 
 					$dupdatarec = $dupdataobj->recordit($tobupdated);
@@ -398,7 +398,7 @@ sub onlineparser
 			'pv_parseddatatext' => $serialized,
 			'pv_parsedfilename' => join( ',', @$sourcelist ),
 			'pv_parsedfilesize' => $datasource ? length($datasource) : $sizeofmail,
-			'pv_parsedmessages' => defined($mpiterator) ? $mpiterator->count() : 0,
+			'pv_parsedmessages' => defined $mpiterator ? $mpiterator->count() : 0,
 			'pv_outputformat' => $dataformat,
 			'pv_onlineparse' => 1,
 			'pv_onlineupdate' => $registerit,

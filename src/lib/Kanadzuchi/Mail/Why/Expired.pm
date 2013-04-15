@@ -1,5 +1,5 @@
-# $Id: Expired.pm,v 1.1.2.2 2011/10/11 03:03:55 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Expired.pm,v 1.1.2.3 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
                                                                                     
   ####                 ##                 ##   ######                               
@@ -19,7 +19,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'Expired'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [ 
 		qr{delivery time expired},
 		qr{retry time not reached for any host after a long failure period},

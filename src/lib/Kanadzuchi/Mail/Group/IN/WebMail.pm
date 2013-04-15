@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.2.2.3 2012/09/28 05:52:43 ak Exp $
-# Copyright (C) 2010,2012 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.2.2.4 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2012-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::IN::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in India
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'ibibo' => [
 			# http://www.ibibo.com/
@@ -44,7 +44,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'ibibo'		=> 'Generic',
 		'in.com'	=> 'Generic',

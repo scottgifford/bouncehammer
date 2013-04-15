@@ -1,7 +1,7 @@
-# $Id: MasterTables.pm,v 1.19.2.3 2011/03/25 00:17:29 ak Exp $
+# $Id: MasterTables.pm,v 1.19.2.4 2013/04/15 04:20:53 ak Exp $
 # -Id: MasterTables.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: MasterTables.pm,v 1.7 2009/08/15 15:06:56 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                                                                 
  ##  ##                  ##              ######       ##    ###                 
@@ -38,7 +38,7 @@ sub tablelist
 	# @Description	Get list of the table
 	# @Param	<None>
 	require Kanadzuchi::BdDR::Page;
-	my $self = shift();
+	my $self = shift;
 	my $bddr = $self->{'database'};
 	my $list = [];
 
@@ -58,7 +58,7 @@ sub tablelist
 	$paginated->set( $mastertab->count( $wherecond ) );
 	$paginated->skip( $self->param('pi_page') || 1 );
 	$list = $mastertab->search( $wherecond, $paginated );
-	map { utf8::encode($_->{'description'}) if( utf8::is_utf8($_->{'description'}) ) } @$list;
+	map { utf8::encode($_->{'description'}) if utf8::is_utf8($_->{'description'}) } @$list;
 
 	$self->tt_params( 
 		'pv_sortby' => $paginated->colnameorderby(),
@@ -82,7 +82,7 @@ sub tablecontrol
 	#
 	# @Description	Update, Delete, Create record in the table
 	# @Param	<None>
-	my $self = shift();
+	my $self = shift;
 	my $bddr = $self->{'database'};
 
 	my $templatef = 'div-mastertable-contents.html';
@@ -96,7 +96,7 @@ sub tablecontrol
 	if( $mastertab )
 	{
 		# Pick up the string from PATH_INFO
-		my $paginated = undef();		# (Kanadzuchi::BdDR::Page) Pagination object
+		my $paginated = undef;			# (Kanadzuchi::BdDR::Page) Pagination object
 		my $tabrecord = [];			# (Ref->Array) Record in the mastertable
 		my $cgidquery = $self->query();		# Query Strings
 		my $curmtdata = {};			# (Ref->Hash) Current data on the mastertable
@@ -298,11 +298,11 @@ sub tablecontrol
 			{
 				$wherecond->{'id'} = $theidwillberm;
 
-				if( defined($cgidquery->param('fe_do_delete')) )
+				if( defined $cgidquery->param('fe_do_delete') )
 				{
 					$willberemoved = $mastertab->getentbyid($theidwillberm);
 
-					if( exists($willberemoved->{'name'}) )
+					if( exists $willberemoved->{'name'} )
 					{
 						if( $tableisro )
 						{
@@ -353,7 +353,7 @@ sub tablecontrol
 
 			$tabrecord = $mastertab->search( {}, $paginated );
 			map {
-				utf8::encode($_->{'description'}) if( utf8::is_utf8($_->{'description'}) ) 
+				utf8::encode($_->{'description'}) if utf8::is_utf8($_->{'description'}) 
 			} @$tabrecord, @$removedrecord;
 
 			$self->tt_params( 

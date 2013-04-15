@@ -1,5 +1,5 @@
-# $Id: Search.pm,v 1.3.2.1 2011/05/24 02:43:17 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Search.pm,v 1.3.2.2 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::API::HTTP::
                                            
   #####                            ##      
@@ -38,7 +38,7 @@ sub search
 	# @Description	Send query and receive results as JSON format
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $bddr = $self->{'database'};
 
 	my $validcols = [];	# (Ref->Array) Valid column names
@@ -60,23 +60,23 @@ sub search
 
 	# Experimental implementation except the column 'recipient'
 	return unless grep { lc $thecolumn eq $_ } @$validcols;
-	return q() unless( $thestring );
+	return q() unless $thestring;
 
 	if( $thecolumn eq 'recipient' || $thecolumn eq 'addresser' )
 	{
-		$wherecond->{$thecolumn} = Kanadzuchi::Address->canonify( lc $thestring );
+		$wherecond->{ $thecolumn } = Kanadzuchi::Address->canonify( lc $thestring );
 	}
 	else
 	{
-		$wherecond->{$thecolumn} = lc $thestring;
+		$wherecond->{ $thecolumn } = lc $thestring;
 	}
 
 	$recordsin = $bouncelog->count( $wherecond, $paginated );
 
-	return q() unless( $recordsin );
+	return q() unless $recordsin;
 
 	$paginated->resultsperpage( 100 );
-	$paginated->set($recordsin);
+	$paginated->set( $recordsin );
 	$paginated->colnameorderby( 'id' );
 	$paginated->descendorderby( 0 );
 
@@ -85,11 +85,11 @@ sub search
 	{
 		my $dataarray = [];		# (Ref->Array) Dumped results
 		my $xiterator = Kanadzuchi::Mail::Stored::BdDR->searchandnew( 
-						$bddr->handle(), $wherecond, $paginated);
+					$bddr->handle(), $wherecond, $paginated);
 
 		DUMP_EACH_OBJECT: while( my $obj = $xiterator->next() )
 		{
-			push( @$dataarray, $obj );
+			push @$dataarray, $obj;
 		}
 
 		# Create K::Log object and dump
@@ -99,7 +99,7 @@ sub search
 					'format' => 'json' );
 
 		$serializd .= $kanazclog->dumper() || q();
-		last() unless $paginated->hasnext();
+		last unless $paginated->hasnext();
 		$paginated->next();
 	}
 

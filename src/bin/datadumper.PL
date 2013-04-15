@@ -1,9 +1,9 @@
 #__PERLEXECUTABLE__
-# $Id: datadumper.PL,v 1.20.2.5 2011/10/07 06:22:03 ak Exp $
+# $Id: datadumper.PL,v 1.20.2.6 2013/04/15 05:23:28 ak Exp $
 # -Id: datadumper.PL,v 1.16 2010/02/21 20:09:01 ak Exp -
 # -Id: datadumper.PL,v 1.3 2009/08/31 06:57:18 ak Exp -
 # -Id: datadumper.pl,v 1.9 2009/08/27 05:09:59 ak Exp -
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Command::
                                                                         
      ##          ##             ##                                      
@@ -97,7 +97,7 @@ try {
 	$Cmd->d( 1, sprintf( "Config file = %s\n", $Cmd->cf() ));
 }
 otherwise {
-	$Cmd->exception(shift());
+	$Cmd->exception(shift);
 	$Cmd->abort();
 };
 
@@ -124,8 +124,8 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 	require Kanadzuchi::Time;
 	require Kanadzuchi::Address;
 
-	my $xntableobj = undef();	# (Kanadzuchi::BdDR::BounceLogs::Table) Txn table object
-	my $pagination = undef();	# (Kanadzuchi::BdDR::Page) Pagination object
+	my $xntableobj = undef;		# (Kanadzuchi::BdDR::BounceLogs::Table) Txn table object
+	my $pagination = undef;		# (Kanadzuchi::BdDR::Page) Pagination object
 	my $whereconds = {};		# (Ref->Hash) Where conditions
 	my $nrecordsin = 0;		# (Integer) The number of records in the database
 	my $linesapage = 500;		# (Integer) How many lines a page
@@ -135,8 +135,8 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 	try {
 		$Rdb->setup( $Zci->config->{'database'} );
 		Kanadzuchi::Exception::Database->throw( 
-			'-text' => 'Failed to connect DB' ) unless( $Rdb->connect() );
-		$Cmd->d(2,"Connecting to the database\n") if( defined $Rdb->handle() );
+			'-text' => 'Failed to connect DB' ) unless $Rdb->connect();
+		$Cmd->d(2,"Connecting to the database\n") if defined $Rdb->handle();
 
 		# Create master table objects
 		$xntableobj = Kanadzuchi::BdDR::BounceLogs::Table->new( 'handle' => $Rdb->handle() );
@@ -153,7 +153,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 
 	}
 	catch Kanadzuchi::Exception::Database with {
-		my $e = shift();
+		my $e = shift;
 		my $b = '-' x 64;
 		my $m = $e;
 
@@ -170,13 +170,13 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 	};
 
 	# Check parameters: recipient, senderdomain, destination, hostgroup, and reason
-	foreach my $_key ( keys(%$WhereCondition) )
+	foreach my $_key ( keys %$WhereCondition )
 	{
-		next() unless( length($WhereCondition->{$_key}) );
-		$whereconds->{$_key} =  lc($WhereCondition->{$_key});
+		next unless length $WhereCondition->{ $_key };
+		$whereconds->{$_key} =  lc $WhereCondition->{ $_key };
 		$whereconds->{$_key} =~ y{[;=&`'"%*()[]|~$]}{}d;
 		$whereconds->{$_key} =~ s{\A.+[@]}{}g if( $_key eq 'senderdomain' || $_key eq 'destination' );
-		$whereconds->{$_key} =  Kanadzuchi::Address->canonify($whereconds->{$_key})
+		$whereconds->{$_key} =  Kanadzuchi::Address->canonify($whereconds->{ $_key })
 						if( $_key eq 'recipient' || $_key eq 'addresser' );
 
 		if( $_key eq 'bounced' )
@@ -184,13 +184,13 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 			my $__tbounced = Kanadzuchi::Time->to_second($whereconds->{'bounced'});
 			my $__timepobj = 0;
 
-			if( $__tbounced <= 0 || $__tbounced >= time() )
+			if( $__tbounced <= 0 || $__tbounced >= time )
 			{
 				$whereconds->{'bounced'} = { '>=' => 0 };
 			}
 			else
 			{
-				$__timepobj = Time::Piece->new(int( time() - $__tbounced ));
+				$__timepobj = Time::Piece->new(int( time - $__tbounced ));
 				$whereconds->{'bounced'} = { '>=' => $__timepobj->epoch() };
 			}
 			$Cmd->d( 1, sprintf( "WHERE->%s >= '%s'\n", $_key, $__timepobj->cdate() ) );
@@ -213,7 +213,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 	# Check the host group and the reason
 	try{
 		my( $_str, $_xid, $_err );
-		if( exists($whereconds->{'hostgroup'}) && length($whereconds->{'hostgroup'}) )
+		if( exists $whereconds->{'hostgroup'} && length $whereconds->{'hostgroup'} )
 		{
 			# Invalid host group 
 			$_str = $whereconds->{'hostgroup'};
@@ -222,7 +222,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 			Kanadzuchi::Exception::Command->throw( '-text' => $_err ) unless $_xid;
 		}
 
-		if( exists($whereconds->{'reason'}) && length($whereconds->{'reason'}) )
+		if( exists $whereconds->{'reason'} && length $whereconds->{'reason'} )
 		{
 			# Invalid reason
 			$_str = $whereconds->{'reason'};
@@ -232,12 +232,12 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 		}
 	}
 	catch Kanadzuchi::Exception::Command with {
-		$Cmd->exception(shift());
+		$Cmd->exception(shift);
 		$Cmd->abort();
 	};
 
 	# ORDER BY
-	$OrderBy->{'column'} = q(id) unless( $xntableobj->is_validcolumn($OrderBy->{'column'}) );
+	$OrderBy->{'column'} = q(id) unless $xntableobj->is_validcolumn($OrderBy->{'column'});
 	$Cmd->d(1, sprintf( "ORDER BY '%s' %s\n", $OrderBy->{'column'}, $OrderBy->{'descend'} ? q{DESCENDING} : q{} ) );
 
 	# Pagination
@@ -264,11 +264,11 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 		# |____/ \___/|_|  |_|_|    
 		#                           
 		# 0 records in the database
-		$Cmd->finish() unless( $nrecordsin );
+		$Cmd->finish() unless $nrecordsin;
 
-		$linesapage = 5000 if( $nrecordsin > $linesapage );
+		$linesapage = 5000 if $nrecordsin > $linesapage;
 		$pagination->resultsperpage( $linesapage );
-		$pagination->set($nrecordsin);
+		$pagination->set( $nrecordsin );
 		$pagination->colnameorderby( $OrderBy->{'column'} );
 		$pagination->descendorderby( $OrderBy->{'descend'} ? 1 : 0 );
 
@@ -283,7 +283,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 
 			DUMP_EACH_OBJECT: while( my $obj = $xniterator->next() )
 			{
-				push( @$dumpeddata, $obj );
+				push @$dumpeddata, $obj;
 			}
 
 			# Create K::Log object and dump
@@ -311,7 +311,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 				$kanazcilog->dumper();
 			}
 
-			last() unless $pagination->hasnext();
+			last unless $pagination->hasnext();
 			$pagination->next();
 
 		} # End of while(SEACH_AND_NEW)
@@ -374,11 +374,11 @@ sub parse_options
 			'C=s'		=> \$opt_conf,
 			'test'		=> \$opt_test,
 			'T'		=> \$opt_test,
-			'help'		=> sub { help(); exit(0); },
+			'help'		=> sub { help(); exit 0; },
 			'silent'	=> sub { $Cmd->silent(1); },
 			'verbose'	=> \$opt_verbose,
 			'v+'		=> \$opt_verbose,
-			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit(0); },
+			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit 0; },
 
 			# Database options
 			'host=s'	=> \$opt_host,
@@ -458,13 +458,13 @@ sub parse_options
 	$WhereCondition->{'frequency'} = $opt_frequency || q();
 	$WhereCondition->{'destination'} = $opt_destination || q();
 	$WhereCondition->{'senderdomain'} = $opt_senderdomain || q();
-	$WhereCondition->{'disabled'} = 0 unless( $opt_alldata );
+	$WhereCondition->{'disabled'} = 0 unless $opt_alldata;
 
 	# Order by (desc)
 	if( $opt_orderby || $opt_orderbydesc )
 	{
 		$OrderBy->{'column'} = $opt_orderby || $opt_orderbydesc;
-		$OrderBy->{'descend'} = 1 if( $opt_orderbydesc );
+		$OrderBy->{'descend'} = 1 if $opt_orderbydesc;
 	}
 
 	# Database spec option, Override values in the config file
@@ -489,7 +489,7 @@ sub parse_options
 		$Fmt = 'yaml';
 	}
 
-	return($operation);
+	return $operation;
 }
 
 sub help

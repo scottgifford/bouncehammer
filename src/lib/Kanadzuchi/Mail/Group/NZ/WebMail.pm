@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.2.2.2 2011/03/24 05:40:59 ak Exp $
-# Copyright (C) 2010-2011 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.2.2.3 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::NZ::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in New Zealand
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'coolkiwi' => [
 			# Cool Kiwi http://coolkiwi.com/
@@ -40,7 +40,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'coolkiwi'	=> 'Generic',
 		'orcon'		=> 'Generic',

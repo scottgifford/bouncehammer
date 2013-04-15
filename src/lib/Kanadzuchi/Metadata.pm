@@ -1,5 +1,5 @@
-# $Id: Metadata.pm,v 1.15 2010/08/28 17:23:53 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Metadata.pm,v 1.15.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                         
  ##  ##          ##             ##          ##          
@@ -39,14 +39,14 @@ sub to_string
 	# @Param	(Ref->Hash|Ref->Array) Object
 	# @Param	(Integer) 1 = JSON format [ {...} ]
 	# @Return	(Ref->Scalar) Serialized data or undef()
-	my $class  = shift();
-	my $object = shift() || return q();
-	my $isjson = shift() || 0;
+	my $class  = shift;
+	my $object = shift || return q();
+	my $isjson = shift || 0;
 	my $string = q();
 	my $arrayr = [];
 	my $arrayc = 0;		# The numbers of elements in $arrayr
 	my $retaar = 0;		# Return As Array Reference
-	my $objref = ref($object) || return($object);
+	my $objref = ref($object) || return $object;
 
 	eval {
 		local $JSON::Syck::SortKeys = 1;
@@ -83,7 +83,7 @@ sub to_string
 		$string =~ s{,\z}{ ]} if( $isjson && ( $arrayc > 1 || $retaar ) );
 	};
 
-	return \q() if($@);
+	return \q() if $@;
 	return \$string;
 }
 
@@ -96,8 +96,8 @@ sub to_object
 	# @Description	Convert from string to a hash ref
 	# @Param	(Ref->Scalar|Path::Class::File|Path string to file) YAML parsable string or file
 	# @Return	(Ref->Array) Object
-	my $class  = shift();
-	my $string = shift() || return [];
+	my $class  = shift;
+	my $string = shift || return [];
 	my $object = [];
 	my $strref = q();
 	my $objref = q();
@@ -110,15 +110,15 @@ sub to_object
 			# string is a Path::Class::File object
 			$object = JSON::Syck::LoadFile( $string->stringify() );
 		}
-		elsif( $strref eq q|GLOB| )
+		elsif( $strref eq 'GLOB' )
 		{
 			# string is file glob
-			$object = JSON::Syck::LoadFile($string);
+			$object = JSON::Syck::LoadFile( $string );
 		}
-		elsif( $strref eq q|SCALAR| )
+		elsif( $strref eq 'SCALAR' )
 		{
 			# string is a reference to a scalar which hold YAML/JSON data
-			$object = JSON::Syck::Load($$string);
+			$object = JSON::Syck::Load( $$string );
 		}
 		elsif( $strref eq q() )
 		{
@@ -126,12 +126,12 @@ sub to_object
 			if( $string !~ m{[\n\r]} && -f $string && -r _ && -T _ )
 			{
 				# It's a file
-				$object = JSON::Syck::LoadFile($string);
+				$object = JSON::Syck::LoadFile( $string );
 			}
 			else
 			{
 				# It's not a file, something else...
-				$object = JSON::Syck::Load($string);
+				$object = JSON::Syck::Load( $string );
 			}
 		}
 		else
@@ -140,12 +140,12 @@ sub to_object
 			$object = [];
 		}
 
-		$objref = ref($object);
+		$objref = ref $object;
 	};
-	return [] if($@);
+	return [] if $@;
 
-	return [$object] if( $objref eq q|HASH| );
-	return $object if( $objref eq q|ARRAY| );
+	return [ $object ] if $objref eq 'HASH';
+	return $object if $objref eq 'ARRAY';
 	return [];
 }
 
@@ -159,20 +159,20 @@ sub mergesort
 	# @Param <ref>	(Ref->Array) Unsorted list
 	# @Param <str>	(String) Hash key name
 	# @Return	(Ref->Array) Sorted list
-	my $class = shift();
-	my $slist = shift() || return [];
-	my $kname = shift() || return [];
+	my $class = shift;
+	my $slist = shift || return [];
+	my $kname = shift || return [];
 	my( $lhsln, $rhsln, $wshed );
 	my $lhsar = [];
 	my $rhsar = [];
 
-	return $slist if( scalar(@$slist) < 2 );
+	return $slist if scalar(@$slist) < 2;
 	$wshed = int( scalar(@$slist) / 2 );
 
 	$lhsar = [ map { $slist->[$_] } ( 0 .. $wshed - 1 ) ];
 	$rhsar = [ map { $slist->[$_] } ( $wshed .. scalar(@$slist) - 1 ) ];
-	$lhsln = scalar(@$lhsar);
-	$rhsln = scalar(@$rhsar);
+	$lhsln = scalar @$lhsar;
+	$rhsln = scalar @$rhsar;
 
 	$lhsar = $class->mergesort( $lhsar, $kname );
 	$rhsar = $class->mergesort( $rhsar, $kname );
@@ -186,11 +186,11 @@ sub mergesort
 		if( $y >= $rhsln || 
 			( $x < $lhsln && $lhsar->[$x]->{ $kname } < $rhsar->[$y]->{ $kname } ) ){
 
-			push( @$dlist, $lhsar->[$x++] );
+			push @$dlist, $lhsar->[ $x++ ];
 		}
 		else
 		{
-			push( @$dlist, $rhsar->[$y++] );
+			push @$dlist, $rhsar->[ $y++ ];
 		}
 	}
 

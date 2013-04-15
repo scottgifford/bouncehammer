@@ -1,5 +1,5 @@
-# $Id: Stored.pm,v 1.2 2010/08/16 12:05:12 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Stored.pm,v 1.2.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Statistics::
                                          
   ##### ##                           ##  
@@ -37,7 +37,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param <ref>	(Ref->Hash)
 	# @Return	(Kanadzuchi::Statistics::Stored) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 
 	# Default values
@@ -60,11 +60,11 @@ sub aggregate
 	# @Description	Aggregate by the column
 	# @Param <str>	(String) Column name
 	# @Return	(Ref->Array) Aggregated data
-	my $self = shift();
-	my $name = shift() || return [];
-	my $cond = shift() || {};
+	my $self = shift;
+	my $name = shift || return [];
+	my $cond = shift || {};
 
-	$cond = undef() if( ref($cond) eq q|HASH| && ! keys %$cond );
+	$cond = undef if( ref($cond) eq q|HASH| && ! keys %$cond );
 
 	my $aggr = $self->congregat( $name, $cond );
 	my $list = [];
@@ -77,11 +77,11 @@ sub aggregate
 
 		while( my $e =  shift @$list )
 		{
-			next() if( grep { $e eq $_->{'name'} } @$aggr );
-			push( @$aggr, { 'name' => $e, 'size' => 0, 'freq' => 0 } );
+			next if( grep { $e eq $_->{'name'} } @$aggr );
+			push @$aggr, { 'name' => $e, 'size' => 0, 'freq' => 0 };
 		}
 	}
-	$self->{'cache'} = $aggr if( scalar @$aggr );
+	$self->{'cache'} = $aggr if scalar @$aggr;
 	return $aggr;
 }
 

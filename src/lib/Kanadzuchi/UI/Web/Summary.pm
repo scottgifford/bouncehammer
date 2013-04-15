@@ -1,7 +1,7 @@
-# $Id: Summary.pm,v 1.15.2.1 2011/05/24 02:43:18 ak Exp $
+# $Id: Summary.pm,v 1.15.2.2 2013/04/15 04:20:53 ak Exp $
 # -Id: Summary.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Summary.pm,v 1.1 2009/08/18 02:37:53 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                                     
   #####                                             
@@ -36,7 +36,7 @@ sub datasummary
 	# +-+-+-+-+-+-+-+-+-+-+-+
 	#
 	# @Description	Data summary page
-	my $self = shift();
+	my $self = shift;
 	my $file = 'summary.html';
 	my $bddr = $self->{'database'};
 

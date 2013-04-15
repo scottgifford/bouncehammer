@@ -1,9 +1,9 @@
 #__PERLEXECUTABLE__
-# $Id: databasectl.PL,v 1.23.2.8 2011/10/07 06:22:02 ak Exp $
+# $Id: databasectl.PL,v 1.23.2.9 2013/04/15 05:23:28 ak Exp $
 # -Id: databasectl.PL,v 1.16 2010/02/21 20:09:01 ak Exp -
 # -Id: databasectl.PL,v 1.1 2009/08/29 14:36:53 ak Exp -
 # -Id: databasectl.PL,v 1.15 2009/08/27 05:09:59 ak Exp -
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Command::
                                                                             
      ##          ##         ##                                  ##   ###    
@@ -39,7 +39,7 @@ my $Zci;		# (Kanadzuchi) System object
 my $Cmd;		# (Kanadzuchi::UI::CLI) Commadline object
 my $Rdb;		# (Kanadzuchi::BdDR) Database object
 my $Logs = [];		# (Ref->Array) Log files for INSERT or UPDATE
-my $Date = undef();	# (String) The day
+my $Date = undef;	# (String) The day
 my $Cond = {};		# (Ref->Hash) Where condition for --remove or --disable
 
 my $CLIOPTION = {
@@ -92,7 +92,7 @@ try {
 	}
 }
 otherwise {
-	my $e = shift();
+	my $e = shift;
 	$Cmd->exception($e);
 	$Zci->historique('err','stat='.$e);
 	$Cmd->abort();
@@ -121,7 +121,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 	require Kanadzuchi::Mail::Stored::YAML;
 	require Kanadzuchi::Mail::Stored::BdDR;
 
-	my $xntableobj = undef();	# (Kanadzuchi::BdDR::BounceLogs::Table) Txn table object
+	my $xntableobj = undef;	# (Kanadzuchi::BdDR::BounceLogs::Table) Txn table object
 	my $mastertabs = {};		# (Ref->Hash) Kanadzuchi::BdDR::BounceLogs::Masters::Table objects
 
 	# Set timeout(ALRM) for reading from STDIN
@@ -131,8 +131,8 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 	try {
 		$Rdb->setup( $Zci->config->{'database'} );
 		Kanadzuchi::Exception::Database->throw( 
-				'-text' => 'Failed to connect DB' ) unless( $Rdb->connect() );
-		$Cmd->d(2,"Connecting to the database\n") if( defined $Rdb->handle() );
+				'-text' => 'Failed to connect DB' ) unless $Rdb->connect();
+		$Cmd->d(2,"Connecting to the database\n") if defined $Rdb->handle();
 
 		# Create master table objects
 		$xntableobj = Kanadzuchi::BdDR::BounceLogs::Table->new( 'handle' => $Rdb->handle() );
@@ -151,7 +151,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 	}
 	catch Kanadzuchi::Exception::Database with {
 
-		my $e = shift();
+		my $e = shift;
 		my $b = '-' x 64;
 		my $m = $e;
 
@@ -180,18 +180,18 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 		my $rthreshold = 10000;		# (Integer) About 10,000 records
 		my $thelinesof = 0;		# (Integer) The number of records in the logs
 		my $sizeoflogs = 0;		# (Integer) File size of all of the logs
-		my $theprogbar = undef();	# (Term::ProgressBar) Progress bar
+		my $theprogbar = undef;	# (Term::ProgressBar) Progress bar
 
 		# Create the log file name by the day(-t, -y, or -b option )
-		if( scalar(@$Logs) == 0 && ( defined($Date) && length($Date) ) )
+		if( scalar @$Logs == 0 && ( defined $Date && length $Date ) )
 		{
 			# Set the log file name
-			push( @$Logs, new Path::Class::File( $Zci->get_logfile('r',{ 'date' => $Date } )) );
+			push @$Logs, new Path::Class::File( $Zci->get_logfile('r',{ 'date' => $Date } ));
 			$Cmd->d( 1, sprintf("Log file(date) = %s\n", $Date ));
 		}
 
 		# Check the log files
-		if( scalar(@$Logs) )
+		if( scalar @$Logs )
 		{
 			try {
 				unless( grep { -s $_ && -r _ && -T _ } @$Logs )
@@ -207,11 +207,11 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 					open( my $loghandle, q{<}, $f );
 					$sizeoflogs += -s $f;
 					$thelinesof++ while( <$loghandle> );
-					close($loghandle);
+					close $loghandle;
 				}
 			}
 			otherwise {
-				my $e = shift();
+				my $e = shift;
 				$Cmd->exception($e);
 				$Zci->historique('err','mode=update, stat='.$e);
 				$Cmd->abort();
@@ -270,7 +270,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 						'count' => $Cmd->stream->{in} ? $thelinesof : $sizeoflogs } );
 		}
 
-		LOAD_EACH_FILE: while( my $logfileobj = shift(@$Logs) )
+		LOAD_EACH_FILE: while( my $logfileobj = shift @$Logs )
 		{
 			my $filehandle = undef();	# (GLOB) File handle of each log file
 			my $kanazciitr = undef();	# (Kanadzuchi::Iterator)
@@ -283,36 +283,36 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 			my $execinsert = 0;		# (Integer) Flag; Exec INSERT
 			my $okorfailed = q();		# (String) OK or Failed
 
-			if( ref($logfileobj) eq q|GLOB| )
+			if( ref($logfileobj) eq 'GLOB' )
 			{
 				$filehandle = $logfileobj;
-				push( @$listoflogs, 'STDIN' );
+				push @$listoflogs, 'STDIN';
 			}
 			else
 			{
-				open( $filehandle, q{<}, $logfileobj );
-				push( @$listoflogs, $logfileobj->basename() );
+				open( $filehandle, '<', $logfileobj );
+				push @$listoflogs, $logfileobj->basename();
 			}
 
 			READ_EACH_LINE: while( <$filehandle> )
 			{
 				# Incremant loaded data size, loaded lines
 				$loadedline++;
-				$loadedsize += length($_);
+				$loadedsize += length $_;
 
 				# Check limit the number of records
 				if( $xsoftlimit > 0 && ($execstatus->{'inserted'} + $recinthedb) >= $xsoftlimit )
 				{
 					# Exceeds limit!
 					$execstatus->{'exceed'}++;
-					next();
+					next;
 				}
 
 				# Read JSON string from the log
-				$jsonstring = $_; chomp($jsonstring);
+				$jsonstring = $_; chomp $jsonstring;
 				$kanazciitr = Kanadzuchi::Mail::Stored::YAML->loadandnew(\$jsonstring);
 
-				READ_AND_UPDATE: while( my $parseddata = $kanazciitr->next() )
+				READ_AND_UPDATE: while( my $parseddata = $kanazciitr->next )
 				{
 					# Check cached data
 					$thismtoken = $parseddata->token();
@@ -321,7 +321,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 					$thiscached = $tablecache->getit( $xntabalias, $thismtoken );
 					$execinsert = 0;
 
-					if( exists($thiscached->{'bounced'}) )
+					if( exists $thiscached->{'bounced'} )
 					{
 						# Cache hit!
 						# This record's bounced date is OLDER THAN the record in the cache.
@@ -329,7 +329,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 						{
 							$execstatus->{'tooold'}++;
 							$theupdated->{$thisdateis}->{'skipped'}++;
-							next();
+							next;
 						}
 						else
 						{
@@ -349,14 +349,14 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 								# Bounced date of this record is older than the record in the database.
 								$execstatus->{'tooold'}++;
 								$theupdated->{$thisdateis}->{'skipped'}++;
-								next();
+								next;
 							}
 							elsif( ! ($Cmd->operation & $Cmd->option->{'force'}) && $thiscached->{'reason'} eq 'whitelisted' )
 							{
 								# The whitelisted record is not updated without --force option.
 								$execstatus->{'whited'}++;
 								$theupdated->{$thisdateis}->{'skipped'}++;
-								next();
+								next;
 							}
 							else
 							{
@@ -378,7 +378,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 								$execstatus->{'nofrom'}++;
 								$theupdated->{$thisdateis}->{'skipped'}++;
 								$snegativec->{ $parseddata->senderdomain }++;
-								next();
+								next;
 							}
 						}
 
@@ -391,7 +391,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 						$execstatus->{'nofrom'}++;
 						$theupdated->{$thisdateis}->{'skipped'}++;
 						$snegativec->{ $parseddata->senderdomain }++;
-						next();
+						next;
 					}
 
 					# UPDATE OR INSERT
@@ -414,10 +414,10 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 			}
 			continue
 			{
-				$theprogbar->update( $loadedline ) if( defined $theprogbar );
+				$theprogbar->update( $loadedline ) if defined $theprogbar;
 			} # End of while(READ_EACH_FILE)
 
-			close($filehandle);
+			close $filehandle;
 
 		} # End of while(LOAD_EACH_FILE)
 
@@ -433,13 +433,13 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 			{
 				foreach my $d ( keys %$theupdated )
 				{
-					push( @$tobupdated, { 
-							'thedate' => $d,
-							'inserted' => $theupdated->{$d}->{'inserted'} || 0,
-							'updated' => $theupdated->{$d}->{'updated'} || 0,
-							'skipped' => $theupdated->{$d}->{'skipped'} || 0,
-							'failed' => $theupdated->{$d}->{'failed'} || 0,
-						} );
+					push @$tobupdated, { 
+						'thedate' => $d,
+						'inserted' => $theupdated->{$d}->{'inserted'} || 0,
+						'updated' => $theupdated->{$d}->{'updated'} || 0,
+						'skipped' => $theupdated->{$d}->{'skipped'} || 0,
+						'failed' => $theupdated->{$d}->{'failed'} || 0,
+					};
 				}
 
 				$Cmd->d(2,sprintf("Using table = %s\n", $dupdataobj->db->alias()));
@@ -474,7 +474,7 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 			$batchinfo .= sprintf( qq|    is-whitelisted: %d\n|, $execstatus->{'whited'} );
 			$batchinfo .= sprintf( qq|    exceeds-limit: %d\n|, $execstatus->{'exceed'} );
 
-			if( $xntableobj->error->{'count'} || grep { $mastertabs->{$_}->error->{'count'} > 0 } keys(%$mastertabs) )
+			if( $xntableobj->error->{'count'} || grep { $mastertabs->{$_}->error->{'count'} > 0 } keys %$mastertabs )
 			{
 				$batchinfo .= sprintf( qq|  failed:\n| );
 				$batchinfo .= sprintf( qq|    bouncelogs: %d\n|, $xntableobj->error->{'count'} );
@@ -523,36 +523,36 @@ if( $Cmd->operation & $Cmd->option->{'database'} )
 		my $doesexist = 0;
 		my $itsstatus = 0;
 		my $operation = q();
-		my $wherecond = undef();
+		my $wherecond = undef;
 
 		try {
-			if( ! exists($Cond->{'id'}) && ! exists($Cond->{'token'}) )
+			if( ! exists $Cond->{'id'} && ! exists $Cond->{'token'} )
 			{
 				Kanadzuchi::Exception::Command->throw( '-text' => 'There are neither --id nor --token' );
 			}
 
-			if( exists($Cond->{'id'}) && ! $xntableobj->is_validid($Cond->{'id'}) )
+			if( exists $Cond->{'id'} && ! $xntableobj->is_validid($Cond->{'id'}) )
 			{
 				Kanadzuchi::Exception::Command->throw( '-text' => 'The argument of --id is invalid!' );
 			}
 
-			if( exists($Cond->{'token'}) && ! Kanadzuchi::String->is_validtoken($Cond->{'token'}) )
+			if( exists $Cond->{'token'} && ! Kanadzuchi::String->is_validtoken($Cond->{'token'}) )
 			{
 				Kanadzuchi::Exception::Command->throw( '-text' => 'The argument of --token is invalid!' );
 			}
 
-			$Cmd->d( 1, sprintf( "WHERE id = %d\n", $Cond->{'id'} ) ) if( $Cond->{'id'} );
-			$Cmd->d( 1, sprintf( "WHERE token = '%s'\n", $Cond->{'token'} ) ) if( $Cond->{'token'} );
+			$Cmd->d( 1, sprintf( "WHERE id = %d\n", $Cond->{'id'} ) ) if $Cond->{'id'};
+			$Cmd->d( 1, sprintf( "WHERE token = '%s'\n", $Cond->{'token'} ) ) if $Cond->{'token'};
 
 			$wherecond = $Cond;
 			$doesexist = $xntableobj->count( $wherecond );
 			Kanadzuchi::Exception::Data->throw( 
 				'-text' => 'No such record: '.sprintf("id = %d, token = %s",
 						( $Cond->{'id'} ? $Cond->{'id'} : '?' ),
-						( $Cond->{'token'} ? $Cond->{'token'} : 'none' ) ) ) unless( $doesexist );
+						( $Cond->{'token'} ? $Cond->{'token'} : 'none' ) ) ) unless $doesexist;
 		}
 		otherwise {
-			my $e = shift();
+			my $e = shift;
 			$Cmd->exception($e);
 			$Zci->historique( 'err',
 				sprintf("mode=%s, stat=%s",
@@ -654,11 +654,11 @@ sub parse_options
 			'cleanup'	=> \$opt_cleanup,
 			'test'		=> \$opt_test,
 			'T'		=> \$opt_test,
-			'help'		=> sub { help(); exit(0); },
+			'help'		=> sub { help(); exit 0; },
 			'silent'	=> sub { $Cmd->silent(1); },
 			'verbose'	=> \$opt_verbose,
 			'v+'		=> \$opt_verbose,
-			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit(0); },
+			'version'	=> sub { printf(STDERR "%s\n", $Zci->version()); exit 0; },
 
 			# Database options
 			'host=s'	=> \$opt_host,
@@ -692,7 +692,7 @@ sub parse_options
 	$Cmd->debuglevel( ( $opt_verbose ? $opt_verbose : 0 ) - 1 );
 
 	# Output results as a YAML in batch mode 
-	$operation |= $Cmd->option->{'batch'} if($opt_batch);
+	$operation |= $Cmd->option->{'batch'} if $opt_batch;
 
 	# Specify Config File(YAML)	
 	if( defined $opt_conf )
@@ -718,15 +718,15 @@ sub parse_options
 	{
 		$operation |= $Cmd->option->{'database'}; 
 		$operation |= $Cmd->option->{'update'};
-		$operation |= $Cmd->option->{'force'} if( $opt_force );
+		$operation |= $Cmd->option->{'force'} if $opt_force;
 	}
 	elsif( $opt_remove || $opt_disable )
 	{
 		$operation |= $Cmd->option->{'database'}; 
-		$operation |= $Cmd->option->{'remove'} if( $opt_remove);
-		$operation |= $Cmd->option->{'disable'} if( $opt_disable );
-		$Cond->{'id'} = $opt_id if( $opt_id );
-		$Cond->{'token'} = $opt_token if( $opt_token );
+		$operation |= $Cmd->option->{'remove'} if $opt_remove;
+		$operation |= $Cmd->option->{'disable'} if $opt_disable;
+		$Cond->{'id'} = $opt_id if $opt_id;
+		$Cond->{'token'} = $opt_token if $opt_token;
 	}
 
 	# Clean up
@@ -747,7 +747,7 @@ sub parse_options
 		{
 			my $_offset = $opt_today ? 0
 					: $opt_yesterday ? 1
-						: defined($opt_before) ? abs $opt_before
+						: defined $opt_before ? abs $opt_before
 							: $Cmd->e('Invalid date offset value');
 			$Date = Kanadzuchi::Time->o2d($_offset);
 			last(DETECT_LOG_FILES);
@@ -779,7 +779,7 @@ sub parse_options
 	}
 
 	# Check whether or not Required options are specified.
-	return($operation);
+	return $operation;
 }
 
 sub help

@@ -1,5 +1,5 @@
-# $Id: MailerError.pm,v 1.1 2010/11/13 19:12:55 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: MailerError.pm,v 1.1.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
                                                                               
  ##  ##           ##  ###                ######                               
@@ -19,7 +19,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'Mailer Error'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [
 		qr{x[-]unix[;][ ]\d{1,3}},	# X-UNIX; 127
 		qr{command died with status \d+},

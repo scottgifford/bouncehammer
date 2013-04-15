@@ -1,7 +1,7 @@
-# $Id: Profile.pm,v 1.12 2010/08/28 17:22:09 ak Exp $
+# $Id: Profile.pm,v 1.12.2.1 2013/04/15 04:20:53 ak Exp $
 # -Id: Profile.pm,v 1.2 2009/08/31 06:58:25 ak Exp -
 # -Id: Profile.pm,v 1.3 2009/08/17 06:54:30 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI:Web::
                                               
  #####                  ###  ##  ###          
@@ -27,7 +27,7 @@ sub systemprofile
 	# +-+-+-+-+-+-+-+-+-+-+-+-+-+
 	#
 	# @Description	System profile page
-	my $self = shift();
+	my $self = shift;
 	my $file = 'profile.html';
 	my $time = q();
 

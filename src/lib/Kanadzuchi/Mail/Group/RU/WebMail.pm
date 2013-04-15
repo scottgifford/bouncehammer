@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.8.2.1 2011/08/20 20:13:49 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.8.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::RU::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -21,7 +21,7 @@ use warnings;
 # Major company's Webmail domains in Russia
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		# http://qip.ru/
 		'qip' => [
@@ -47,7 +47,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'qip'		=> 'Generic',
 		'runet'		=> 'Generic',

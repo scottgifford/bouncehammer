@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.2 2010/06/16 08:15:36 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.2.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::KR::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,7 +22,7 @@ use warnings;
 # http://japan.cnet.com/sp/column_korea/story/0,3800105540,20333168,00.htm
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		# http://www.daum.net/
 		# Lycos?
@@ -39,7 +39,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'daum'		=> 'Generic',
 		'empas'		=> 'Generic',

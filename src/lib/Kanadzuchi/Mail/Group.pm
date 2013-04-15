@@ -1,5 +1,5 @@
-# $Id: Group.pm,v 1.28.2.6 2011/04/07 07:01:59 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Group.pm,v 1.28.2.7 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::
                                      
   ####                               
@@ -39,7 +39,7 @@ sub postulat
 	#             "pc", "provider" is "various" in parsed results.
 	#       * 1 = Load 'Kanadzuchi::Mail::Group::<CCTLD or ISO3166>::<HOSTGROUP>',
 	#             Then it correctly classify host group and provider.
-	my $class = shift();
+	my $class = shift;
 	my $iso3166list = [ qw( AE AL AR AT AU AW BE BG BM BR BS CA CH CL CN CO CR CZ DE DK DO
 				EC EG ES FR GR GT HK HN HR HU ID IE IN IL IR IS IT JM JP KE KR
 				LB LK LU LV MA MD ME MK MO MU MX MY NG NI NO NL NP NZ OM 
@@ -56,14 +56,14 @@ sub postulat
 	{
 		foreach my $hgrp ( 'Cellphone', 'Smartphone', 'WebMail' )
 		{
-			next() if( $didfileload && ! $countryconf->{ lc($code) }->{ lc($hgrp) } );
+			next if( $didfileload && ! $countryconf->{ lc($code) }->{ lc($hgrp) } );
 			$grclassname =  __PACKAGE__.'::'.$code.'::'.$hgrp;
 			$grclasspath =  $grclassname;
 			$grclasspath =~ y{:}{/}s;
 			$grclasspath .= '.pm';
 
 			eval { require $grclasspath; };
-			push( @$areaclasses, $grclassname ) unless $@;
+			push @$areaclasses, $grclassname unless $@;
 		}
 	}
 
@@ -79,27 +79,27 @@ sub reperit
 	# @Description	Detect and load the class for the domain
 	# @Param <str>	(String) Domain part
 	# @Return	(Ref->Hash) Class, Group, Provider name or Empty string
-	my $class = shift();
-	my $dpart = shift() || return({});
+	my $class = shift;
+	my $dpart = shift || return {};
 	my $mdata = { 'class' => q(), 'group' => q(), 'provider' => q(), };
-	my $commx = $class->communisexemplar() || undef();
+	my $commx = $class->communisexemplar() || undef;
 	my $regex = $class->nominisexemplaria();
 	my $klass = $class->classisnomina();
 	my $group = lc $class;
 	my $cpath = q();
 
-	return($mdata) if( $commx && $dpart !~ $commx );
+	return $mdata if( $commx && $dpart !~ $commx );
 	$group =~ s{(?>\A.+::)}{};
 
-	foreach my $d ( keys(%$regex) )
+	foreach my $d ( keys %$regex )
 	{
-		next() unless( grep { $dpart =~ $_ } @{ $regex->{$d} } );
+		next unless grep { $dpart =~ $_ } @{ $regex->{ $d } };
 
-		$mdata->{'class'} = q|Kanadzuchi::Mail::Bounced::|.$klass->{$d};
+		$mdata->{'class'} = 'Kanadzuchi::Mail::Bounced::'.$klass->{ $d };
 		$mdata->{'group'} = $group;
 		$mdata->{'provider'} = $d;
 
-		unless( $klass->{$d} eq q|Generic| )
+		unless( $klass->{ $d } eq 'Generic' )
 		{
 			$cpath =  $mdata->{'class'};
 			$cpath =~ y{:}{/}s;
@@ -107,10 +107,10 @@ sub reperit
 
 			require $cpath;
 		}
-		last();
+		last;
 	}
 
-	return($mdata);
+	return $mdata;
 }
 
 1;

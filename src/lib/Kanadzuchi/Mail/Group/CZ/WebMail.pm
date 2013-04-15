@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.4 2010/06/28 13:19:06 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.4.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::CZ::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,7 +22,7 @@ use warnings;
 sub communisexemplar { return qr{[.]cz\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		# Seznam, http://www.seznam.cz/
 		'seznam.cz' => [
@@ -33,7 +33,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'seznam.cz'	=> 'Generic',
 	};

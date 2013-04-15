@@ -1,7 +1,7 @@
-# $Id: MailboxFull.pm,v 1.8.2.1 2011/10/11 03:03:55 ak Exp $
+# $Id: MailboxFull.pm,v 1.8.2.2 2013/04/15 04:20:53 ak Exp $
 # -Id: MailboxFull.pm,v 1.1 2009/08/29 07:33:28 ak Exp -
 # -Id: MailboxFull.pm,v 1.2 2009/05/11 08:22:29 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
                                                                        
  ##  ##         ##  ###  ##                  ######        ###  ###    
@@ -21,7 +21,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'mailboxfull'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [
 		qr{account is over quota},
 		qr{account is temporarily over quota},

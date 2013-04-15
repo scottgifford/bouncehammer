@@ -1,4 +1,5 @@
-# $Id: OpenSMTPD.pm,v 1.1.2.3 2013/04/08 04:35:02 ak Exp $
+# $Id: OpenSMTPD.pm,v 1.1.2.4 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2012-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::
                                                                  
   ####                        ##### ##  ## ###### #####  ####    
@@ -50,8 +51,8 @@ my $RxOpenSMTPD = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '0.1.0' };
-sub description { '(FFR) OpenBSD:/usr/sbin/smtpd' };
+sub version { '0.1.1' };
+sub description { 'OpenBSD:/usr/sbin/smtpd' };
 sub xsmtpagent { 'X-SMTP-Agent: OpenSMTPD'.qq(\n); }
 sub reperit
 {
@@ -63,13 +64,13 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 
-	return q() unless( $mhead->{'subject'} =~ $RxOpenSMTPD->{'subject'} );
-	return q() unless( $mhead->{'from'} =~ $RxOpenSMTPD->{'from'} );
-	return q() unless( grep { $_ =~ $RxOpenSMTPD->{'received'} } @{ $mhead->{'received'} } );
+	return q() unless $mhead->{'subject'} =~ $RxOpenSMTPD->{'subject'};
+	return q() unless $mhead->{'from'} =~ $RxOpenSMTPD->{'from'};
+	return q() unless grep { $_ =~ $RxOpenSMTPD->{'received'} } @{ $mhead->{'received'} };
 
 	my $phead = q();	# (String) Pseudo email header
 	my $pstat = q();	# (String) Stauts code
@@ -95,10 +96,9 @@ sub reperit
 			#local-part@domain-part: 550 5.2.2 <local-part@domain-part>... Mailbox Full
 			#
 			#    Below is a copy of the original message:
-			$rcptintxt = $1 if( ! length $rcptintxt && $el =~ m{\A(.+?[@].+?):?[ ]} );
-			$codeintxt = $1 if( ! length $codeintxt && $el =~ m|\A.+?[ ](\d{3})[ ]| );
-			$statintxt = $1 if( ! length $statintxt && $el =~ m|\A.+?[ ]([45][.]\d[.]\d+)| );
-
+			$rcptintxt  = $1  if( ! length $rcptintxt && $el =~ m{\A(.+?[@].+?):?[ ]} );
+			$codeintxt  = $1  if( ! length $codeintxt && $el =~ m|\A.+?[ ](\d{3})[ ]| );
+			$statintxt  = $1  if( ! length $statintxt && $el =~ m|\A.+?[ ]([45][.]\d[.]\d+)| );
 			$rhostsaid .= $el if $el =~ m{\A[a-zA-Z0-9_]};
 
 			last if $rcptintxt;

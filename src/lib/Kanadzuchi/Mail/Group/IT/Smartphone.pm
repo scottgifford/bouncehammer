@@ -1,5 +1,5 @@
-# $Id: Smartphone.pm,v 1.1.2.2 2011/03/10 05:58:08 ak Exp $
-# Copyright (C) 2011 Cubicroot Co. Ltd.
+# $Id: Smartphone.pm,v 1.1.2.3 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::IT::
                                                                         
   #####                        ##          ##                           
@@ -23,7 +23,7 @@ use warnings;
 sub communisexemplar { return qr{[.]com\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'three' => [
 			# 3 Italia; http://www.tre.it/
@@ -38,7 +38,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'three'		=> 'Generic',
 		'tim'		=> 'Generic',

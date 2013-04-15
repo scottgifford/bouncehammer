@@ -1,7 +1,7 @@
-# $Id: Update.pm,v 1.15.2.2 2011/03/25 00:17:29 ak Exp $
+# $Id: Update.pm,v 1.15.2.3 2013/04/15 04:20:53 ak Exp $
 # -Id: Update.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Update.pm,v 1.6 2009/08/13 07:13:58 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                             
  ##  ##             ##          ##          
@@ -40,10 +40,10 @@ sub updatetherecord
 	# @Description	Update the record on the DB.BounceLogs
 	# @Param	<None>
 	# @Return
-	my $self = shift();
+	my $self = shift;
 	my $bddr = $self->{'database'};
 	my $file = 'div-result.html';
-	my $iter = undef();	# (K::Iterator) Iterator object
+	my $iter = undef;	# (K::Iterator) Iterator object
 	my $cond = {};		# (Ref->Hash) WHERE Condition
 	my $isro = $self->{'webconfig'}->{'database'}->{'table'}->{'bouncelogs'}->{'readonly'};
 	my $cgiq = $self->query();
@@ -57,8 +57,8 @@ sub updatetherecord
 
 	if( $iter->count() )
 	{
-		my $this = undef();	# (K::Mail::Stored::YAML) YAML object
-		my $iitr = undef();	# (K::Iterator) Iterator for inner process
+		my $this = undef;	# (K::Mail::Stored::YAML) YAML object
+		my $iitr = undef;	# (K::Iterator) Iterator for inner process
 		my $data = [];		# (Ref->Array) Updated record
 		my $dont = 0;		# (Integer) Flag, Do Not UPDATE
 		my $stat = 0;		# (Integer) UPDATE Status
@@ -91,13 +91,13 @@ sub updatetherecord
 				sprintf("logs=WebUI, records=1, inserted=0, updated=%d, skipped=0, failed=%d, mode=update, stat=ok, name=%s",
 					( $stat ? 1 : 0 ), ( $stat ? 0 : 1 ), $self->{'configname'} ));
 
-			return('Failed') unless( $stat );
+			return 'Failed' unless $stat;
 		}
 
 		$data = $this->damn();
 		$data->{'updated'}  = $this->updated->ymd().'('.$this->updated->wdayname().') '.$this->updated->hms();
 		$data->{'bounced'}  = $this->bounced->ymd().'('.$this->bounced->wdayname().') '.$this->bounced->hms();
-		$data->{'bounced'} .= ' '.$this->timezoneoffset() if( $this->timezoneoffset() );
+		$data->{'bounced'} .= ' '.$this->timezoneoffset() if $this->timezoneoffset();
 		$self->tt_params( 
 			'pv_bouncemessages' => [ $data ],
 			'pv_isupdated' => 1,

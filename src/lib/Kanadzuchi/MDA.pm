@@ -1,5 +1,5 @@
-# $Id: MDA.pm,v 1.2 2010/12/15 09:00:47 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: MDA.pm,v 1.2.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                        
  ##  ## ####     ##    
@@ -115,14 +115,14 @@ sub parse
 	# @Param <ref>	(Ref->Hash) Message Header
 	# @Param <ref>	(Ref->Scalar) Message body
 	# @Return	(Ref->Hash) Error reason and error text
-	my $class = shift();
-	my $mhead = shift() || return undef();
-	my $mbody = shift() || return undef();
+	my $class = shift;
+	my $mhead = shift || return undef;
+	my $mbody = shift || return undef;
 
-	return undef() unless ref($mhead) eq q|HASH|;
-	return undef() unless grep { $mhead->{'from'} =~ $_ } @$bSenders;
-	return undef() unless ref($mbody) eq q|SCALAR|;
-	return undef() unless length $$mbody;
+	return undef unless ref($mhead) eq q|HASH|;
+	return undef unless grep { $mhead->{'from'} =~ $_ } @$bSenders;
+	return undef unless ref($mbody) eq q|SCALAR|;
+	return undef unless length $$mbody;
 
 	my $mdais = q();	# (String) MDA name
 	my $error = q();	# (String) Error reason
@@ -135,28 +135,28 @@ sub parse
 		@mbbuf = ();
 		EACH_LINE: foreach my $el ( @lines )
 		{
-			next() if( $mdais eq q() && $el !~ $MDASign->{ $mda } );
+			next if( $mdais eq q() && $el !~ $MDASign->{ $mda } );
 			$mdais ||= $mda;
 			push( @mbbuf, $el );
-			last() if( $el =~ m{\A\z} );
+			last if $el =~ m{\A\z};
 		}
 
-		last() if( $mdais );
+		last if $mdais;
 	}
 
-	return undef() unless $mdais;
-	return undef() unless scalar @mbbuf;
+	return undef unless $mdais;
+	return undef unless scalar @mbbuf;
 
 	DETECT_AN_ERROR: foreach my $er ( keys %{ $bMessage->{ $mdais } } )
 	{
 		foreach my $lb ( @mbbuf )
 		{
-			next() unless grep { $lb =~ $_ } @{ $bMessage->{ $mdais }->{ $er } };
+			next unless grep { $lb =~ $_ } @{ $bMessage->{ $mdais }->{ $er } };
 			$mtext = $lb;
 			$error = $er;
-			last();
+			last;
 		}
-		last() if( $mtext && $error );
+		last if $mtext && $error;
 	}
 
 	return { 'mda' => $mdais, 'reason' => $error, 'message' => $mtext };

@@ -1,5 +1,5 @@
-# $Id: Bzip2.pm,v 1.3 2010/07/07 11:21:40 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: Bzip2.pm,v 1.3.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Archive::
                                     
  #####            ##         ####   
@@ -35,12 +35,12 @@ sub compress
 	# @Param	<None>
 	# @Return	n = Size of the compressed file 
 	#		0 = Failed to compress or missing argument
-	my $self = shift();
-	my $bzip = undef();
+	my $self = shift;
+	my $bzip = undef;
 
-	return(0) unless( $self->{'input'} );
-	return(0) unless( -r $self->{'input'} );
-	return(0) if( $self->{'override'} == 0 && -e $self->{'output'} );
+	return 0 unless $self->{'input'};
+	return 0 unless -r $self->{'input'};
+	return 0 if( $self->{'override'} == 0 && -e $self->{'output'} );
 
 	eval {
 		use IO::Compress::Bzip2;
@@ -48,12 +48,12 @@ sub compress
 		$self->{'output'}->remove() if( $self->{'override'} && -e $self->{'output'} );
 		$bzip = IO::Compress::Bzip2->new( $self->{'output'}->stringify(), 'Append' => 0, );
 	};
-	return(0) if $@;
+	return 0 if $@;
 
 	$bzip->binmode();
 	$bzip->print( Perl6::Slurp::slurp( $self->{'input'}->stringify() ) );
 	$bzip->close();
-	$self->{'input'}->remove() if( $self->{'cleanup'} );
+	$self->{'input'}->remove() if $self->{'cleanup'};
 	return $self->{'output'}->stat->size();
 }
 

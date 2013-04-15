@@ -1,5 +1,5 @@
-# $Id: About.pm,v 1.1 2010/07/12 08:08:18 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: About.pm,v 1.1.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI:Web::
                                      
    ##   ##                     ##    
@@ -25,7 +25,7 @@ sub about
 	# +-+-+-+-+-+
 	#
 	# @Description	About...
-	my $self = shift();
+	my $self = shift;
 	my $file = 'about.html';
 	return $self->tt_process($file);
 }

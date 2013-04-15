@@ -1,4 +1,4 @@
-# $Id: Mail.pm,v 1.33.2.3 2012/11/02 10:49:51 ak Exp $
+# $Id: Mail.pm,v 1.33.2.4 2013/04/15 04:20:52 ak Exp $
 # -Id: Message.pm,v 1.1 2009/08/29 07:32:59 ak Exp -
 # -Id: BounceMessage.pm,v 1.13 2009/08/21 02:43:14 ak Exp -
 # Copyright (C) 2009-2012 Cubicroot Co. Ltd.
@@ -124,107 +124,113 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	(K::Mail::*) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ }; 
 
-	ADDRESSER_AND_RECIPIENT: foreach my $x ( keys(%$DomainParts) )
+	ADDRESSER_AND_RECIPIENT: foreach my $x ( keys %$DomainParts )
 	{
-		next() unless( defined($argvs->{$x}) );
+		next unless defined $argvs->{ $x };
 
-		if( length($argvs->{$x}) && ref($argvs->{$x}) eq q() )
+		if( length( $argvs->{ $x } ) && ref( $argvs->{ $x } ) eq q() )
 		{
-			$argvs->{$x} = new Kanadzuchi::Address( 'address' => $argvs->{$x} );
+			$argvs->{ $x } = new Kanadzuchi::Address( 'address' => $argvs->{ $x } );
 		}
 
-		next() unless( ref($argvs->{$x}) eq q|Kanadzuchi::Address| );
+		next unless ref( $argvs->{ $x } ) eq 'Kanadzuchi::Address';
+
 		# Set senderdomain or destination
-		$argvs->{ $DomainParts->{$x} } = $argvs->{$x}->host();
+		$argvs->{ $DomainParts->{ $x } } = $argvs->{ $x }->host();
 	}
 
 	MESSAGE_TOKEN: {
-		last() if( defined($argvs->{'token'}) && length($argvs->{'token'}) == 32 );
-		last() unless( ref($argvs->{'addresser'}) eq q|Kanadzuchi::Address| );
-		last() unless( ref($argvs->{'recipient'}) eq q|Kanadzuchi::Address| );
+		last if( defined $argvs->{'token'} && length( $argvs->{'token'} ) == 32 );
+		last unless ref( $argvs->{'addresser'} ) eq 'Kanadzuchi::Address';
+		last unless ref( $argvs->{'recipient'} ) eq 'Kanadzuchi::Address';
 		$argvs->{'token'} = Kanadzuchi::String->token(
-						$argvs->{'addresser'}->address(),
-						$argvs->{'recipient'}->address() );
+					$argvs->{'addresser'}->address(),
+					$argvs->{'recipient'}->address() );
 	}
 
 	DATE_AND_TIME: {
-		last() unless( defined($argvs->{'bounced'}) );
-		last() if( ref($argvs->{'bounced'}) eq q|Time::Piece| );
-		last() unless( $argvs->{'bounced'} =~ m{\A\d+\z} );
-		last() if( $argvs->{'bounced'} < 0 || $argvs->{'bounced'} > (2 ** 32) );
+		last unless defined $argvs->{'bounced'};
+		last if( ref( $argvs->{'bounced'} ) eq 'Time::Piece' );
+		last unless $argvs->{'bounced'} =~ m{\A\d+\z};
+		last if( $argvs->{'bounced'} < 0 || $argvs->{'bounced'} > (2 ** 32) );
 		$argvs->{'bounced'} = new Time::Piece( $argvs->{'bounced'} );
 	}
 
 	SET_EMPTY_VALUES: {
 		foreach my $e ( 'reason', 'hostgroup', 'provider', 'diagnosticcode' )
 		{
-			$argvs->{$e} = q() unless( defined($argvs->{$e}) );
+			$argvs->{ $e } = q() unless defined $argvs->{ $e };
 		}
 	}
 
 	DETECT_PROVIDER_AND_HOSTGROUP: {
-		last() unless( $class =~ m{\AKanadzuchi::Mail::Bounced\z} );
-		last() unless( $argvs->{'destination'} );
+		last unless $class =~ m{\AKanadzuchi::Mail::Bounced\z};
+		last unless $argvs->{'destination'};
 
 		my $dpart = $argvs->{'destination'};
 		my $klass = $class.q|::Generic|;	# Default Class = K::M::B::Generic
 		my $group = 'pc';			# Default Group = PC
 		my $prvdr = 'various';			# Default Provider = Various
 
-		if( Kanadzuchi::RFC2606->is_reserved($dpart) )
+		if( Kanadzuchi::RFC2606->is_reserved( $dpart ) )
 		{
 			$group = 'reserved';
 			$prvdr = Kanadzuchi::RFC2606->is_rfc2606($dpart) ? 'rfc2606' : 'reserved';
 		}
 		else
 		{
-			if( $DomainCache->{$dpart}->{'class'} )
+			if( $DomainCache->{ $dpart }->{'class'} )
 			{
 				# Domain information exists in the cache.
-				$klass = $DomainCache->{$dpart}->{'class'};
-				$group = $DomainCache->{$dpart}->{'group'};
-				$prvdr = $DomainCache->{$dpart}->{'provider'};
+				$klass = $DomainCache->{ $dpart }->{'class'};
+				$group = $DomainCache->{ $dpart }->{'group'};
+				$prvdr = $DomainCache->{ $dpart }->{'provider'};
 			}
 			else
 			{
-				foreach my $g ( q|Kanadzuchi::Mail::Group::Neighbor|, 
-						q|Kanadzuchi::Mail::Group::WebMail|,
-						q|Kanadzuchi::Mail::Group::Smartphone|, 
-						q|Kanadzuchi::Mail::Group::Cellphone|, @$LoadedGroup ){
+				my $clist = [ qw|
+					Kanadzuchi::Mail::Group::Neighbor
+					Kanadzuchi::Mail::Group::WebMail
+					Kanadzuchi::Mail::Group::Smartphone
+					Kanadzuchi::Mail::Group::Cellphone
+				| ];
+				push @$clist, @$LoadedGroup;
 
-					my $dinfo = $g->reperit($dpart);
+				foreach my $g ( @$clist )
+				{
+					my $dinfo = $g->reperit( $dpart );
 
 					if( $dinfo->{'class'} )
 					{
 						$klass = $dinfo->{'class'};
 						$group = $dinfo->{'group'};
 						$prvdr = $dinfo->{'provider'};
-						last();
+						last;
 					}
 				}
 
 				# Set cache
-				$DomainCache->{$dpart}->{'class'} ||= $klass;
-				$DomainCache->{$dpart}->{'group'} ||= $group;
-				$DomainCache->{$dpart}->{'provider'} ||= $prvdr;
+				$DomainCache->{ $dpart }->{'class'}    ||= $klass;
+				$DomainCache->{ $dpart }->{'group'}    ||= $group;
+				$DomainCache->{ $dpart }->{'provider'} ||= $prvdr;
 			}
 		}
 
 		$class = $klass;
 		$argvs->{'hostgroup'} = $group;
-		$argvs->{'provider'} = $prvdr;
+		$argvs->{'provider'}  = $prvdr;
 	}
 
 	PARSE_DESCRIPTION: {
 
 		my $descr = [ qw(deliverystatus diagnosticcode timezoneoffset smtpagent listid) ];
 
-		if( defined($argvs->{'description'}) )
+		if( defined $argvs->{'description'} )
 		{
-			if( ref($argvs->{'description'}) eq q|HASH| )
+			if( ref( $argvs->{'description'} ) eq q|HASH| )
 			{
 				#  ____                        _       _   _    _    ____  _   _ 
 				# |  _ \  ___  ___  ___ _ __  (_)___  | | | |  / \  / ___|| | | |
@@ -235,11 +241,11 @@ sub new
 				# 'description' is not empty, Build 'description' as hash reference.
 				foreach my $x ( @$descr )
 				{
-					next() if( defined($argvs->{$x}) );
-					$argvs->{$x} = $argvs->{'description'}->{$x};
+					next if defined $argvs->{ $x };
+					$argvs->{ $x } = $argvs->{'description'}->{ $x };
 				}
 			}
-			elsif( $argvs->{'description'} =~ m{\A\s*["]*[{].+[}]["]*\s*\z} )
+			elsif( $argvs->{'description'} =~ m{\A\s*["]*[{].+[}]["]*\s*\z} )	# "
 			{
 				#  ____                        _           _ ____   ___  _   _ 
 				# |  _ \  ___  ___  ___ _ __  (_)___      | / ___| / _ \| \ | |
@@ -251,14 +257,14 @@ sub new
 				# Set values into 3 variables if it is empty and build 'description'
 				# as a hash reference.
 				my $json = shift @{ Kanadzuchi::Metadata->to_object( \$argvs->{'description'} ) };
-				last() unless( ref($json) eq q|HASH| );
+				last unless ref( $json ) eq 'HASH';
 				$argvs->{'description'} = $json;
 
 				foreach my $y ( @$descr )
 				{
-					next() if( defined($argvs->{$y}) );
-					next() unless( defined($json->{$y}) );
-					$argvs->{$y} = $json->{$y};
+					next if defined $argvs->{ $y };
+					next unless defined $json->{ $y };
+					$argvs->{ $y } = $json->{ $y };
 				}
 			}
 			else
@@ -282,7 +288,8 @@ sub new
 				'diagnosticcode' => $argvs->{'diagnosticcode'} || q(),
 				'timezoneoffset' => $argvs->{'timezoneoffset'} || q(+0000),
 				'smtpagent'      => $argvs->{'smtpagent'} || q(),
-				'listid'         => $argvs->{'listid'} || q(), };
+				'listid'         => $argvs->{'listid'} || q(),
+			};
 		}
 	}
 
@@ -308,13 +315,13 @@ sub id2gname
 	# @Param <int>	(Integer) Host group ID
 	# @Return	(String|Ref->Array) Host group name(s)
 	#		(Empty) Does not exist
-	my $class = shift();
-	my $theid = shift() || return q();
+	my $class = shift;
+	my $theid = shift || return q();
 
-	return [ keys(%$HostGroups) ] if( $theid eq '@' );
-	return q() unless( $theid );
-	return q() unless( $theid =~ m{\A\d+\z} );
-	return [grep { $HostGroups->{$_} == $theid } keys(%$HostGroups)]->[0] || q();
+	return [ keys %$HostGroups ] if $theid eq '@';
+	return q() unless $theid;
+	return q() unless $theid =~ m{\A\d+\z};
+	return [ grep { $HostGroups->{$_} == $theid } keys %$HostGroups ]->[0] || q();
 }
 
 sub id2rname
@@ -327,13 +334,13 @@ sub id2rname
 	# @Param <int>	(Integer) Reason ID
 	# @Return	(String|Ref->Array) The reason(s)
 	#		(Empty) Does not exist
-	my $class = shift();
-	my $theid = shift() || return q();
+	my $class = shift;
+	my $theid = shift || return q();
 
-	return [ keys(%$ReasonWhy) ] if( $theid eq '@' );
-	return q() unless( $theid );
-	return q() unless( $theid =~ m{\A\d+\z} );
-	return [grep { $ReasonWhy->{$_} == $theid } keys(%$ReasonWhy)]->[0] || q(); 
+	return [ keys %$ReasonWhy ] if $theid eq '@';
+	return q() unless $theid;
+	return q() unless $theid =~ m{\A\d+\z};
+	return [ grep { $ReasonWhy->{ $_ } == $theid } keys %$ReasonWhy ]->[0] || q(); 
 }
 
 sub gname2id
@@ -346,11 +353,11 @@ sub gname2id
 	# @Param <str>	(String) Host group name
 	# @Return	(Integer|Ref->Array) n = Host group ID(s)
 	#		(Integer) 0 = Does not exist
-	my $class = shift();
-	my $gname = shift() || return(0);
-	return [ values(%$HostGroups) ] if( $gname eq '@' );
-	return(0) unless( $gname );
-	return $HostGroups->{$gname} || 0;
+	my $class = shift;
+	my $gname = shift || return 0;
+	return [ values %$HostGroups ] if $gname eq '@';
+	return 0 unless $gname;
+	return $HostGroups->{ $gname } || 0;
 }
 
 sub rname2id
@@ -363,11 +370,11 @@ sub rname2id
 	# @Param <str>	(String) The reason 
 	# @Return	(Integer|Ref->Array) n = reason ID(s)
 	#		(Integer) 0 = Does not exist
-	my $class = shift();
-	my $rname = shift() || return(0);
-	return [ values(%$ReasonWhy) ] if( $rname eq '@' );
-	return(0) unless( $rname );
-	return $ReasonWhy->{$rname} || 0;
+	my $class = shift;
+	my $rname = shift || return 0;
+	return [ values %$ReasonWhy ] if $rname eq '@';
+	return 0 unless $rname;
+	return $ReasonWhy->{ $rname } || 0;
 }
 
 #  ____ ____ ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
@@ -384,13 +391,13 @@ sub damn
 	# @Description	Damn, Object to hash reference
 	# @Param	<None>
 	# @Return	(Ref->Hash)
-	my $self = shift();
+	my $self = shift;
 	my $damn = {};
 	my $astr = [ qw(token reason hostgroup provider frequency destination senderdomain) ];
 	my $aobj = [ qw(addresser recipient) ];
 
-	map { $damn->{$_} = $self->{$_} if( exists($self->{$_}) ) } @$astr;
-	map { $damn->{$_} = $self->{$_}->address if( ref($self->{$_}) eq q|Kanadzuchi::Address| ) } @$aobj;
+	map { $damn->{ $_ } = $self->{ $_ } if exists $self->{$_} } @$astr;
+	map { $damn->{ $_ } = $self->{ $_ }->address if( ref($self->{$_}) eq 'Kanadzuchi::Address' ) } @$aobj;
 
 	$damn->{'bounced'} = $self->{'bounced'}->epoch() if( ref($self->{'bounced'}) eq q|Time::Piece| );
 	$damn->{'description'} = ${ Kanadzuchi::Metadata->to_string( $self->{'description'} ) };

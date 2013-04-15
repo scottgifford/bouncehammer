@@ -1,6 +1,6 @@
-# $Id: Smartphone.pm,v 1.8.2.1 2011/01/21 06:43:22 ak Exp $
+# $Id: Smartphone.pm,v 1.8.2.2 2013/04/15 04:20:53 ak Exp $
 # -Id: SmartPhone.pm,v 1.1 2009/08/29 07:33:22 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::JP::
                                                                         
   #####                        ##          ##                           
@@ -23,7 +23,7 @@ use warnings;
 # Smart phone domains in Japan
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'willcom' => [
 			# Willcom AIR-EDGE
@@ -53,7 +53,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'willcom'	=> 'Generic',
 		'emobile'	=> 'Generic',

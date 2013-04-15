@@ -1,5 +1,5 @@
-# $Id: qmail.pm,v 1.7.2.6 2011/10/08 13:51:04 ak Exp $
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# $Id: qmail.pm,v 1.7.2.7 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::
                          ##  ###    
   #####  ##  ##  ####         ##    
@@ -105,7 +105,7 @@ my $RxqmailError = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '2.1.4' };
+sub version { '2.1.5' };
 sub description { 'qmail' };
 sub xsmtpagent { 'X-SMTP-Agent: qmail'.qq(\n); }
 sub reperit
@@ -118,9 +118,9 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 
 	#                        _ _ 
 	#   __ _ _ __ ___   __ _(_) |
@@ -132,8 +132,8 @@ sub reperit
 	# by qmail, see http://cr.yp.to/qmail.html
 	#   e.g.) Received: (qmail 12345 invoked for bounce); 29 Apr 2009 12:34:56 -0000
 	#         Subject: failure notice
-	return q() unless( lc($mhead->{'subject'}) =~ $RxQSBMF->{'subject'} );
-	return q() unless( grep { $_ =~ $RxQSBMF->{'received'} } @{ $mhead->{'received'} } );
+	return q() unless lc($mhead->{'subject'}) =~ $RxQSBMF->{'subject'};
+	return q() unless grep { $_ =~ $RxQSBMF->{'received'} } @{ $mhead->{'received'} };
 
 	my $pstat = q();	# (String) Pseudo status value
 	my $phead = q();	# (String) Pseudo email header
@@ -150,7 +150,7 @@ sub reperit
 	EACH_LINE: foreach my $el ( split( qq{\n}, $$mbody ) )
 	{
 		$endof = 1 if( $endof == 0 && $el =~ $RxQSBMF->{'endof'} );
-		next() if( $endof || $el =~ m{\A\z} );
+		next if( $endof || $el =~ m{\A\z} );
 
 		if( ($el =~ $RxQSBMF->{'begin'}) .. ($el =~ $RxQSBMF->{'endof'}) )
 		{
@@ -158,14 +158,14 @@ sub reperit
 			{
 				# Get a mail address from the recipient paragraph.
 				$rcptintxt = $1;
-				next();
+				next;
 			}
 
 			if( $rcptintxt )
 			{
 				# The line which begins with the string 'Remote host said:'
 				$rhostsaid .= $el.' ';
-				next();
+				next;
 			}
 		}
 
@@ -179,21 +179,21 @@ sub reperit
 	$rhostsaid =~ s{ [-]{2,}.+\z}{};
 
 	# The line which begins with the string 'Sorry,...'
-	$xsmtp = 'CONN' if( $rhostsaid =~ $RxQSBMF->{'sorry'} );
+	$xsmtp = 'CONN' if $rhostsaid =~ $RxQSBMF->{'sorry'};
 
 	DETECT: {
 		SMTP_ERROR: foreach my $e ( keys(%{ $RxSMTPError }) )
 		{
-			if( grep { $rhostsaid =~ $_ } @{ $RxSMTPError->{$e} } )
+			if( grep { $rhostsaid =~ $_ } @{ $RxSMTPError->{ $e } } )
 			{
 				$xsmtp = uc $e;
-				last();
+				last;
 			}
 		}
 
 		QMAIL_ERROR: foreach my $q ( keys(%{ $RxqmailError }) )
 		{
-			if( grep { $rhostsaid =~ $_ } @{ $RxqmailError->{$q} } )
+			if( grep { $rhostsaid =~ $_ } @{ $RxqmailError->{ $q } } )
 			{
 				$causa = $q;
 				$xsmtp ||= 'DATA';
@@ -237,15 +237,15 @@ sub reperit
 	# Add the pseudo Content-Type header if it does not exist.
 	$mhead->{'content-type'} ||= q(message/delivery-status);
 
-	if( Kanadzuchi::RFC2822->is_emailaddress($rcptintxt) )
+	if( Kanadzuchi::RFC2822->is_emailaddress( $rcptintxt ) )
 	{
-		$phead .= __PACKAGE__->xsmtprecipient($rcptintxt);
+		$phead .= __PACKAGE__->xsmtprecipient( $rcptintxt );
 	}
 	else
 	{
-		$rcptintxt = Kanadzuchi::Address->canonify($rhostsaid);
-		$phead .= __PACKAGE__->xsmtprecipient($rcptintxt)
-				if( Kanadzuchi::RFC2822->is_emailaddress($rcptintxt) );
+		$rcptintxt = Kanadzuchi::Address->canonify( $rhostsaid );
+		$phead .= __PACKAGE__->xsmtprecipient( $rcptintxt )
+				if( Kanadzuchi::RFC2822->is_emailaddress( $rcptintxt ) );
 	}
 
 	if( ! $xsmtp || $xsmtp eq 'CONN' )
@@ -256,7 +256,7 @@ sub reperit
 			if( $rhostsaid =~ $esmtpcomm->{ $cmd } )
 			{
 				$xsmtp = uc $cmd;
-				last();
+				last;
 			}
 		}
 	}
@@ -264,7 +264,7 @@ sub reperit
 	# Add the text that 'Remote host said' or 'Sorry,...' into X-SMTP-Diagnosis header.
 	$phead .= __PACKAGE__->xsmtpdiagnosis( $rhostsaid );
 	$phead .= __PACKAGE__->xsmtpstatus( ($statintxt || $pstat) );
-	$phead .= __PACKAGE__->xsmtpcommand($xsmtp);
+	$phead .= __PACKAGE__->xsmtpcommand( $xsmtp );
 	$phead .= __PACKAGE__->xsmtpagent();
 
 	return $phead;

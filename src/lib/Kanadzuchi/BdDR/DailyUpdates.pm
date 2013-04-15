@@ -1,5 +1,5 @@
-# $Id: DailyUpdates.pm,v 1.4.2.2 2011/05/24 02:43:18 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: DailyUpdates.pm,v 1.4.2.3 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::BdDR::
                                                                                   
  ####           ##  ###         ##  ##             ##          ##                 
@@ -27,8 +27,8 @@ use Time::Piece;
 install_utf8_columns('description');
 install_inflate_rule( 
 		'^(thetime|modified)$' => callback {
-			inflate { return( Time::Piece->new(shift()) ) };
-			deflate { return( shift()->epoch()) };
+			inflate { return( Time::Piece->new(shift) ) };
+			deflate { return( shift->epoch()) };
 		}
 	);
 install_table( 't_dailyupdates' => schema { 
@@ -82,7 +82,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	(K::BdDR::DailyUpdates::Table) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 	my $klass = q|Kanadzuchi::BdDR::DailyUpdates|;
 
@@ -95,7 +95,7 @@ sub new
 	};
 	$argvs->{'object'} = $argvs->{'handle'}
 				? $klass->new( { 'dbh' => $argvs->{'handle'} } )
-				: undef();
+				: undef;
 	return $class->SUPER::new($argvs);
 }
 
@@ -114,13 +114,13 @@ sub is_validid
 	# @Param	<None>
 	# @Return	(Integer) 1 = Is valid ID
 	#		(Integer) 0 = Is not
-	my $self = shift();
-	my $anid = shift() || return(0);
+	my $self = shift;
+	my $anid = shift || return 0;
 
-	return(0) unless( defined($anid) );
-	return(0) unless( $anid );
-	return(0) unless( $anid =~ m{\A\d+\z} );
-	return(1);
+	return 0 unless defined $anid;
+	return 0 unless $anid;
+	return 0 unless $anid =~ m{\A\d+\z};
+	return 1;
 }
 
 sub is_validcolumn
@@ -133,12 +133,12 @@ sub is_validcolumn
 	# @Param <str>	(String) Column name
 	# @Return	(Integer) 1 = Is valid column name
 	#		(Integer) 0 = Is not
-	my $self = shift();
-	my $acol = shift() || return(0);
+	my $self = shift;
+	my $acol = shift || return 0;
 	my $cols = $self->{'fields'};
 
-	return(1) if( grep { $acol eq $_ } @{ $cols->{'trxn'} } );
-	return(0);
+	return 1 if grep { $acol eq $_ } @{ $cols->{'trxn'} };
+	return 0;
 }
 
 sub search
@@ -152,15 +152,15 @@ sub search
 	# @Param <obj>	(Kanadzuchi::BdDR::Page) Pagination object
 	# @Param <flg>	(Integer) Flag, 1=Count only
 	# @Return	(Ref->Array) Hash references
-	my $self = shift();
-	my $cond = shift() || {};
-	my $page = shift() || new Kanadzuchi::BdDR::Page;
-	my $cflg = shift() || 0;
+	my $self = shift;
+	my $cond = shift || {};
+	my $page = shift || new Kanadzuchi::BdDR::Page;
+	my $cflg = shift || 0;
 	my $rset = undef();	# (DBIx::Skinny::SQL) ->resultset()
 	my $tobj = $self->{'object'};
 	my $data = [];
 
-	my $iterator = undef();	# (Kanadzuchi::Iterator)
+	my $iterator = undef;	# (Kanadzuchi::Iterator)
 	my $nrecords = 0;	# (Integer) The number of records in the database
 	my $rssetopt = {};	# (Ref->Hash) Options for Resultset
 	my $colnames = $self->{'fields'}->{'trxn'};
@@ -193,8 +193,7 @@ sub search
 		# Where Condition
 		foreach my $_c ( @$colnames )
 		{
-			next() unless( defined $cond->{$_c} );
-			# $rset->add_where( $self->{'table'}.'.'.$_c => $cond->{$_c} );
+			next unless defined $cond->{$_c};
 			$rset->add_where( $_c => $cond->{$_c} );
 		}
 
@@ -244,7 +243,7 @@ sub size
 	# @Description	SELECT count(*) FROM t_dailyupdates;
 	# @Param	<None>
 	# @Return	(Integer) The number of records
-	my $self = shift();
+	my $self = shift;
 	my $size = 0;
 
 	eval { $size = $self->search( {}, Kanadzuchi::BdDR::Page->new(), 1 ) };
@@ -252,7 +251,7 @@ sub size
 
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub count
@@ -265,17 +264,17 @@ sub count
 	# @Param <ref>	(Ref->Hash) Where Condition
 	# @Param <obj>	(Kanadzuchi::BdDR::Page) Pagination object
 	# @Return	(Integer) The number of records
-	my $self = shift();
-	my $cond = shift() || {};
-	my $page = shift() || new Kanadzuchi::BdDR::Page;
+	my $self = shift;
+	my $cond = shift || {};
+	my $page = shift || new Kanadzuchi::BdDR::Page;
 	my $size = 0;
 
-	eval{ $size = $self->search( $cond, $page, 1 ) };
+	eval { $size = $self->search( $cond, $page, 1 ) };
 	return $size unless $@;
 
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub insert
@@ -288,19 +287,19 @@ sub insert
 	# @Param <ref>	(Ref->Hash) New data
 	# @Returns	(Integer) n = The ID of inserted object
 	#		(Integer) 0 = Failed to INSERT
-	my $self = shift();
-	my $data = shift() || return(0);
-	my $that = undef();
+	my $self = shift;
+	my $data = shift || return 0;
+	my $that = undef;
 	my $nuid = 0;
 
 	eval {
 		$that = $self->{'object'}->insert( $self->{'table'}, $data );
-		$nuid = $that->get_column('id') if( defined($that) );
+		$nuid = $that->get_column('id') if defined $that;
 	};
 	return $nuid unless $@;
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub update
@@ -314,19 +313,19 @@ sub update
 	# @Param <ref>	(Ref->Hash) Where Condition
 	# @Returns	(Integer) 1 = Successfully updated
 	#		(Integer) 0 = Failed to UPDATE
-	my $self = shift();
-	my $data = shift() || return(0);
-	my $cond = shift() || return(0);
+	my $self = shift;
+	my $data = shift || return 0;
+	my $cond = shift || return 0;
 	my $stat = 0;
 
-	return(0) if( ! defined $cond->{'thetime'} && ! defined $cond->{'thedate'} );
+	return 0 if( ! defined $cond->{'thetime'} && ! defined $cond->{'thedate'} );
 	eval {
 		$stat = $self->{'object'}->update( $self->{'table'}, $data, $cond );
 	};
 	return $stat unless $@;
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub remove
@@ -339,19 +338,19 @@ sub remove
 	# @Param <ref>	(Ref->Hash) Where condition
 	# @Return	(Integer) 0 = Failed to remove or parameter error
 	#		(Integer) 1 = Successfully removed
-	my $self = shift();
-	my $cond = shift() || return(0);
+	my $self = shift;
+	my $cond = shift || return 0;
 	my $stat = 0;
 
-	return(0) unless( $self->is_validid($cond->{'id'}) );
-	return(0) if( ! defined $cond->{'thetime'} && ! defined $cond->{'thedate'} );
+	return 0 unless( $self->is_validid($cond->{'id'}) );
+	return 0 if( ! defined $cond->{'thetime'} && ! defined $cond->{'thedate'} );
 	eval {
 		$stat = $self->{'object'}->delete( $self->{'table'}, $cond );
 	};
 	return $stat unless $@;
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 
 }
 
@@ -365,10 +364,10 @@ sub disable
 	# @Param <ref>	(Ref->Hash) Where Condition
 	# @Returns	(Integer) 1 = Successfully disabled the record
 	#		(Integer) 0 = Failed to UPDATE
-	my $self = shift();
-	my $cond = shift() || return(0);
-	return(0) unless( $self->is_validid($cond->{'id'}) );
-	return(0) if( ! defined $cond->{'thetime'} && ! defined $cond->{'thedate'} );
+	my $self = shift;
+	my $cond = shift || return 0;
+	return 0 unless $self->is_validid($cond->{'id'});
+	return 0 if( ! defined $cond->{'thetime'} && ! defined $cond->{'thedate'} );
 	return $self->update( { 'disabled' => 1 }, $cond );
 }
 
@@ -417,19 +416,19 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	(Kanadzuchi::BdDR::DailyUpdates::Data) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ }; 
 	my $tunit = q();
 
 	return unless defined $argvs->{'handle'};
 
-	$tunit = substr( lc $argvs->{'totalsby'}, 0, 1 ) if( $argvs->{'totalsby'} );
+	$tunit = substr( lc $argvs->{'totalsby'}, 0, 1 ) if $argvs->{'totalsby'};
 	$tunit = 'w' if( $tunit eq q() || $tunit !~ m{\A(?:d|m|w|y)\z} );
 	$argvs->{'totalsby'} = $tunit;
 
 	map {
-		$argvs->{$_} = [] if( ! defined $argvs->{$_} 
-					|| ref($argvs->{$_}) ne q|ARRAY| )
+		$argvs->{ $_ } = [] if( ! defined $argvs->{ $_ } 
+					|| ref($argvs->{ $_ }) ne q|ARRAY| )
 	} ( 'data', 'subtotal' );
 	$argvs->{'db'} = new Kanadzuchi::BdDR::DailyUpdates::Table( 'handle' => $argvs->{'handle'} );
 	return $class->SUPER::new($argvs);
@@ -451,8 +450,8 @@ sub recordit
 	# @Param	 (Ref->Array) Data
 	# @Return	 (Integer) n = The number of inserted|updated records
 	#		 (Integer) 0 = Failed to INSERT|UPDATE
-	my $self = shift();
-	my $data = shift() || $self->{'data'};
+	my $self = shift;
+	my $data = shift || $self->{'data'};
 
 	my $dbobj = $self->{'db'};
 	my $ndata = {};
@@ -461,7 +460,7 @@ sub recordit
 	my $xstat = 0;
 	my $xcols = [ 'inserted', 'updated', 'skipped', 'failed' ];
 
-	return 0 unless( ref($data) eq q|ARRAY| );
+	return 0 unless ref($data) eq q|ARRAY|;
 
 	foreach my $eachdatum ( @$data )
 	{
@@ -483,17 +482,19 @@ sub recordit
 				'thedate' => $eachdatum->{'thedate'},
 				'description' => $eachdatum->{'description'} || q(),
 			};
-			map { $ndata->{$_} = $eachdatum->{$_} || 0 } @$xcols;
+			map { $ndata->{ $_ } = $eachdatum->{ $_ } || 0 } @$xcols;
 			$xstat++ if $dbobj->insert( $ndata );
 		}
 	}
 
 	# UPDATE 2 columns; executed and modified
-	while( my $d = shift(@$dates) )
+	while( my $d = shift @$dates )
 	{
 		$dbobj->update( {
 			'executed' => \'executed + 1',
-			'modified' => Time::Piece->new() }, { 'thedate' => $d } );
+			'modified' => Time::Piece->new() },
+			{ 'thedate' => $d }
+		);
 	}
 
 	return $xstat;
@@ -513,10 +514,10 @@ sub quaerit
 	# @Return	 (Kanadzuchi::Iterator) Results in the iterator
 	#		 (Integer) The number of results
 	#
-	my $self = shift();
-	my $cond = shift() || {};
-	my $page = shift() || Kanadzuchi::BdDR::Page->new( 'resultsperpage' => 31 );
-	my $unit = shift() || 'd';
+	my $self = shift;
+	my $cond = shift || {};
+	my $page = shift || Kanadzuchi::BdDR::Page->new( 'resultsperpage' => 31 );
+	my $unit = shift || 'd';
 	my $dobj = $self->{'db'};
 	my $data = [];		# Data in the current page
 
@@ -525,10 +526,10 @@ sub quaerit
 		$page->colnameorderby( 'thedate' );
 		$data = $dobj->search( $cond, $page );
 
-		last() if( $unit eq 'd' );
-		last() if( scalar @$data == 1 );
+		last if $unit eq 'd';
+		last if scalar @$data == 1;
 
-		my $leaf = undef();	# (Kanadzuchi::Page) Pagination for getting the next entry
+		my $leaf = undef;	# (Kanadzuchi::Page) Pagination for getting the next entry
 		my $this = [];		# (Ref->Array) This year[0], month[1], and day[2] by split()
 		my $that = [];		# (Ref->Array) That year[0], month[1], and day[2] by split()
 		my $xrpp = $unit eq 'w' ? 7 : $unit eq 'm' ? 31 : 366;
@@ -556,7 +557,7 @@ sub quaerit
 
 			# Get the next page
 			$next = $dobj->search( $cond, $leaf );
-			last() unless scalar @$next;		# There is no next entry
+			last unless scalar @$next;		# There is no next entry
 
 			# Join
 			$last = $data->[-1]->{'thedate'};	# Date string of the last entry
@@ -569,19 +570,19 @@ sub quaerit
 				if( $unit eq 'y' || $unit eq 'm' )
 				{
 					# Same year and same month
-					last() if( $this->[0] != $that->[0] || $this->[1] != $that->[1] );
-					push( @$data, $e );
+					last if( $this->[0] != $that->[0] || $this->[1] != $that->[1] );
+					push @$data, $e;
 				}
 				else
 				{
 					# Same week
-					last() unless( $this->[0] == $that->[0] );
+					last unless( $this->[0] == $that->[0] );
 
 					my $__this = Time::Piece->strptime($e->{'thedate'},"%Y-%m-%d");
 					my $__that = Time::Piece->strptime(join('-',@$that),"%Y-%m-%d");
 
-					last() unless( $__this->week == $__that->week() );
-					push( @$data, $e );
+					last unless( $__this->week == $__that->week() );
+					push @$data, $e;
 				}
 			} # End of foreach(JOIN_FORWARD)
 		} # End of FORWARD
@@ -609,7 +610,7 @@ sub quaerit
 
 			# Get the next page
 			$prev = $dobj->search( $cond, $leaf );
-			last() unless scalar @$prev;		# There is no previous entry
+			last unless scalar @$prev;		# There is no previous entry
 
 			# Join
 			$head = $data->[0]->{'thedate'};	# Date string of the first entry
@@ -622,24 +623,24 @@ sub quaerit
 				if( $unit eq 'y' || $unit eq 'm' )
 				{
 					# Same year and same month
-					last() if( $this->[0] != $that->[0] || $this->[1] != $that->[1] );
-					push( @$data, $e );
+					last if( $this->[0] != $that->[0] || $this->[1] != $that->[1] );
+					push @$data, $e;
 				}
 				else
 				{
 					# Same week
-					last() unless( $this->[0] == $that->[0] );
+					last unless $this->[0] == $that->[0];
 
 					my $__this = Time::Piece->strptime($e->{'thedate'},"%Y-%m-%d");
 					my $__that = Time::Piece->strptime(join('-',@$that),"%Y-%m-%d");
 
-					last() unless( $__this->week == $__that->week() );
-					push( @$data, $e );
+					last unless( $__this->week == $__that->week() );
+					push @$data, $e;
 				}
 			} # End of foreach(JOIN_BACKWARD)
 		} # End of BACKWARD
 
-		last();
+		last;
 
 	} # End of while(SCAN_AND_JOIN)
 
@@ -649,7 +650,7 @@ sub quaerit
 		my $s = $x->{'executed'} ? int( $x->{'skipped'} / $x->{'executed'} ) : 0;
 		my $e = 0;
 
-		map { $e += $x->{$_} } ('inserted', 'updated', 'skipped', 'failed');
+		map { $e += $x->{ $_ } } ('inserted', 'updated', 'skipped', 'failed');
 		$x->{'estimated'} = $e ? ( $x->{'inserted'} + $x->{'updated'} + $s ) : 0;
 	}
 
@@ -673,20 +674,20 @@ sub congregat
 	# @Param <ref>	(Ref->Array) Data
 	# @Return	(Ref->Hash)
 	#
-	my $self = shift();
-	my $data = shift() || $self->{'data'};
+	my $self = shift;
+	my $data = shift || $self->{'data'};
 	my $unit = $self->{'totalsby'} || 'w';
 	my $subt = $self->{'subtotal'} || [];
 	my $subx = {};
 	my $list = [];
 	my $cols = [ qw(inserted updated skipped failed executed) ];
 
-	return 0 if( ref($data) ne q|ARRAY| );
-	return 0 if( $unit eq 'd' );
+	return 0 if ref($data) ne q|ARRAY|;
+	return 0 if $unit eq 'd';
 
-	my $timepobj = undef();	# (Time::Piece)
-	my $modified = undef();	# (Time::Piece) Last Modified (Table)
-	my $thistime = undef();	# (Time::Piece) The time(machine time)
+	my $timepobj = undef;	# (Time::Piece)
+	my $modified = undef;	# (Time::Piece) Last Modified (Table)
+	my $thistime = undef;	# (Time::Piece) The time(machine time)
 	my $subtotal = {};	# (Ref->Hash) Alias for each $totalled->{?}
 	my $totalled = {};	# (Ref->Hash) Data, already totalled.
 	my $hkstring = q();	# (String) Hash key string
@@ -697,7 +698,7 @@ sub congregat
 		my $s = $e->{'executed'} ? int( $e->{'skipped'} / $e->{'executed'} ) : 0;
 		my $n = $e->{'name'};
 
-		map { $totalled->{ $n }->{$_} = $e->{$_} } @$cols;
+		map { $totalled->{ $n }->{ $_ } = $e->{ $_ } } @$cols;
 		$totalled->{ $n }->{'modified'} = $e->{'modified'};
 		$totalled->{ $n }->{'estimated'} = $e->{'inserted'} + $e->{'updated'} + $s;
 	}
@@ -705,10 +706,10 @@ sub congregat
 	while( my $thisdata = shift( @$data ) )
 	{
 		$timepobj = Time::Piece->strptime( $thisdata->{'thedate'}, "%Y-%m-%d" );
-		$modified = ref( $thisdata->{'modified'} ) eq q|Time::Piece|
+		$modified = ref( $thisdata->{'modified'} ) eq 'Time::Piece'
 				? $thisdata->{'modified'}
 				: Time::Piece->new( $thisdata->{'modified'} );
-		$thistime = ref( $thisdata->{'thetime'} ) eq q|Time::Piece|
+		$thistime = ref( $thisdata->{'thetime'} ) eq 'Time::Piece'
 				? $thisdata->{'thetime'}
 				: Time::Piece->new( $thisdata->{'thetime'} );
 
@@ -726,7 +727,7 @@ sub congregat
 		}
 
 		$subtotal = $totalled->{ $hkstring };
-		map { $subtotal->{$_} += $thisdata->{$_} } @$cols;
+		map { $subtotal->{ $_ } += $thisdata->{ $_ } } @$cols;
 		$subtotal->{'estimated'} += $thisdata->{'estimated'};
 
 		if( ! $subtotal->{'modified'} || $subtotal->{'modified'} < $modified )
@@ -745,13 +746,13 @@ sub congregat
 	foreach my $name ( sort keys %$totalled )
 	{
 		$subx = { 'name' => $name };
-		map { $subx->{$_} = $totalled->{ $name }->{$_} } @$cols;
+		map { $subx->{ $_ } = $totalled->{ $name }->{ $_ } } @$cols;
 
 		$subx->{'estimated'} = $totalled->{ $name }->{'estimated'};
 		$subx->{'modified'} = $totalled->{ $name }->{'modified'};
 		$subx->{'thetime'} = $totalled->{ $name }->{'thetime'};
 
-		push( @$list, $subx );
+		push @$list, $subx;
 	}
 
 	$self->{'subtotal'} = $list;

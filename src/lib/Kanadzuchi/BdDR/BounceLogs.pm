@@ -1,8 +1,8 @@
-# $Id: BounceLogs.pm,v 1.14 2010/09/23 14:07:52 ak Exp $
+# $Id: BounceLogs.pm,v 1.14.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: BounceLogs.pm,v 1.9 2010/03/04 08:33:28 ak Exp -
 # -Id: BounceLogs.pm,v 1.1 2009/08/29 08:58:48 ak Exp -
 # -Id: BounceLogs.pm,v 1.6 2009/08/27 05:09:55 ak Exp -
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::BdDR::
                                                                      
  #####                                   ##                          
@@ -30,20 +30,20 @@ use Time::Piece;
 install_utf8_columns('description');
 install_inflate_rule( 
 		'^(bounced|updated)$' => callback {
-			inflate { return( Time::Piece->new(shift()) ) };
-			deflate { return( shift()->epoch()) };
+			inflate { return( Time::Piece->new(shift) ) };
+			deflate { return( shift->epoch()) };
 		}
 	);
 install_inflate_rule( 
 		'hostgroup' => callback {
-			inflate { return( Kanadzuchi::Mail->id2gname(shift()) ) };
-			deflate { return( Kanadzuchi::Mail->gname2id(shift()) ) };
+			inflate { return( Kanadzuchi::Mail->id2gname(shift) ) };
+			deflate { return( Kanadzuchi::Mail->gname2id(shift) ) };
 		}
 	);
 install_inflate_rule( 
 		'reason' => callback {
-			inflate { return( Kanadzuchi::Mail->id2rname(shift()) ) };
-			deflate { return( Kanadzuchi::Mail->rname2id(shift()) ) };
+			inflate { return( Kanadzuchi::Mail->id2rname(shift) ) };
+			deflate { return( Kanadzuchi::Mail->rname2id(shift) ) };
 		}
 	);
 
@@ -100,7 +100,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	(K::BdDR::BounceLogs::Table) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 	my $klass = q|Kanadzuchi::BdDR::BounceLogs|;
 
@@ -134,13 +134,13 @@ sub is_validid
 	# @Param	<None>
 	# @Return	(Integer) 1 = Is valid ID
 	#		(Integer) 0 = Is not
-	my $self = shift();
-	my $anid = shift() || return(0);
+	my $self = shift;
+	my $anid = shift || return 0;
 
-	return(0) unless( defined($anid) );
-	return(0) unless( $anid );
-	return(0) unless( $anid =~ m{\A\d+\z} );
-	return(1);
+	return 0 unless defined $anid;
+	return 0 unless $anid;
+	return 0 unless $anid =~ m{\A\d+\z};
+	return 1;
 }
 
 sub is_validcolumn
@@ -153,13 +153,13 @@ sub is_validcolumn
 	# @Param <str>	(String) Column name
 	# @Return	(Integer) 1 = Is valid column name
 	#		(Integer) 0 = Is not
-	my $self = shift();
-	my $acol = shift() || return(0);
+	my $self = shift;
+	my $acol = shift || return 0;
 	my $cols = $self->{'fields'};
 
-	return(1) if( grep { $acol eq $_ } @{ $cols->{'trxn'} } );
-	return(1) if( grep { $acol eq $_ } @{ $cols->{'join'} } );
-	return(0);
+	return 1 if grep { $acol eq $_ } @{ $cols->{'trxn'} };
+	return 1 if grep { $acol eq $_ } @{ $cols->{'join'} };
+	return 0;
 }
 
 sub search
@@ -173,17 +173,17 @@ sub search
 	# @Param <obj>	(Kanadzuchi::BdDR::Page) Pagination object
 	# @Param <flg>	(Integer) Flag, 1=Count only
 	# @Return	(Ref->Array) Hash references
-	my $self = shift();
-	my $cond = shift() || {};
-	my $page = shift() || new Kanadzuchi::BdDR::Page;
-	my $cflg = shift() || 0;
+	my $self = shift;
+	my $cond = shift || {};
+	my $page = shift || new Kanadzuchi::BdDR::Page;
+	my $cflg = shift || 0;
 
 	my $data = [];		# (Ref->Array) Kanadzuchi::Mail::Stored or hash
-	my $rset = undef();	# (DBIx::Skinny::SQL) ->resultset()
-	my $mtab = undef();	# (Kanadzuchi::BdDR::BounceLogs::Masters)
+	my $rset = undef;	# (DBIx::Skinny::SQL) ->resultset()
+	my $mtab = undef;	# (Kanadzuchi::BdDR::BounceLogs::Masters)
 	my $tobj = $self->{'object'};
 
-	my $iterator = undef();	# (Kanadzuchi::Iterator)
+	my $iterator = undef;	# (Kanadzuchi::Iterator)
 	my $nrecords = 0;	# (Integer) The number of records in the database
 	my $wherecnd = {};	# (Ref->Hash) WHERE Condition for sending query
 	my $mtobject = {};	# (Ref->Hash) Mastertable objects
@@ -222,7 +222,7 @@ sub search
 		INNER_JOIN: foreach my $_c ( @$joincols )
 		{
 			$mtab = $mtobject->{ $_c.'s' };
-			$rset->add_select( $mtab->table().'.'.$mtab->field() => $_c ) if( $cflg == 0 );
+			$rset->add_select( $mtab->table().'.'.$mtab->field() => $_c ) if $cflg == 0;
 			$rset->add_join( $self->{'table'} => [ { 
 						'type' => 'inner',
 						'table' => $mtab->table(),
@@ -233,7 +233,7 @@ sub search
 		# Where Condition
 		COLUMNS_IN_TXNTABLE: foreach my $_c ( @$trxncols )
 		{
-			next() unless( defined($cond->{$_c}) );
+			next unless defined $cond->{$_c};
 
 			if( $_c eq 'hostgroup' )
 			{
@@ -290,7 +290,7 @@ sub search
 				};
 
 				map { $__data->{$_} = $__data->{'description'}->{$_} } @$desccols;
-				push( @$data, $__data );
+				push @$data, $__data;
 			}
 		}
 	};
@@ -314,14 +314,14 @@ sub groupby
 	# @Param <str>	(String) Column name
 	# @Param <ref>	(Ref->Hash) WHERE Condition
 	# @Return	(Ref->Array) Aggregated data
-	my $self = shift();
-	my $name = shift() || return {};
-	my $cond = shift() || {};
-	my $rset = undef();
+	my $self = shift;
+	my $name = shift || return {};
+	my $cond = shift || {};
+	my $rset = undef;
 	my $mtab = q();
 	my $data = [];
 
-	my $iterator = undef();
+	my $iterator = undef;
 	my $xtobject = $self->{'object'};
 	return [] unless( grep { $name eq $_ }
 			( @{ $self->{'fields'}->{'join'} }, 'hostgroup', 'reason' ) );
@@ -339,7 +339,7 @@ sub groupby
 				{
 					foreach my $__op ( keys %$_wcnd )
 					{
-						push( @_sqlw, sprintf( "bounced %s %d", $__op, $_wcnd->{$__op} ) );
+						push @_sqlw, sprintf( "bounced %s %d", $__op, $_wcnd->{$__op} );
 					}
 				}
 				$_sqlx .= ' WHERE (';
@@ -366,7 +366,7 @@ sub groupby
 
 			$_rset->add_select( $_mtab->table().'.'.$_mtab->field() => $name );
 			$_rset->add_join( $self->{'table'} => [ $_join ] );
-			map { $_rset->add_where( 'bounced' => $cond->{'bounced'}->[$_] ) } (0,1) if( keys %$cond );
+			map { $_rset->add_where( 'bounced' => $cond->{'bounced'}->[$_] ) } (0,1) if keys %$cond;
 			$iterator = $_rset->retrieve(); 
 		}
 	};
@@ -378,9 +378,9 @@ sub groupby
 		return [];
 	}
 
-	RETRIEVE: while( my $r = $iterator->next() )
+	RETRIEVE: while( my $r = $iterator->next )
 	{
-		push( @$data, { 'name' => $r->$name, 'size' => $r->x(), 'freq' => $r->y() } )
+		push @$data, { 'name' => $r->$name, 'size' => $r->x(), 'freq' => $r->y() };
 	}
 	return $data;
 }
@@ -394,7 +394,7 @@ sub size
 	# @Description	SELECT count(*) FROM t_bouncelogs;
 	# @Param	<None>
 	# @Return	(Integer) The number of records
-	my $self = shift();
+	my $self = shift;
 	my $size = 0;
 
 	eval{ $size = $self->search( {}, Kanadzuchi::BdDR::Page->new(), 1 ) };
@@ -402,7 +402,7 @@ sub size
 
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub count
@@ -415,17 +415,17 @@ sub count
 	# @Param <ref>	(Ref->Hash) Where Condition
 	# @Param <obj>	(Kanadzuchi::BdDR::Page) Pagination object
 	# @Return	(Integer) The number of records
-	my $self = shift();
-	my $cond = shift() || {};
-	my $page = shift() || new Kanadzuchi::BdDR::Page;
+	my $self = shift;
+	my $cond = shift || {};
+	my $page = shift || new Kanadzuchi::BdDR::Page;
 	my $size = 0;
 
-	eval{ $size = $self->search( $cond, $page, 1 ) };
+	eval { $size = $self->search( $cond, $page, 1 ) };
 	return $size unless $@;
 
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub insert
@@ -438,19 +438,19 @@ sub insert
 	# @Param <ref>	(Ref->Hash) New data
 	# @Returns	(Integer) n = The ID of inserted object
 	#		(Integer) 0 = Failed to INSERT
-	my $self = shift();
-	my $data = shift() || return(0);
-	my $that = undef();
+	my $self = shift;
+	my $data = shift || return 0;
+	my $that = undef;
 	my $nuid = 0;
 
 	eval {
 		$that = $self->{'object'}->insert( $self->{'table'}, $data );
-		$nuid = $that->get_column('id') if( defined($that) );
+		$nuid = $that->get_column('id') if defined $that;
 	};
 	return $nuid unless $@;
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub update
@@ -464,19 +464,19 @@ sub update
 	# @Param <ref>	(Ref->Hash) Where Condition
 	# @Returns	(Integer) 1 = Successfully updated
 	#		(Integer) 0 = Failed to UPDATE
-	my $self = shift();
-	my $data = shift() || return(0);
-	my $cond = shift() || return(0);
+	my $self = shift;
+	my $data = shift || return 0;
+	my $cond = shift || return 0;
 	my $stat = 0;
 
-	return(0) if( ! $self->is_validid($cond->{'id'}) && ! $cond->{'token'} );
+	return 0 if( ! $self->is_validid($cond->{'id'}) && ! $cond->{'token'} );
 	eval {
 		$stat = $self->{'object'}->update( $self->{'table'}, $data, $cond );
 	};
 	return $stat unless $@;
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub remove
@@ -489,18 +489,18 @@ sub remove
 	# @Param <ref>	(Ref->Hash) Where condition
 	# @Return	(Integer) 0 = Failed to remove or parameter error
 	#		(Integer) 1 = Successfully removed
-	my $self = shift();
-	my $cond = shift() || return(0);
+	my $self = shift;
+	my $cond = shift || return 0;
 	my $stat = 0;
 
-	return(0) if( ! $self->is_validid($cond->{'id'}) && ! $cond->{'token'} );
+	return 0 if( ! $self->is_validid($cond->{'id'}) && ! $cond->{'token'} );
 	eval {
 		$stat = $self->{'object'}->delete( $self->{'table'}, $cond );
 	};
 	return $stat unless $@;
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 
 }
 
@@ -514,9 +514,9 @@ sub disable
 	# @Param <ref>	(Ref->Hash) Where Condition
 	# @Returns	(Integer) 1 = Successfully disabled the record
 	#		(Integer) 0 = Failed to UPDATE
-	my $self = shift();
-	my $cond = shift() || return(0);
-	return(0) if( ! $self->is_validid($cond->{'id'}) && ! $cond->{'token'} );
+	my $self = shift;
+	my $cond = shift || return 0;
+	return 0 if( ! $self->is_validid($cond->{'id'}) && ! $cond->{'token'} );
 	return $self->update( { 'disabled' => 1 }, $cond );
 }
 

@@ -1,7 +1,7 @@
-# $Id: Time.pm,v 1.10 2010/11/15 16:11:06 ak Exp $
+# $Id: Time.pm,v 1.10.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: Time.pm,v 1.1 2009/08/29 09:13:56 ak Exp -
 # -Id: Time.pm,v 1.5 2009/07/16 09:05:33 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                             
  ######  ##                 
@@ -214,8 +214,8 @@ sub to_second
 	# @Param <str>	(String) Digit and a unit of time
 	# @Return	(Integer) n = seconds
 	#		(Integer) 0 = 0 or invalid unit of time
-	my $class = shift();
-	my $digit = shift() || return(0);
+	my $class = shift;
+	my $digit = shift || return 0;
 	my $t_sec = 0;
 	my @unitc = keys %$UnitOfTime;
 	my @mathc = keys %$MathematicalConstant;
@@ -248,10 +248,10 @@ sub monthname
 	# @Param <flg>	(Integer) require full name
 	# @Return	(Ref|Array) Month name
 	#
-	my $class = shift();
-	my $fname = shift() || 0;
+	my $class = shift;
+	my $fname = shift || 0;
 	my $keyis = $fname ? 'Full' : 'Abbr';
-	return @{ $MonthName->{$keyis} } if wantarray();
+	return @{ $MonthName->{ $keyis } } if wantarray;
 	return $MonthName->{ $keyis };
 }
 
@@ -265,10 +265,10 @@ sub dayofweek
 	# @Param <flg>	(Integer) require full name
 	# @Return	(Ref|Array) list of day of week
 	#
-	my $class = shift();
-	my $fname = shift() || 0;
+	my $class = shift;
+	my $fname = shift || 0;
 	my $keyis = $fname ? 'Full' : 'Abbr';
-	return @{ $DayOfWeek->{$keyis} } if wantarray();
+	return @{ $DayOfWeek->{ $keyis } } if wantarray;
 	return $DayOfWeek->{ $keyis };
 }
 
@@ -282,10 +282,10 @@ sub hourname
 	# @Param <flg>	(Integer) require full name
 	# @Return	(Ref|Array) Month name
 	#
-	my $class = shift();
-	my $fname = shift() || 1;
+	my $class = shift;
+	my $fname = shift || 1;
 	my $keyis = $fname ? 'Full' : 'Abbr';
-	return @{ $HourName->{$keyis} } if wantarray();
+	return @{ $HourName->{ $keyis } } if wantarray;
 	return $HourName->{ $keyis };
 }
 
@@ -300,19 +300,19 @@ sub o2d
 	# @Param <del>	(Character) Delimiter
 	# @Return	(String) String
 	#
-	my $class = shift();
-	my $dateo = shift() || 0;
-	my $delim = shift();
+	my $class = shift;
+	my $dateo = shift || 0;
+	my $delim = shift;
 	my $timep = new Time::Piece;
 	my $epoch = 0;
 
 	$delim = '-' unless defined $delim;
-	return $timep->ymd($delim) unless( $dateo =~ m{\A[-]?\d+\z} );
+	return $timep->ymd($delim) unless $dateo =~ m{\A[-]?\d+\z};
 
 	# See http://en.wikipedia.org/wiki/Year_2038_problem
 	$epoch = $timep->epoch() - $dateo * 86400;
-	$epoch = 0 if( $epoch < 0 );
-	$epoch = 2 ** 31 - 1 if( $epoch >= 2 ** 31 );
+	$epoch = 0 if $epoch < 0;
+	$epoch = 2 ** 31 - 1 if $epoch >= 2 ** 31;
 	return Time::Piece->new($epoch)->ymd($delim);
 }
 
@@ -328,30 +328,30 @@ sub canonify
 	# @Return	(String|Time::Piece) Canonified date string or Time::Piece object
 	# @See		http://en.wikipedia.org/wiki/ISO_8601
 	# @See		http://www.ietf.org/rfc/rfc3339.txt
-	my $class = shift();
-	my $datev = shift() || return q();
-	my $quiet = shift() || 0;
+	my $class = shift;
+	my $datev = shift || return q();
+	my $quiet = shift || 0;
 	my $piece = { 
-		'Y' => undef(),		# (Integer) Year
-		'M' => undef(),		# (String) Month Abbr.
-		'd' => undef(),		# (Integer) Day
-		'a' => undef(),		# (String) Day of week, Abbr.
-		'T' => undef(),		# (String) Time
-		'z' => undef(),		# (Integer) Timezone offset
+		'Y' => undef,		# (Integer) Year
+		'M' => undef,		# (String) Month Abbr.
+		'd' => undef,		# (Integer) Day
+		'a' => undef,		# (String) Day of week, Abbr.
+		'T' => undef,		# (String) Time
+		'z' => undef,		# (Integer) Timezone offset
 	};
 
 	$datev =~ s{[,](\d+)}{, $1};	# Thu,13 -> Thu, 13
 
-	my $timetokens = [split( q{ }, $datev )];
+	my $timetokens = [ split( q{ }, $datev ) ];
 	my $canonified = q();		# (String) Canonified Date/Time string
-	my $timepiecex = undef();	# (Time::Piece)
+	my $timepiecex = undef;		# (Time::Piece)
 
 	while( my $p = shift @$timetokens )
 	{
 		if( $p =~ m{\A[A-Z][a-z]{2}[,]?\z} )
 		{
 			# Day of week or Day of week; Thu, Apr, ...
-			chop($p) if( length($p) == 4 );	# Thu, -> Thu
+			chop $p if length($p) == 4;	# Thu, -> Thu
 
 			if( grep { $p eq $_ } @{ $DayOfWeek->{'Abbr'} } )
 			{
@@ -442,8 +442,8 @@ sub abbr2tz
 	# @Param <str>	(String) Abbr. e.g.) JST, GMT, PDT
 	# @Return	(String) +0900, +0000, -0600
 	#		(undef) invalid format
-	my $class = shift();
-	my $tabbr = shift() || return undef();
+	my $class = shift;
+	my $tabbr = shift || return undef;
 	return $TimeZoneAbbr->{ $tabbr };
 }
 
@@ -457,8 +457,8 @@ sub tz2second
 	# @Param <str>	(String) Timezone string e.g) +0900
 	# @Return	(Integer) n  = seconds
 	#		(undef) invalid format
-	my $class = shift();
-	my $tzstr = shift() || return undef();
+	my $class = shift;
+	my $tzstr = shift || return undef;
 	my $digit = {};
 	my $tzsec = 0;
 
@@ -471,8 +471,8 @@ sub tz2second
 			'minutes'  => $4, };
 		$tzsec += ( $digit->{'hour-10'} * 10 + $digit->{'hour-01'} ) * 3600;
 		$tzsec += ( $digit->{'minutes'} * 60 );
-		$tzsec *= -1 if( $digit->{'operator'} eq q{-} );
-		return undef() if( abs($tzsec) > TZ_OFFSET );
+		$tzsec *= -1 if $digit->{'operator'} eq '-';
+		return undef if abs($tzsec) > TZ_OFFSET;
 	}
 	elsif( $tzstr =~ m{\A[A-Za-z]+\z} )
 	{
@@ -480,7 +480,7 @@ sub tz2second
 	}
 	else
 	{
-		return undef();
+		return undef;
 	}
 	
 	return $tzsec;
@@ -495,15 +495,15 @@ sub second2tz
 	# @Description	Convert to Timezone string
 	# @Param <int>	(Integer) Second
 	# @Return	(String) Timezone offset string
-	my $class = shift();
-	my $tzsec = shift() || 0;
-	my $digit = { 'operator' => q(+) };
+	my $class = shift;
+	my $tzsec = shift || 0;
+	my $digit = { 'operator' => '+' };
 	my $tzstr = q();
 
-	return q(+0000) unless($tzsec);
-	return q() if( ref($tzsec) && ref($tzsec) ne q|Time::Seconds| );
+	return '+0000' unless $tzsec;
+	return q() if( ref($tzsec) && ref($tzsec) ne 'Time::Seconds' );
 	return q() if( abs($tzsec) > TZ_OFFSET );	# UTC+14 + 1(DST?)
-	$digit->{'operator'} = q{-} if( $tzsec < 0 );
+	$digit->{'operator'} = '-' if $tzsec < 0;
 
 	$digit->{'hours'} = int( abs($tzsec) / 3600 );
 	$digit->{'minutes'} = int( ( abs($tzsec) % 3600 ) / 60 );

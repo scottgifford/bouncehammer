@@ -1,5 +1,5 @@
-# $Id: YAML.pm,v 1.1 2010/06/25 19:29:28 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: YAML.pm,v 1.1.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Statistics::Stored::
                              
  ##  ##  ##   ##  ## ##      
@@ -38,13 +38,13 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param <ref>	(Ref->Hash)
 	# @Return	(Kanadzuchi::Statistics::YAML) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
-	my $ipsum = undef();
+	my $ipsum = undef;
 
 	$argvs->{'data'} = [];
 	$ipsum = $class->SUPER::new(%$argvs);
-	$ipsum->load() if( defined $argvs->{'file'} );
+	$ipsum->load() if defined $argvs->{'file'};
 	return $ipsum;
 }
 
@@ -62,7 +62,7 @@ sub load
 	# @Description	Load the file(s)
 	# @Param	<None>
 	# @Return	(Ref->Array)
-	my $self = shift();
+	my $self = shift;
 	my $data = [];
 	my $smpl = [];
 
@@ -73,27 +73,27 @@ sub load
 	{
 		foreach my $f ( @{ $self->{'file'} } )
 		{
-			next() unless $f;
-			push( @$data, @{ Kanadzuchi::Metadata->to_object($f) } );
+			next unless $f;
+			push @$data, @{ Kanadzuchi::Metadata->to_object($f) };
 		}
 	}
 	else
 	{
 		$data = Kanadzuchi::Metadata->to_object( $self->{'file'} );
 	}
-	return [] unless( scalar @$data );
+	return [] unless scalar @$data;
 
 	while( my $e = shift @$data )
 	{
-		push( @$smpl, {
+		push @$smpl, +{
 			'senderdomain' => $e->{'senderdomain'},
 			'destination' => $e->{'destination'},
 			'frequency' => $e->{'frequency'},
 			'hostgroup' => $e->{'hostgroup'},
 			'provider' => $e->{'provider'},
-			'reason' => $e->{'reason'}, } );
+			'reason' => $e->{'reason'}, };
 	}
-	$data = undef();
+	$data = undef;
 	$self->{'data'} = $smpl;
 	return $self;
 }
@@ -107,13 +107,13 @@ sub congregat
 	# @Description	Count by each key of the table
 	# @Param <str>	(String) Table name or alias
 	# @Return	(Ref->Hash)
-	my $self = shift();
-	my $name = shift() || return undef();
+	my $self = shift;
+	my $name = shift || return undef;
 	my $size = {};
 	my $freq = {};
 	my $aggr = [];
 
-	return undef() unless( scalar @{ $self->{'data'} } );
+	return undef unless scalar @{ $self->{'data'} };
 	map { $size->{ $_ }++ } map( $_->{ $name }, @{ $self->{'data'} } );
 	map { $freq->{ $_->{ $name } } += $_->{'frequency'} } @{ $self->{'data'} };
 

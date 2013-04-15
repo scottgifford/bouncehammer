@@ -1,7 +1,7 @@
-# $Id: SystemFull.pm,v 1.7 2010/12/12 06:19:35 ak Exp $
+# $Id: SystemFull.pm,v 1.7.2.1 2013/04/15 04:20:53 ak Exp $
 # -Id: SystemFull.pm,v 1.1 2009/08/29 07:33:28 ak Exp -
 # -Id: SystemFull.pm,v 1.1 2009/05/04 05:17:05 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Why::
                                                                     
   #####                 ##                ######        ###  ###    
@@ -22,7 +22,7 @@ use base 'Kanadzuchi::Mail::Why';
 # Regular expressions of 'Mail system full'
 sub exemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return [
 		qr{mail system full},
 		qr{requested mail action aborted: exceeded storage allocation}, # MS Exchange

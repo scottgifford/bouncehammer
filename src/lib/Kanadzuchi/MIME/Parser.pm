@@ -1,5 +1,5 @@
-# $Id: Parser.pm,v 1.5 2010/07/07 11:21:48 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Parser.pm,v 1.5.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MIME::
                                             
  #####                                      
@@ -36,7 +36,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param <ref>	(Ref->Scalar) Data
 	# @Return	(Kanadzuchi::MIME::Parser) Ojbect
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { 'data' => {} };
 	return $class->SUPER::new($argvs);
 }
@@ -55,11 +55,11 @@ sub parseit
 	# @Description	Parse the email body as a header
 	# @Param <ref>	(Ref->Scalar|String) Email header text
 	# @Return	(Kanadzuchi::MIME::Parser) This object
-	my $self = shift();
-	my $text = shift() || return $self;
+	my $self = shift;
+	my $text = shift || return $self;
 	my $data = ref($text) eq q|SCALAR| ? $$text : $text;
 
-	return $self unless( defined $data );
+	return $self unless defined $data;
 	return $self if( ref($data) || ! length($data) );
 	$self->flush();
 
@@ -72,11 +72,11 @@ sub parseit
 
 			$headdata =~ s{\A\s+}{};
 			$headdata =~ s{\s+\z}{};
-			next() unless( $headdata );
+			next unless $headdata;
 
 			$self->{'data'}->{$headname} = [] 
-				unless( ref($self->{'data'}->{$headname}) eq q|ARRAY| );
-			push( @{ $self->{'data'}->{ $headname } }, $headdata );
+				unless ref($self->{'data'}->{ $headname }) eq q|ARRAY|;
+			push @{ $self->{'data'}->{ $headname } }, $headdata;
 		}
 	}
 	return $self;
@@ -91,7 +91,7 @@ sub flush
 	# @Description	Delete all of the data
 	# @Param	<None>
 	# @Return	(Integer) The number of entries
-	my $self = shift();
+	my $self = shift;
 	$self->{'data'} = {};
 	return $self;
 }
@@ -105,7 +105,7 @@ sub count
 	# @Description	Return the number of headers
 	# @Param	<None>
 	# @Return	(Integer) The number of headers
-	my $self = shift();
+	my $self = shift;
 	return keys %{ $self->{'data'} };
 }
 
@@ -118,15 +118,15 @@ sub getit
 	# @Description	Get the header content
 	# @Param <tab>	(String) Header name
 	# @Return	(Array|String) Value
-	my $self = shift();
-	my $head = shift() || return undef();
-	my $data = undef();
+	my $self = shift;
+	my $head = shift || return undef;
+	my $data = undef;
 
-	return q() unless( ref($self->{'data'}->{$head}) eq q|ARRAY| );
-	return q() unless( scalar @{ $self->{'data'}->{$head} } );
-	$data = $self->{'data'}->{$head};
+	return q() unless ref( $self->{'data'}->{ $head } ) eq q|ARRAY|;
+	return q() unless scalar @{ $self->{'data'}->{ $head } };
+	$data = $self->{'data'}->{ $head };
 
-	return @$data if( wantarray() );
+	return @$data if wantarray;
 	return $data->[0];
 }
 

@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.1.2.1 2011/04/07 06:53:17 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.1.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::SK::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,7 +22,7 @@ use warnings;
 sub communisexemplar { return qr{[.]sk\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'centrum' => [
 			# Centrum.sk; http://pobox.centrum.sk/
@@ -37,7 +37,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'centrum'	=> 'Generic',
 		'sme'		=> 'Generic',

@@ -1,7 +1,7 @@
-# $Id: Zip.pm,v 1.4 2010/07/07 11:21:40 ak Exp $
+# $Id: Zip.pm,v 1.4.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: Zip.pm,v 1.1 2009/08/29 08:05:06 ak Exp -
 # -Id: Zip.pm,v 1.2 2009/05/26 02:45:39 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Archive::
                        
  ######    ##          
@@ -37,12 +37,12 @@ sub compress
 	# @Param	<None>
 	# @Return	n = Size of the compressed file 
 	#		0 = Failed to compress or missing argument
-	my $self = shift();
-	my $zipf = undef();
+	my $self = shift;
+	my $zipf = undef;
 	
-	return(0) unless( $self->{'input'} );
-	return(0) unless( -r $self->{'input'} );
-	return(0) if( $self->{'override'} == 0 && -e $self->{'output'} );
+	return 0 unless $self->{'input'};
+	return 0 unless -r $self->{'input'};
+	return 0 if( $self->{'override'} == 0 && -e $self->{'output'} );
 
 	eval {
 		use IO::Compress::Zip;
@@ -56,12 +56,12 @@ sub compress
 				'TextFlag' => -T $self->{'input'} ? 1 : 0,
 				'Append' => 0, );
 	};
-	return(0) if( $@ );
+	return 0 if $@;
 
 	$zipf->binmode();
 	$zipf->print( Perl6::Slurp::slurp( $self->{'input'}->stringify() ) );
 	$zipf->close();
-	$self->{'input'}->remove() if( $self->{'cleanup'} );
+	$self->{'input'}->remove() if $self->{'cleanup'};
 	return $self->{'output'}->stat->size();
 }
 

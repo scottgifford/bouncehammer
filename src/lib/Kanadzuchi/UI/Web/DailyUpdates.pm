@@ -1,7 +1,7 @@
-# $Id: DailyUpdates.pm,v 1.2.2.1 2011/05/24 02:43:18 ak Exp $
+# $Id: DailyUpdates.pm,v 1.2.2.2 2013/04/15 04:20:53 ak Exp $
 # -Id: Summary.pm,v 1.1 2009/08/29 09:30:33 ak Exp -
 # -Id: Summary.pm,v 1.1 2009/08/18 02:37:53 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::UI::Web::
                                                                                   
  ####           ##  ###         ##  ##             ##          ##                 
@@ -61,7 +61,7 @@ sub dailyupdates
 	# +-+-+-+-+-+-+-+-+-+-+-+-+
 	#
 	# @Description	Daily Updates on the Web
-	my $self = shift();
+	my $self = shift;
 	my $file = 'dailyupdates.html';
 	my $bddr = $self->{'database'};
 	my $drpp = { 'd' => 31, 'w' => 188, 'm' => 732, 'y' => 3660 };
@@ -77,7 +77,7 @@ sub dailyupdates
 
 	$descorder = defined $cgiq->param('fe_descend') ? 1 : defined $descorder ? $descorder : 0;
 	$stotalsby = substr( $stotalsby, 0, 1 );
-	$stotalsby = 'd' unless( $stotalsby =~ m{\A(?:d|w|m|y)} );
+	$stotalsby = 'd' unless $stotalsby =~ m{\A(?:d|w|m|y)};
 
 	$operation = $self->config2value( {} );
 	$uioptions = $self->value2config( $operation );
@@ -88,10 +88,10 @@ sub dailyupdates
 	my $latestlog = new Kanadzuchi::BdDR::DailyUpdates::Data( 'handle' => $bddr->handle() );
 	my $dailylogs = new Kanadzuchi::BdDR::DailyUpdates::Data( 'handle' => $bddr->handle() );
 	my $wherecond = {};		# (Ref->Hash) WHERE Condition
-	my $diterator = undef();	# (Kanadzuchi::Iterator)
-	my $dusummary = undef();	# (Kanadzuchi::Statistics)
+	my $diterator = undef;		# (Kanadzuchi::Iterator)
+	my $dusummary = undef;		# (Kanadzuchi::Statistics)
 	my $summarizd = {};		# (Ref->Array) Summarized data
-	my $paginated = undef();	# (Kanadzuchi::BdDR::Page)
+	my $paginated = undef;		# (Kanadzuchi::BdDR::Page)
 	my $dailydata = [];		# (Ref->Array)
 	my $thelatest = [];		# (Ref->Array)
 	my $eachdatum = [];		# (Ref->Array) Each datum
@@ -108,7 +108,7 @@ sub dailyupdates
 
 	$dailylogs->totalsby( $stotalsby );
 	$dailylogs->quaerit( $wherecond, $paginated, $stotalsby );
-	$dailylogs->congregat() unless( $stotalsby eq 'd' );
+	$dailylogs->congregat() unless $stotalsby eq 'd';
 
 	# Sort
 	if( $stotalsby eq 'd' )
@@ -120,7 +120,7 @@ sub dailyupdates
 	{
 		map { $_->{'thetime'} = $_->{'thetime'}->epoch() } @{ $dailylogs->subtotal() };
 		$dailydata = Kanadzuchi::Metadata->mergesort( $dailylogs->subtotal(), 'thetime' );
-		$dailydata = [reverse @$dailydata] if( $descorder );
+		$dailydata = [ reverse @$dailydata ] if $descorder;
 	}
 
 	SUMMARY: foreach my $x ( qw|inserted updated skipped failed executed estimated| )
@@ -134,8 +134,8 @@ sub dailyupdates
 
 		foreach my $y ( qw|sum min mean max stddev| )
 		{
-			next() if( $summarizd->{ $y }->{ $x } eq 'NA' );
-			$summarizd->{ $y }->{ $x } = sprintf("%0.2f",$summarizd->{ $y }->{ $x });
+			next if $summarizd->{ $y }->{ $x } eq 'NA';
+			$summarizd->{ $y }->{ $x } = sprintf( "%0.2f",$summarizd->{ $y }->{ $x } );
 		}
 	}
 
@@ -152,9 +152,9 @@ sub dailyupdates
 		{
 			$latestlog->quaerit( { 'thedate' => $x->{'time'}->ymd('-') }, $p, 'd' );
 			$r = shift @{ $latestlog->data() };
-			next() unless $r->{'thedate'};
+			next unless $r->{'thedate'};
 			$r->{'name'} = $x->{'name'};
-			push( @$thelatest, $r );
+			push @$thelatest, $r;
 		}
 
 		# Neither today's nor yesterday's record exists
@@ -168,7 +168,7 @@ sub dailyupdates
 			if( $r->{'thedate'} )
 			{
 				$r->{'name'} = 'latest';
-				push( @$thelatest, $r );
+				push @$thelatest, $r;
 			}
 		}
 	}
@@ -208,8 +208,8 @@ sub value2config
 	# @Param [int]	(Integer) Option value
 	# @Return	(Ref->Hash) UI Configuration
 	#
-	my $self = shift();
-	my $optv = shift() || $self->param('pi_uioption') || 0;
+	my $self = shift;
+	my $optv = shift || $self->param('pi_uioption') || 0;
 	my $cgiq = $self->query() || q();
 	my $defs = $UIConfiguration;
 	my $conf = {};
@@ -229,7 +229,7 @@ sub value2config
 
 	foreach my $c ( keys %$defs )
 	{
-		next() if( $c eq 'semilog' );
+		next if $c eq 'semilog';
 		$sent = $cgiq->param('fe_'.$c) || q();
 		$conf->{ $c } = 1 if( $sent eq 'on' || $optv & $defs->{ $c } );
 	}
@@ -247,14 +247,14 @@ sub config2value
 	# @Param <ref>	(Ref->Hash) Configuration
 	# @Return	(Integer) Value
 	#
-	my $self = shift();
-	my $conf = shift();
+	my $self = shift;
+	my $conf = shift;
 	my $cgiq = $self->query() || q();
 	my $optv = 0;
 	my $sent = q();
 	my $defs = $UIConfiguration;
 
-	if( ! $cgiq || ref($conf) ne q|HASH| )
+	if( ! $cgiq || ref($conf) ne 'HASH' )
 	{
 		map { $optv |= $defs->{$_} } (qw|vestimated vinserted vupdated vskipped| );
 		return $optv;
@@ -268,7 +268,7 @@ sub config2value
 
 	foreach my $c ( keys %$defs )
 	{
-		next() if( $c eq 'semilog' );
+		next if( $c eq 'semilog' );
 		$sent = $cgiq->param('fe_'.$c) || q();
 		$optv |= $defs->{ $c } if( $conf->{ $c } || $sent );
 	}

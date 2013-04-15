@@ -1,5 +1,5 @@
-# $Id: RFC3463.pm,v 1.3.2.1 2011/06/22 05:35:30 ak Exp $
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# $Id: RFC3463.pm,v 1.3.2.2 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                                                    
  #####  ###### ####  ######   ####   ####  ######  
@@ -365,11 +365,11 @@ sub status
 	# @Param <char>	(Character) i = internal code or s = standard code(default)
 	# @Return	(String) D.S.N.
 	#		(String) Empty = Invalid reason name
-	my $class = shift();
-	my $causa = shift() || return q();
-	my $klass = shift() || 'p';
-	my $ctype = shift() || 's';
-	my $codes = undef();
+	my $class = shift;
+	my $causa = shift || return q();
+	my $klass = shift || 'p';
+	my $ctype = shift || 's';
+	my $codes = undef;
 
 	$klass = $klass eq 't' ? 'temporary' : 'permanent';
 	$codes = $ctype eq 'i' ? $InternalCode : $StandardCode;
@@ -387,10 +387,10 @@ sub causa
 	# @Param <str>	(String) Status code(DSN)
 	# @Return	(String) Reason name
 	#		(String) Empty = Reason does not exist
-	my $class = shift();
-	my $state = shift() || return q();
+	my $class = shift;
+	my $state = shift || return q();
 
-	return q() unless( $state =~ m{\A[45][.]\d[.]\d+\z} );
+	return q() unless $state =~ m{\A[45][.]\d[.]\d+\z};
 
 	my $causa = q();
 	my $klass = substr($state,0,1) == 4 ? 'temporary' : 'permanent';
@@ -400,9 +400,9 @@ sub causa
 
 	foreach my $r ( keys %$codes )
 	{
-		next() unless grep { $state eq $_ } @{ $codes->{ $r } };
+		next unless grep { $state eq $_ } @{ $codes->{ $r } };
 		$causa = $r;
-		last();
+		last;
 	}
 	return $causa;
 }

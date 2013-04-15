@@ -1,5 +1,5 @@
-# $Id: Page.pm,v 1.6 2010/08/28 17:27:01 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: Page.pm,v 1.6.2.1 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::BdDR::
 
  #####                        
@@ -44,7 +44,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param	<None>
 	# @Return	Kanadzuchi::BdDR::Page Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 
 	DEFAULT_VALUES: {
@@ -73,8 +73,8 @@ sub set
 	# @Description	Setting up the page number
 	# @Param <int>	(Integer) The number of records in the DB
 	# @Return	(Kanadzuchi::BdDR::Page) This object
-	my $self = shift();
-	my $recs = shift() || 0;
+	my $self = shift;
+	my $recs = shift || 0;
 
 	return $self if( $recs !~ m{\A\d+\z} || $recs < 1 );
 	$self->{'numofrecordsin'} = $recs;
@@ -91,7 +91,7 @@ sub reset
 	# @Description	Reset values
 	# @Param	<None>
 	# @Return	(Kanadzuchi::BdDR::Page) This object
-	my $self = shift();
+	my $self = shift;
 
 	$self->{'currentpagenum'} = 1;
 	$self->{'resultsperpage'} = 10;
@@ -125,11 +125,11 @@ sub skip
 	# @Description	Skip to the page
 	# @Param <int>	(Integer) Page number
 	# @Return	(Kanadzuchi::BdDR::Page) This object
-	my $self = shift();
-	my $page = shift() || $self->{'currentpagenum'};
+	my $self = shift;
+	my $page = shift || $self->{'currentpagenum'};
 	my $ppos = $page;
 
-	return $self unless( $page =~ m{\A\d+\z} );
+	return $self unless $page =~ m{\A\d+\z};
 
 	$ppos = $page < 0 
 			? 1
@@ -151,9 +151,9 @@ sub hasnext
 	# @Description	There is next page or not
 	# @Param	<None>
 	# @Return	(Boolean) 0 = does not exist, 1 = exists
-	my $self = shift();
-	return(1) if( $self->{'currentpagenum'} < $self->{'lastpagenumber'} );
-	return(0);
+	my $self = shift;
+	return 1 if $self->{'currentpagenum'} < $self->{'lastpagenumber'};
+	return 0;
 }
 
 sub next
@@ -165,7 +165,7 @@ sub next
 	# @Description	Next page
 	# @Param 	<None>
 	# @Return	(Kanadzuchi::BdDR::Page) This object
-	my $self = shift();
+	my $self = shift;
 	my $curr = $self->{'currentpagenum'};
 	my $next = $self->{'currentpagenum'} + 1;
 
@@ -192,7 +192,7 @@ sub prev
 	# @Description	Previous page
 	# @Param 	<None>
 	# @Return	(Kanadzuchi::BdDR::Page) This object
-	my $self = shift();
+	my $self = shift;
 	my $curr = $self->{'currentpagenum'};
 	my $prev = $self->{'currentpagenum'} - 1;
 
@@ -219,7 +219,7 @@ sub to_hashref
 	# @Description	Returns DBIx::Skinny compatible hash reference
 	# @Param 	<None>
 	# @Return	(Kanadzuchi::BdDR::Page) This object
-	my $self = shift();
+	my $self = shift;
 	my $page = {};
 
 	$page->{'limit'} = $self->{'resultsperpage'} if( $self->{'resultsperpage'} );
@@ -237,18 +237,19 @@ sub to_sql
 	# @Description	Convert from object to SQL statement
 	# @Param 	<None>
 	# @Return	(String) SQL Statement
-	my $self = shift();
+	my $self = shift;
 	my $page = {};
 	my $sqls = [];
 
 	if( $self->{'colnameorderby'} )
 	{
-		push( @$sqls, q(ORDER BY ).$self->{'colnameorderby'} );
-		push( @$sqls, q( DESC) ) if( $self->{'descendroderby'} );
+		push @$sqls, 'ORDER BY '.$self->{'colnameorderby'};
+		push @$sqls, ' DESC' if $self->{'descendroderby'};
 	}
 
-	push( @$sqls, q(LIMIT ).$self->{'resultsperpage'} ) if( $self->{'resultsperpage'} );
-	push( @$sqls, q(OFFSET ).$self->{'offsetposition'} ) if( $self->{'offsetposition'} );
+	push @$sqls, 'LIMIT '.$self->{'resultsperpage'} if $self->{'resultsperpage'};
+	push @$sqls, 'OFFSET '.$self->{'offsetposition'} if $self->{'offsetposition'};
+
 	return join( q{ }, @$sqls );
 }
 

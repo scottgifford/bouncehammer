@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.2 2010/06/16 08:15:32 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.2.2.1 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::IR::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,7 +22,7 @@ use warnings;
 sub communisexemplar { return qr{[.]ir\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		# Experimental(Not tested)
 		# http://iran.ir/
@@ -34,7 +34,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'iran.ir'	=> 'Generic',
 	};

@@ -1,8 +1,8 @@
-# $Id: Mbox.pm,v 1.28.2.13 2013/04/08 04:35:23 ak Exp $
+# $Id: Mbox.pm,v 1.28.2.14 2013/04/15 04:20:52 ak Exp $
 # -Id: Parser.pm,v 1.10 2009/12/26 19:40:12 ak Exp -
 # -Id: Parser.pm,v 1.1 2009/08/29 08:50:27 ak Exp -
 # -Id: Parser.pm,v 1.4 2009/07/31 09:03:53 ak Exp -
-# Copyright (C) 2009-2012 Cubicroot Co. Ltd.
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::
                              
  ##  ## ##                   
@@ -57,8 +57,10 @@ __PACKAGE__->mk_accessors(
 #
 sub ENDOF() { qq(\n__THE_END_OF_THE_EMAIL__\n); }
 my $TransferAgents = __PACKAGE__->postulat();
-my $MostFamousMTAs = [ 'Sendmail', 'Postfix', 'qmail', 'Exim', 'Courier',
-			'OpenSMTPD', 'FeedbackLoop' ];
+my $MostFamousMTAs = [ 
+	'Sendmail', 'Postfix', 'qmail', 'Exim', 'Courier',
+	'OpenSMTPD', 'FeedbackLoop'
+];
 
 #  ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
 # ||C |||l |||a |||s |||s |||       |||M |||e |||t |||h |||o |||d |||s ||
@@ -74,7 +76,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param
 	# @Return	Kanadzuchi::Mbox Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 
 	DEFAULT_VALUES: {
@@ -106,7 +108,7 @@ sub postulat
 	#         Mbox::<CCTLD or ISO3166>::*.pm
 	#       * The key 'agents' has a value: Load only the module of its name in 
 	#         Kanadzuch::Mbox::<CCTLD or ISO3166>::<its name>.pm
-	my $class = shift();
+	my $class = shift;
 
 	# Experimental implementation for the future.
 	my $libmboxroot = '__KANADZUCHILIB__/Kanadzuchi/MTA';
@@ -157,9 +159,9 @@ sub postulat
 			$acclassname =~ s{[.]pm\z}{};
 
 			eval { require $fp; };
-			push( @$listofclass, $acclassname ) unless $@;
+			push @$listofclass, $acclassname unless $@;
 		}
-		closedir($dh);
+		closedir $dh;
 
 	} # End of foreach(EACH_COUNTRY)
 
@@ -168,7 +170,7 @@ sub postulat
 		# Load user-defined modules and commercial MTA modules
 		my $directory = $libmboxroot.'/'.$amod;
 
-		next() unless( -d $directory && -r _ && -x _ );
+		next unless( -d $directory && -r _ && -x _ );
 		opendir( my $dh, $directory );
 
 		READAM: while( my $de = readdir($dh) )
@@ -182,10 +184,10 @@ sub postulat
 			$acclassname =~ s{[.]pm\z}{};
 
 			eval { require $fp; };
-			push( @$listofclass, $acclassname ) unless $@;
+			push @$listofclass, $acclassname unless $@;
 		}
 
-		closedir($dh);
+		closedir $dh;
 
 	} # End of foreach(ADDITIONALS)
 
@@ -202,9 +204,9 @@ sub breakit
 	# @Param <ref>	(Ref->Hash) Message entity.
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Message body or empty string
-	my $packagename = shift();
-	my $thismessage = shift() || return q();
-	my $thebodypart = shift() || return q();
+	my $packagename = shift;
+	my $thismessage = shift || return q();
+	my $thebodypart = shift || return q();
 	my $theheadpart = $thismessage->{'head'};
 
 	# For Code Refactoring IN THE FUTURE.
@@ -249,9 +251,9 @@ sub breakit
 	# Most famous MTAs
 	foreach my $mta ( @$MostFamousMTAs )
 	{
-		$agentmodule  = q|Kanadzuchi::MTA::|.$mta;
+		$agentmodule  = 'Kanadzuchi::MTA::'.$mta;
 		$pseudofield .= $agentmodule->reperit( $theheadpart, $thebodypart );
-		last() if( $pseudofield );
+		last if $pseudofield;
 	}
 
 	# Optionals
@@ -260,7 +262,7 @@ sub breakit
 		foreach my $mod ( @$TransferAgents )
 		{
 			$pseudofield .= $mod->reperit( $theheadpart, $thebodypart );
-			last() if( $pseudofield );
+			last if $pseudofield;
 		}
 
 		# Fallback
@@ -300,15 +302,16 @@ sub slurpit
 	# @Description	Slurp the email
 	# @Param	<None>
 	# @Return	(Integer) n = The number of slurped emails
-	my $self = shift();
-	my $file = defined($self->{'file'}) ? $self->{'file'} : \*STDIN;
+	my $self = shift;
+	my $file = defined $self->{'file'} ? $self->{'file'} : \*STDIN;
 
 	unless( ref($file) eq q|SCALAR| )
 	{
-		return(0) if( $file =~ m{[\n\r]} || $file =~ m{[\x00-\x1f\x7f]} );
-		return(0) if(
+		return 0 if( $file =~ m{[\n\r]} || $file =~ m{[\x00-\x1f\x7f]} );
+		return 0 if(
 			! ( -f $file && -T _ && -s _ ) &&
-			! ( ref($file) eq q|GLOB| && -T $file ) );
+			! ( ref($file) eq q|GLOB| && -T $file )
+		);
 	}
 
 	$self->{'emails'} = [];
@@ -342,8 +345,8 @@ sub slurpit
 		}
 	};
 
-	return(0) if $@;
-	$self->{'nmails'} = scalar( @{$self->{'emails'}} );
+	return 0 if $@;
+	$self->{'nmails'} = scalar @{$self->{'emails'}};
 	return $self->{'nmails'};
 }
 
@@ -357,14 +360,17 @@ sub parseit
 	# @Param <ref>	(Integer) Flag for saving failed messages
 	# @Param <ref>	(Ref->Code) Callback function
 	# @Return	(Integer) n = The number of parsed messages
-	my $self = shift();
-	my $save = shift() || 0;
-	my $call = shift() || sub {};
+	my $self = shift;
+	my $save = shift || 0;
+	my $call = shift || sub {};
 	my $ends = ENDOF;
 	my $seek = 0;
 
 	my $agentclasses = [ map { 'Kanadzuchi::MTA::'.$_ } @$MostFamousMTAs ];
-	my $emailheaders = [ 'From', 'To', 'Date', 'Subject', 'Content-Type', 'Reply-To', 'Message-Id' ];
+	my $emailheaders = [ 
+		'From', 'To', 'Date', 'Subject', 'Content-Type',
+		'Reply-To', 'Message-Id',
+	];
 	my $agentheaders = [];
 
 	# Load each agent's headers
@@ -372,7 +378,7 @@ sub parseit
 	map { push @$agentheaders, @{ $_->emailheaders() } } @$TransferAgents;
 
 
-	PARSE_EMAILS: while( my $_email = shift @{$self->{'emails'}} )
+	PARSE_EMAILS: while( my $_email = shift @{ $self->{'emails'} } )
 	{
 		my $_mail = {};
 		my $_from = q();	# 'From_' of UNIX mbox
@@ -403,34 +409,40 @@ sub parseit
 		# 1. Set the content in UNIX From_ Line
 		$_mail->{'from'} = $_from;
 		$_mail->{'head'} = { 
-				'received' => [], 'subject' => q(), 'from' => q(),
-				'to' => q(), 'date' => q(), 'content-type' => q(),
-				'reply-to' => q(), 'message-id' => q() };
+			'to' => q(),
+			'from' => q(),
+			'date' => q(),
+			'subject' => q(),
+			'reply-to' => q(),
+			'received' => [], 
+			'message-id' => q(),
+			'content-type' => q(),
+		};
 
 		# 2. Parse email headers
 		my $__continued = 0;	# Flag; Continued from the previous line.
 		my $__ehcounter = 0;	# Temporary counter for email headers
 
-		LINES: foreach my $_ln ( split( qq{\n}, $_head ) )
+		LINES: foreach my $e ( split( qq{\n}, $_head ) )
 		{
-			HEADERS: foreach my $_eh ( @$emailheaders, @$agentheaders )
+			HEADERS: foreach my $eh ( @$emailheaders, @$agentheaders )
 			{
-				next(HEADERS) unless( $_ln =~ m{\A$_eh[:][ ]*}i );
-				$_mail->{'head'}->{ lc $_eh } = $1 if( $_ln =~ m/\A${_eh}[:][ ]*(.+?)\z/i );
+				next(HEADERS) unless( $e =~ m{\A$eh[:][ ]*}i );
+				$_mail->{'head'}->{ lc $eh } = $1 if( $e =~ m/\A${eh}[:][ ]*(.+?)\z/i );
 			}
 
 			# Get and concatenate 'Received:' headers
-			if( $_ln =~ m{\AReceived[:][ ]*(.+?)\z}i )
+			if( $e =~ m{\AReceived[:][ ]*(.+?)\z}i )
 			{
 				push( @{ $_mail->{'head'}->{'received'} }, $1 );
 				$__continued = 1;
 				$__ehcounter = scalar( @{ $_mail->{'head'}->{'received'} } ) - 1;
 			}
-			elsif( $__continued && $_ln =~ m{\A[\s\t]+(.+?)\z} )
+			elsif( $__continued && $e =~ m{\A[\s\t]+(.+?)\z} )
 			{
 				# This line is countinued from the previous line.
 				next(LINES) unless( scalar @{ $_mail->{'head'}->{'received'} } );
-				$_mail->{'head'}->{'received'}->[$__ehcounter] .= q( ).$1;
+				$_mail->{'head'}->{'received'}->[ $__ehcounter ] .= q( ).$1;
 			}
 			else
 			{
@@ -448,7 +460,7 @@ sub parseit
 
 		# Parse message body
 		# Concatenate multiple-lined headers
-		next(PARSE_EMAILS) unless( $_mail->{'body'} );
+		next(PARSE_EMAILS) unless $_mail->{'body'};
 		$_mail->{'body'} =~ s{^[Ff]rom:[ ]*([^\n\r]+)[\n\r][ \t]+([^\n\r]+)}{From: $1 $2}gm;
 		$_mail->{'body'} =~ s{^[Tt]o:[ ]*([^\n\r]+)[\n\r][ \t]+([^\n\r]+)}{To: $1 $2}gm;
 
@@ -457,10 +469,10 @@ sub parseit
 			my $_d1 = 'Diagnostic-Code: '.$1;
 			my $_d2 = $2; $_d2 =~ y{\r}{\n};
 
-			foreach my $__e ( split( qq(\n), $_d2 ) )
+			foreach my $e ( split( qq(\n), $_d2 ) )
 			{
-				last unless $__e =~ m{\A[\s\t]+};
-				$_d1 .= ' '.$__e;
+				last unless $e =~ m{\A[\s\t]+};
+				$_d1 .= ' '.$e;
 			}
 
 			$_d1 =~ y{ }{}s;
@@ -531,7 +543,7 @@ sub parseit
 					|X-Postfix-Sender|Envelope-From|X-Envelope-From
 					|Resent-From|Sender|Resent-Reply-To|Apparently-From):[ ]}mx ){
 
-			$_mail->{'body'} .= qq(\n) unless( $_mail->{'body'} =~ m{\n\z}mx );
+			$_mail->{'body'} .= qq(\n) unless $_mail->{'body'} =~ m{\n\z}mx;
 			$_mail->{'body'} .= 'From: '.$_mail->{'head'}->{'to'}.qq(\n);
 		}
 
@@ -543,11 +555,11 @@ sub parseit
 			$_mail->{'body'} .= 'Date: '.$_mail->{'head'}->{'date'}.qq(\n);
 		}
 
-		push( @{ $self->{'messages'} }, {
+		push @{ $self->{'messages'} }, {
 				'data' => $_mail->{'data'},
 				'from' => $_mail->{'from'},
 				'head' => $_mail->{'head'},
-				'body' => $_mail->{'body'}, } );
+				'body' => $_mail->{'body'}, };
 
 		$self->{'nmesgs'}++;
 

@@ -1,5 +1,5 @@
-# $Id: Sendmail.pm,v 1.6.2.4 2011/10/07 06:23:14 ak Exp $
-# Copyright (C) 2009-2011 Cubicroot Co. Ltd.
+# $Id: Sendmail.pm,v 1.6.2.5 2013/04/15 04:20:52 ak Exp $
+# Copyright (C) 2009-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::
                                                           
   #####                    ##                  ##  ###    
@@ -37,7 +37,7 @@ my $RxSendmail = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '2.1.4' }
+sub version { '2.1.5' }
 sub description { 'V8Sendmail: /usr/sbin/sendmail' };
 sub xsmtpagent { 'X-SMTP-Agent: Sendmail'.qq(\n); }
 sub reperit
@@ -50,12 +50,12 @@ sub reperit
 	# @Param <ref>	(Ref->Hash) Message header
 	# @Param <ref>	(Ref->String) Message body
 	# @Return	(String) Pseudo header content
-	my $class = shift();
-	my $mhead = shift() || return q();
-	my $mbody = shift() || return q();
+	my $class = shift;
+	my $mhead = shift || return q();
+	my $mbody = shift || return q();
 
-	return q() unless( $mhead->{'subject'} =~ $RxSendmail->{'subject'} );
-	return q() unless( $mhead->{'from'} =~ $RxSendmail->{'from'} );
+	return q() unless $mhead->{'subject'} =~ $RxSendmail->{'subject'};
+	return q() unless $mhead->{'from'} =~ $RxSendmail->{'from'};
 
 	my $phead = q();	# (String) Pseudo email header
 	my $pstat = q();	# (String) Stauts code
@@ -66,7 +66,7 @@ sub reperit
 	{
 		if( ($el =~ $RxSendmail->{'begin'}) .. ($el =~ $RxSendmail->{'endof'}) )
 		{
-			next() if( $xsmtp && $pstat );
+			next if( $xsmtp && $pstat );
 			if( ! length($xsmtp) & $el =~ m{\A[>]{3}[ ]([A-Z]{4})[ ]?} )
 			{
 				# ----- Transcript of session follows -----
@@ -79,23 +79,23 @@ sub reperit
 				# Received-From-MTA: DNS; x1x2x3x4.dhcp.example.ne.jp
 				# Arrival-Date: Wed, 29 Apr 2009 16:03:18 +0900
 				$xsmtp = $1;
-				next();
+				next;
 			}
 
 			if( ! length($pstat) & $el =~ m{\A\d{3} ([45][.]\d[.]\d+)} )
 			{
 				# 554 5.0.0 Service unavailable
 				$pstat = $1;
-				$xrcpt = $1 if( $el =~ m{\A.+[<](.+[@].+)[>].*\z} );
-				next();
+				$xrcpt = $1 if $el =~ m{\A.+[<](.+[@].+)[>].*\z};
+				next;
 			}
 
 		}
 	}
 
-	$phead .= __PACKAGE__->xsmtprecipient($xrcpt) if $xrcpt;
-	$phead .= __PACKAGE__->xsmtpcommand($xsmtp);
-	$phead .= __PACKAGE__->xsmtpstatus($pstat);
+	$phead .= __PACKAGE__->xsmtprecipient( $xrcpt ) if $xrcpt;
+	$phead .= __PACKAGE__->xsmtpcommand( $xsmtp );
+	$phead .= __PACKAGE__->xsmtpstatus( $pstat );
 	$phead .= __PACKAGE__->xsmtpagent();
 
 	return $phead;

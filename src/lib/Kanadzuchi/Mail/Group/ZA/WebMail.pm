@@ -1,5 +1,5 @@
-# $Id: WebMail.pm,v 1.3.2.1 2011/03/24 05:40:59 ak Exp $
-# Copyright (C) 2010 Cubicroot Co. Ltd.
+# $Id: WebMail.pm,v 1.3.2.2 2013/04/15 04:20:53 ak Exp $
+# Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::ZA::
                                                    
  ##  ##         ##     ##  ##           ##  ###    
@@ -22,7 +22,7 @@ use warnings;
 sub communisexemplar { return qr{[.]za\z}; }
 sub nominisexemplaria
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'mighty' => [
 			# http://www.mighty.co.za/
@@ -39,7 +39,7 @@ sub nominisexemplaria
 
 sub classisnomina
 {
-	my $class = shift();
+	my $class = shift;
 	return {
 		'mighty'	=> 'Generic',
 		'webmail.co.za'	=> 'Generic',

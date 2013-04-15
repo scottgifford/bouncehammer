@@ -1,7 +1,7 @@
-# $Id: Masters.pm,v 1.13 2010/09/23 14:07:55 ak Exp $
+# $Id: Masters.pm,v 1.13.2.1 2013/04/15 04:20:52 ak Exp $
 # -Id: Addressers.pm,v 1.4 2010/03/04 08:33:28 ak Exp -
 # -Id: Addressers.pm,v 1.4 2010/02/21 20:42:02 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::BdDR::BounceLogs::
                                                    
  ##  ##                  ##                        
@@ -106,8 +106,8 @@ sub whichtable
 	# @Description	Which table should I use?
 	# @Param <str>	(String) Table alias or symbol character
 	# @Return	(String) MasterTable class name
-	my $class = shift();
-	my $alias = lc(shift()) || return undef();
+	my $class = shift;
+	my $alias = lc shift || return undef;
 	my $klass = q();
 
 	if( $alias eq 'addressers' || $alias eq 'a' )
@@ -148,12 +148,14 @@ sub mastertables
 	# @Param <obj>	(DBI::db) Database handle
 	# @Param <ref>	(Ref->Array) Mastertable names to new()
 	# @Return	(Ref->Hash) K::BdDR::BounceLogs::Masters::Table Objects
-	my $class = shift();
-	my $mtdbh = shift() || return {};
-	my $mtabs = shift() || [];
-	my $alias = [ 'addressers', 'senderdomains', 'destinations',
-			'hostgroups', 'providers', 'reasons' ];
-	$mtabs = $alias unless( scalar(@$mtabs) );
+	my $class = shift;
+	my $mtdbh = shift || return {};
+	my $mtabs = shift || [];
+	my $alias = [
+		'addressers', 'senderdomains', 'destinations',
+		'hostgroups', 'providers', 'reasons',
+	];
+	$mtabs = $alias unless scalar @$mtabs;
 	return { map { $_ => $class->new( 'alias' => $_, 'handle' => $mtdbh ) } @$mtabs };
 }
 
@@ -166,7 +168,7 @@ sub new
 	# @Description	Wrapper method of new()
 	# @Param <str>	(Ref->Hash) Arguments
 	# @Return	(K::BdDR::BounceLogs::Masters) Object
-	my $class = shift();
+	my $class = shift;
 	my $argvs = { @_ };
 	my $tfmap = {
 		'Addressers'	=> { 'table' => 't_addressers', 'field' => 'email' },
@@ -179,22 +181,22 @@ sub new
 	my $klass = q|Kanadzuchi::BdDR::BounceLogs::Masters|;
 
 	# Check table alias
-	my $alias = $class->whichtable($argvs->{'alias'});
-	return undef() unless $alias;
+	my $alias = $class->whichtable( $argvs->{'alias'} );
+	return undef unless $alias;
 
-	foreach my $t ( keys(%$tfmap) )
+	foreach my $t ( keys %$tfmap )
 	{
-		next() unless( $t eq $alias );
+		next unless $t eq $alias;
 
 		$argvs->{'alias'} = $alias;
 		$argvs->{'table'} = $tfmap->{ $t }->{'table'};
 		$argvs->{'field'} = $tfmap->{ $t }->{'field'};
 		$argvs->{'error'} = { 'string' => q(), 'count' => 0 };
 		$argvs->{'object'} = $klass->new( {'dbh' => $argvs->{'handle'} });
-		last();
+		last;
 	}
 
-	return $class->SUPER::new($argvs);
+	return $class->SUPER::new( $argvs );
 }
 
 #  ____ ____ ____ ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
@@ -212,13 +214,13 @@ sub is_validid
 	# @Param	<None>
 	# @Return	(Integer) 1 = Is valid ID
 	#		(Integer) 0 = Is not
-	my $self = shift();
-	my $anid = shift() || $self->{'id'};
+	my $self = shift;
+	my $anid = shift || $self->{'id'};
 
-	return(0) unless( defined($anid) );
-	return(0) unless( $anid );
-	return(0) unless( $anid =~ m{\A\d+\z} );
-	return(1);
+	return 0 unless defined $anid;
+	return 0 unless $anid;
+	return 0 unless $anid =~ m{\A\d+\z};
+	return 1;
 }
 
 sub is_validcolumn
@@ -231,12 +233,12 @@ sub is_validcolumn
 	# @Param <str>	(String) Column name
 	# @Return	(Integer) 1 = Is valid column name
 	#		(Integer) 0 = Is not
-	my $self = shift();
-	my $colm = shift() || return(0);
+	my $self = shift;
+	my $colm = shift || return 0;
 
-	return(1) if( $colm eq $self->{'field'} || $colm eq 'id' );
-	return(1) if( $colm eq 'description' || $colm eq 'disabled' );
-	return(0);
+	return 1 if( $colm eq $self->{'field'} || $colm eq 'id' );
+	return 1 if( $colm eq 'description' || $colm eq 'disabled' );
+	return 0;
 }
 
 sub count
@@ -249,8 +251,8 @@ sub count
 	# @Param <ref>	(Ref->Hash) Where Conditions
 	# @Return	(Integer) n = The number of records
 	#		undef       = Failed to connect
-	my $self = shift();
-	my $cond = shift() || {};
+	my $self = shift;
+	my $cond = shift || {};
 	my $size = 0;
 
 	eval {
@@ -264,7 +266,7 @@ sub count
 
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub getidbyname
@@ -277,22 +279,22 @@ sub getidbyname
 	# @Param <str>	(String) name
 	# @Return	(Integer) 0 = Failed
 	#		(Integer) n = The ID
-	my $self = shift();
-	my $name = shift() || return(0);
+	my $self = shift;
+	my $name = shift || return 0;
 	my $anid = 0;
 
 	eval {
 		my $_tobj = $self->{'object'};
 		my $_tsql = sprintf( "SELECT id FROM %s WHERE %s = :name", $self->{'table'}, $self->{'field'} );
 		my $_iter = $_tobj->search_named( $_tsql, { 'name' => $name } );
-		my $_row1 = defined($_iter) ? $_iter->first() : undef();
-		$anid = defined($_row1) ? $_row1->get_column('id') : 0;
+		my $_row1 = defined $_iter ? $_iter->first() : undef;
+		$anid = defined $_row1 ? $_row1->get_column('id') : 0;
 	};
 
 	return $anid unless $@;
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub getnamebyid
@@ -305,18 +307,18 @@ sub getnamebyid
 	# @Param <id>	(Integer) ID
 	# @Return	(String) '' = Failed or not found
 	#		(String) value of 'name' field
-	my $self = shift();
-	my $anid = shift() || return q();
+	my $self = shift;
+	my $anid = shift || return q();
 	my $name = q();
 
-	return q() unless( $self->is_validid($anid) );
+	return q() unless $self->is_validid( $anid );
 
 	eval {
 		my $_tobj = $self->{'object'};
 		my $_tsql = sprintf( "SELECT %s FROM %s WHERE id = :id", $self->{'field'}, $self->{'table'} );
 		my $_iter = $_tobj->search_named( $_tsql, { 'id' => $anid } );
-		my $_row1 = defined($_iter) ? $_iter->first() : undef();
-		$name = defined($_row1) ? $_row1->get_column($self->{'field'}) : q();
+		my $_row1 = defined $_iter ? $_iter->first() : undef;
+		$name = defined $_row1 ? $_row1->get_column($self->{'field'}) : q();
 	};
 
 	return $name unless $@;
@@ -334,23 +336,25 @@ sub getentbyid
 	# @Description	Get a entry by the ID 
 	# @Param <id>	(Integer) ID
 	# @Return	(Ref->Hash) Entity
-	my $self = shift();
-	my $anid = shift() || return {};
+	my $self = shift;
+	my $anid = shift || return {};
 	my $trow = {};
 
-	return {} unless( $self->is_validid($anid) );
+	return {} unless $self->is_validid( $anid );
 
 	eval {
 		my $_tobj = $self->{'object'};
 		my $_tcol = $self->{'field'};
 		my $_that = $_tobj->single( $self->{'table'}, { 'id' => $anid } );
 
-		if( defined($_that) )
+		if( defined $_that )
 		{
-			$trow = { 'id' => $_that->id(),
-				  'name' => $_that->$_tcol,
-				  'disabled' => $_that->disabled(),
-				  'description' => $_that->description() || q() };
+			$trow = { 
+				'id' => $_that->id(),
+				'name' => $_that->$_tcol,
+				'disabled' => $_that->disabled(),
+				'description' => $_that->description() || q(),
+			};
 		}
 	};
 
@@ -370,13 +374,13 @@ sub search
 	# @Param <ref>	(Ref->Hash) WHERE condition
 	# @Param <obj>	(Kanadzuchi::BdDR::Page) Pagination object
 	# @Return	(Ref->Array) records
-	my $self = shift();
-	my $cond = shift() || {};
-	my $page = shift() || new Kanadzuchi::BdDR::Page();
+	my $self = shift;
+	my $cond = shift || {};
+	my $page = shift || new Kanadzuchi::BdDR::Page();
 	my $recs = [];
 
-	return [] unless( ref($cond) eq q|HASH| );
-	return [] unless( ref($page) eq q|Kanadzuchi::BdDR::Page| );
+	return [] unless ref($cond) eq 'HASH';
+	return [] unless ref($page) eq 'Kanadzuchi::BdDR::Page';
 
 	eval {
 		my $_qopt = $page->to_hashref();
@@ -390,14 +394,16 @@ sub search
 		$_cond->{ $self->{'field'} } = $cond->{'name'} if( defined($cond->{'name'}) );
 		$_that = $_tobj->search( $self->{'table'}, $_cond, $_qopt );
 
-		if( defined($_that) )
+		if( defined $_that )
 		{
-			while( my $_e = $_that->next() )
+			while( my $_e = $_that->next )
 			{
-				push( @$recs, { 'id' => $_e->id(),
-						'name' => $_e->$_tcol,
-						'description' => $_e->description() || q(),
-						'disabled' => $_e->disabled() || 0, } );
+				push @$recs, {
+					'id' => $_e->id(),
+					'name' => $_e->$_tcol,
+					'description' => $_e->description() || q(),
+					'disabled' => $_e->disabled() || 0,
+				};
 			}
 		}
 	};
@@ -418,13 +424,13 @@ sub insert
 	# @Param <ref>	(Ref->Hash) New data
 	# @Return	(Integer) 0 = Failed to create or parameter error
 	#		(Integer) n = ID of Inserted record, Successfully created
-	my $self = shift();
-	my $data = shift() || {};
+	my $self = shift;
+	my $data = shift || {};
 	my $nuid = 0;
 
-	return(0) unless( ref($data) eq q|HASH| );
-	return(0) unless( $data->{'name'} );
-	return(0) if( $data->{'name'} =~ m{[\x00-\x1f\x7f]} );
+	return 0 unless ref($data) eq 'HASH';
+	return 0 unless $data->{'name'};
+	return 0 if $data->{'name'} =~ m{[\x00-\x1f\x7f]};
 
 	eval {
 		my $_name = lc($data->{'name'});
@@ -434,13 +440,13 @@ sub insert
 					$self->{'field'} => $_name,
 					'description' => $data->{'description'} || q(),
 					'disabled' => $data->{'disabled'}, } );
-		$nuid = defined($_that) ? $_that->id() : 0;
+		$nuid = defined $_that ? $_that->id() : 0;
 	};
 	return $nuid unless $@;
 
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub update
@@ -454,13 +460,13 @@ sub update
 	# @Param <ref>	(Ref->Hash) Where condition
 	# @Return	(Integer) 0 = Failed to update or parameter error
 	#		(Integer) n = ID, Successfully updated 
-	my $self = shift();
-	my $data = shift() || {};
-	my $cond = shift() || {};
+	my $self = shift;
+	my $data = shift || {};
+	my $cond = shift || {};
 	my $stat = 0;
 
-	return(0) if( ref($data) ne q|HASH| || ref($cond) ne q|HASH| );
-	return(0) unless( $self->is_validid($cond->{'id'}) );
+	return 0 if( ref($data) ne q|HASH| || ref($cond) ne q|HASH| );
+	return 0 unless $self->is_validid($cond->{'id'});
 
 	eval {
 		my $_new1 = {};
@@ -477,7 +483,7 @@ sub update
 	return $cond->{'id'} if( $stat && ! $@ );
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 sub remove
@@ -490,12 +496,12 @@ sub remove
 	# @Param <ref>	(Ref->Hash) Where condition
 	# @Return	(Integer) 0 = Failed to remove or parameter error
 	#		(Integer) 1 = Successfully removed
-	my $self = shift();
-	my $cond = shift() || {};
+	my $self = shift;
+	my $cond = shift || {};
 	my $stat = 0;
 
-	return(0) unless( ref($cond) eq q|HASH| );
-	return(0) unless( $self->is_validid($cond->{'id'}) );
+	return 0 unless ref($cond) eq 'HASH';
+	return 0 unless $self->is_validid( $cond->{'id'} );
 
 	eval {
 		my $_tobj = $self->{'object'};
@@ -507,7 +513,7 @@ sub remove
 	return $cond->{'id'} if( $stat && ! $@ );
 	$self->{'error'}->{'string'} = $@;
 	$self->{'error'}->{'count'}++;
-	return(0);
+	return 0;
 }
 
 1;
