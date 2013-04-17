@@ -1,7 +1,7 @@
-$Id: INSTALL,v 1.4.2.2 2011/06/22 05:35:58 ak Exp $
+$Id: INSTALL,v 1.4.2.3 2013/04/16 09:08:26 ak Exp $
 -------------------------------------------------------------------------------
-  To install this system; bounceHammer, cd to the directory that contains this
-  file and type the following commands:
+  To install bounceHammer, cd to the directory that contains this file and type
+  the following commands:
 
    # ./configure
    # make
@@ -20,46 +20,48 @@ $Id: INSTALL,v 1.4.2.2 2011/06/22 05:35:58 ak Exp $
    *[ NG ] is missing module, [ OK ] is installed module.
 
 -------------------------------------------------------------------------------
- 2. Install all of the missing perl modules
+ 2. Install cpanm(App::cpanminus) command
+
+   We recommend cpanm command to install missing perl modules into your system.
+
+   # cd /usr/local/bin
+   # wget -O- 'http://cpanmin.us/' > ./cpanm
+   # chmod a+x ./cpanm
+
+-------------------------------------------------------------------------------
+ 3. Install all of the missing perl modules
 
    If 'Time::Piece' module does not exist, Install the module by executing the
    following command.
 
-   # cpan Time::Piece
-    or
-   # perl -MCPAN -e 'install Time::Piece'
-   ...
+   # export PERL5LIB=/usr/local/bouncehammer/lib/perl5
+   # /usr/local/bin/cpanm -L /usr/local/bouncehammer Time::Piece
+     or
+   # perl ./Modules.PL missing | cut -d' ' -f4 | cpanm -L /usr/local/bouncehammer
 
    Then, Check again.
+   # export PERL5LIB=/usr/local/bouncehammer/lib/perl5
    # perl ./Modules.PL check
 
-   ------ OR IF YOU USE cpanm COMMAND ------
-
-   # cpanm -l /usr/local/bouncehammer Time::Piece
-     or
-   # perl ./Modules.PL missing | cut -d' ' -f4 | cpanm -l /usr/local/bouncehammer
 
 -------------------------------------------------------------------------------
- 3. Build: configure and make
+ 4. Build: configure and make
 
    * Available configure options
      --prefix <dir>		Install directory, Default is /usr/local/bouncehammer
      --with-perl <path>		Path to perl interpreter, If you have multiple perl.
+     --with-perl-extlib <path>  Directory which hold required perl modules of bounceHammer
      --disable-webui=<yes|no>	Disable WebUI, Default is no.
 
   e.g.)
-   # ./configure --prefix=/usr/local/bouncehammer --with-perl=/usr/local/bin/perl
+   # export PERL5LIB=/usr/local/bouncehammer/lib/perl5
+   # ./configure --prefix=/usr/local/bouncehammer --with-perl=/usr/local/bin/perl \
+     --with-perl-extlib=$PERL5LIB
    # make && make test && make install
-   ...
-
-   ------ OR IF YOU INSTALLED REQUIRED PERL MODULES BY cpanm COMMAND ------
-   # PERL5LIB=/usr/local/bouncehammer/lib/perl5 ./configure
-   # make 
-   # PERL5LIB=/usr/local/bouncehammer/lib/perl5 make test && make install
    ...
  
 -------------------------------------------------------------------------------
- 4. Setting up database
+ 5. Setting up database
    e.g.)
      - Database name = bouncehammer
      - Database hostname = 127.0.0.1
@@ -97,7 +99,7 @@ $Id: INSTALL,v 1.4.2.2 2011/06/22 05:35:58 ak Exp $
      # touch /usr/local/bouncehammer/var/db/bouncehammer.db
 
 -------------------------------------------------------------------------------
- 5. Setting up tables of the database
+ 6. Setting up tables of the database
 
    # cd /usr/local/bouncehammer/share/script
 
@@ -117,7 +119,7 @@ $Id: INSTALL,v 1.4.2.2 2011/06/22 05:35:58 ak Exp $
      # cat ./mastertable-* | sqlite3 /usr/local/bouncehammer/var/db/bouncehammer
 
 -------------------------------------------------------------------------------
- 6. Configuration files
+ 7. Configuration files
 
    # cd /usr/local/bouncehammer/etc
    # cp ./bouncehammer.cf-example ./bouncehammer.cf
@@ -129,7 +131,7 @@ $Id: INSTALL,v 1.4.2.2 2011/06/22 05:35:58 ak Exp $
    # cp ./available-countries-example ./available-countries
 
 -------------------------------------------------------------------------------
- 7. Copy CGI script file to the document root
+ 8. Copy CGI script file to the document root
 
    # cd /usr/local/bouncehammer/share/script
    # cp ./bouncehammer.cgi /path/to/docroot-of-webui/
@@ -137,9 +139,4 @@ $Id: INSTALL,v 1.4.2.2 2011/06/22 05:35:58 ak Exp $
 
    # cp ./api.cgi /path/to/docroot-of-httpapi/
    # chmod a+x /path/to/docroot-of-httpapi/api.cgi
-
-
-
-
-
 
