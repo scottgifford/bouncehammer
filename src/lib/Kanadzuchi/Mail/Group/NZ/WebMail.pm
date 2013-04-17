@@ -1,4 +1,4 @@
-# $Id: WebMail.pm,v 1.2.2.3 2013/04/15 04:20:53 ak Exp $
+# $Id: WebMail.pm,v 1.2.2.4 2013/04/15 09:33:32 ak Exp $
 # Copyright (C) 2010-2011,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::NZ::
                                                    
@@ -34,6 +34,7 @@ sub nominisexemplaria
 		'vodafone' => [
 			# https://webmail.vodafone.co.nz/vfwebmail/
 			qr{\A(?:vodafone|es|ihug|pcconnect|quik|wave)[.]co[.]nz\z},
+			qr{\Avodafone[.]net[.]nz\z},
 		],
 	};
 }
