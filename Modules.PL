@@ -1,7 +1,7 @@
-# $Id: Modules.PL,v 1.22.2.1 2012/09/27 06:43:23 ak Exp $
+# $Id: Modules.PL,v 1.22.2.2 2013/04/16 09:08:26 ak Exp $
 # -Id: PERL-MODULES.PL,v 1.1 2009/08/29 07:32:08 ak Exp -
 # -Id: PERL-MODULES,v 1.6 2009/08/12 01:57:35 ak Exp -
-# Copyright (C) 2009,2010 Cubicroot Co. Ltd.
+# Copyright (C) 2009,2010-2013 Cubicroot Co. Ltd.
 use strict;
 use warnings;
 
@@ -55,7 +55,7 @@ my $Dependencies = {
 sub modules
 {
 	my $modules = undef;
-	my $reqtype = shift || q{key};
+	my $reqtype = shift || 'key';
 
 	if( $reqtype eq 'key' )
 	{
@@ -111,11 +111,11 @@ sub check
 	};
 	$ver0 = 1 unless $@;
 
-	foreach my $m ( keys(%$hash) )
+	foreach my $m ( keys %$hash )
 	{
 		$path =  $m;
 		$path =~ s{::}{/}g;
-		$path .= q{.pm};
+		$path .= '.pm';
 
 		eval { require "$path"; };
 		if( $@ )
@@ -137,7 +137,7 @@ sub check
 
 				if( $ver1 && $ver2 && ( $ver2->numify < $ver1->numify ) )
 				{
-					push( @$oldv, $m );
+					push @$oldv, $m;
 					printf(STDOUT "%s %s VERSION = %s is older than %s\n",
 						$head->{'warning'}, $m, $ver2->stringify, $ver1->stringify );
 				}
@@ -148,11 +148,11 @@ sub check
 			}
 			else
 			{
-				if( $hash->{$m}->[0] && $vers && ( $vers < $hash->{$m}->[0] ) )
+				if( $hash->{ $m }->[0] && $vers && ( $vers < $hash->{ $m }->[0] ) )
 				{
-					push( @$oldv, $m );
+					push @$oldv, $m;
 					printf(STDOUT "%s %s VERSION = %s is older than %s\n",
-						$head->{'warning'}, $m, $vers, $hash->{$m}->[0] );
+						$head->{'warning'}, $m, $vers, $hash->{ $m }->[0] );
 				}
 				else
 				{
@@ -161,9 +161,9 @@ sub check
 			}
 		}
 	}
-	exit(1) if( scalar(@$none) && $argv ne 'installed' );
-	exit(2) if( scalar(@$oldv) && $argv ne 'missing' );
-	exit(0);
+	exit 1 if( scalar @$none && $argv ne 'installed' );
+	exit 2 if( scalar @$oldv && $argv ne 'missing' );
+	exit 0;
 }
 
 if( $Command eq 'list' )
