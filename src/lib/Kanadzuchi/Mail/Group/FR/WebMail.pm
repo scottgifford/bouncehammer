@@ -1,4 +1,4 @@
-# $Id: WebMail.pm,v 1.1.2.5 2013/04/15 04:20:53 ak Exp $
+# $Id: WebMail.pm,v 1.1.2.6 2013/04/15 09:33:32 ak Exp $
 # Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::FR::
                                                    
@@ -29,6 +29,7 @@ sub nominisexemplaria
 			qr{\A(?:cario|guideo)[.]fr\z},
 			qr{\A(?:mageos|waika9)[.]com\z},
 			qr{\Afnac[.]net\z},
+			qr{\Asfr[.]fr\z},
 		],
 		'voila' => [
 			# http://www.voila.fr/
