@@ -1,6 +1,6 @@
- $Id: README,v 1.4.2.1 2011/05/18 07:33:21 ak Exp $
+ $Id: README,v 1.4.2.2 2013/04/16 09:08:26 ak Exp $
 -----------------------------------------------------------------------
- Copyright (C) 2009-2011 Cubicroot Co. Ltd. ALL RIGHTS RESERVED.
+ Copyright (C) 2009-2013 Cubicroot Co. Ltd. ALL RIGHTS RESERVED.
  Developed by Cubicroot Co. Ltd. (http://cubicroot.jp/)
 ------------------------------------------------------------------------
  bounceHammer: An open source software mainly developed for handling 
@@ -9,7 +9,9 @@
  Other information is available at the following sites:
 
   - http://sourceforge.jp/projects/bouncehammer/
+  - http://www.facebook.com/bouncehammer
   - http://twitter.com/bouncehammer
+  - http://bouncehammer.jp/
 ------------------------------------------------------------------------
 
 ARTISTIC -------------- Artistic License
@@ -39,3 +41,4 @@ missing ---------------
 src/ ------------------ Source code
 t/ -------------------- Test cases for make test
 template/ ------------- WebUI template files
+
