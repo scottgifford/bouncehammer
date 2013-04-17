@@ -1,4 +1,4 @@
-# $Id: OpenSMTPD.pm,v 1.1.2.4 2013/04/15 04:20:52 ak Exp $
+# $Id: OpenSMTPD.pm,v 1.1.2.5 2013/04/17 04:55:29 ak Exp $
 # Copyright (C) 2012-2013 Cubicroot Co. Ltd.
 # Kanadzuchi::MTA::
                                                                  
@@ -51,8 +51,8 @@ my $RxOpenSMTPD = {
 # ||__|||__|||__|||__|||__|||_______|||__|||__|||__|||__|||__|||__|||__||
 # |/__\|/__\|/__\|/__\|/__\|/_______\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|
 #
-sub version { '0.1.1' };
-sub description { 'OpenBSD:/usr/sbin/smtpd' };
+sub version { '0.1.2' };
+sub description { 'OpenSMTPD' };
 sub xsmtpagent { 'X-SMTP-Agent: OpenSMTPD'.qq(\n); }
 sub reperit
 {
