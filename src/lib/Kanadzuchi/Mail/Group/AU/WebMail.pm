@@ -1,4 +1,4 @@
-# $Id: WebMail.pm,v 1.4.2.2 2013/04/15 09:33:32 ak Exp $
+# $Id: WebMail.pm,v 1.4.2.3 2013/04/17 04:55:29 ak Exp $
 # Copyright (C) 2010,2013 Cubicroot Co. Ltd.
 # Kanadzuchi::Mail::Group::AU::
                                                    
@@ -29,7 +29,7 @@ sub nominisexemplaria
 		],
 		'fastmail' => [
 			# FastMail http://fastmail.fm/
-			qr{\Afastmail[.](?:cn|es|im|in|jp|mx|net|nl|se|to|tw|us|co[.]uk|com[.]au)\z},
+			qr{\Afastmail[.](?:cn|es|fm|im|in|jp|mx|net|nl|se|to|tw|us|co[.]uk|com[.]au)\z},
 			qr{\A(?:123|elite|imap|speedy)mail[.]org\z},
 			qr{\A(?:fast-|internet-)mail[.]org\z},
 			qr{\A(?:150|16|50|clue|theinternete|xs|myfast|mymac|opera)mail[.]com\z},
@@ -51,7 +51,7 @@ sub nominisexemplaria
 			qr{\Ainternet(?:emails|mailing)[.]net\z},
 			qr{\Asent[.](?:as|at|com)\z},
 			qr{\Athe-(?:fastest[.]net|quickest[.]com)\z},
-			qr{\Avery(?fast[.]biz|speedy[.]net)\z},
+			qr{\Avery(?:fast[.]biz|speedy[.]net)\z},
 			qr{\Areallyfast(?:biz|info)\z},
 			qr{\A(?:air|speed)post[.]net\z},
 			qr{\A(?:inoutbox|fmailbox|fmgirl|fmguy|promessage|rushpost)[.]com\z},
