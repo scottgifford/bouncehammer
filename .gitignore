@@ -1,2 +1,15 @@
 autom4te.cache/
 cvs
+Makefile
+__KANADZUCHIROOT__
+config.log
+config.status
+dist
+*~
+src/bin/databasectl
+src/bin/datadumper
+src/bin/logger
+src/bin/mailboxparser
+src/bin/messagetoken
+src/bin/summarizer
+src/bin/tablectl
