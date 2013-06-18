@@ -1,7 +1,11 @@
 autom4te.cache/
+.test/
 cvs
 Makefile
 __KANADZUCHIROOT__
+__KANADZUCHIETC__
+__KANADZUCHILIB__
+bouncehammer-*.tar.gz
 config.log
 config.status
 dist
