@@ -14,7 +14,7 @@ sub standard {
 		'ApacheJames', 'Courier', 'Exim', 'Fallback', 'FeedbackLoop',
 		'OpenSMTPD', 'Postfix', 'qmail', 'Sendmail', 'sSMTP',
 		'JP::aubyKDDI', 'JP::Biglobe',
-		'US::Facebook', 'US::Google', 
+		'US::Facebook', 'US::Google', 'US::Vtext'
 	];
 }
 

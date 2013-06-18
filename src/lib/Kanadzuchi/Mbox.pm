@@ -35,6 +35,7 @@ use Kanadzuchi::MTA::Exim;
 use Kanadzuchi::MTA::Courier;
 use Kanadzuchi::MTA::OpenSMTPD;
 use Kanadzuchi::MTA::FeedbackLoop;
+use Kanadzuchi::MTA::US::Vtext;
 
 #  ____ ____ ____ ____ ____ ____ ____ ____ ____ 
 # ||A |||c |||c |||e |||s |||s |||o |||r |||s ||
@@ -59,7 +60,8 @@ sub ENDOF() { qq(\n__THE_END_OF_THE_EMAIL__\n); }
 my $TransferAgents = __PACKAGE__->postulat();
 my $MostFamousMTAs = [ 
 	'Sendmail', 'Postfix', 'qmail', 'Exim', 'Courier',
-	'OpenSMTPD', 'FeedbackLoop'
+	'OpenSMTPD', 'FeedbackLoop',
+	'US::Vtext',
 ];
 
 #  ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 
