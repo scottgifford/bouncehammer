@@ -61,7 +61,6 @@ my $TransferAgents = __PACKAGE__->postulat();
 my $MostFamousMTAs = [ 
 	'Sendmail', 'Postfix', 'qmail', 'Exim', 'Courier',
 	'OpenSMTPD', 'FeedbackLoop',
-	'US::Vtext',
 ];
 
 #  ____ ____ ____ ____ ____ _________ ____ ____ ____ ____ ____ ____ ____ 

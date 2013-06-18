@@ -282,7 +282,7 @@
 "uk": { "cellphone": 1, "smartphone": 1, "webmail": 1 }
 
 # The United States of America
-"us": { "cellphone": 1, "smartphone": 1, "webmail": 1, "agents": [ "Google" ] }
+"us": { "cellphone": 1, "smartphone": 1, "webmail": 1, "agents": [ "Google", "Vtext" ] }
 
 # Oriental Republic of Uruguay 
 "uy": { "cellphone": 1, "smartphone": 1, "webmail": 1 }

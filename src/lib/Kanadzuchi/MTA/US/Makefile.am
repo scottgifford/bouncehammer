@@ -5,7 +5,7 @@
 
 distdir = $(BUILDROOT)/dist/lib/Kanadzuchi/MTA/US
 pkgdatadir = @libdir@/Kanadzuchi/MTA/US
-pkgdata_DATA = Google.pm Facebook.pm
+pkgdata_DATA = Google.pm Facebook.pm Vtext.pm
 
 all-am:
 	test -d $(distdir) || mkdir -p $(distdir)
